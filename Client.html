@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Quick Construct | Shop & Hire</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ["Inter", "system-ui", "sans-serif"],
+            display: ["Space Grotesk", "sans-serif"] 
+          },
+          colors: {
+            brand: {
+              yellow: "#FFC107",
+              dark: "#050505", 
+              card: "#121214",
+              border: "#27272A",
+              accent: "#38BDF8"
+            },
+            light: { 
+              background: "#F8FAFC",
+              text: "#050505",
+              card: "#FFFFFF",
+              border: "#E2E8F0",
+              input: "#F1F5F9"
+            }
+          },
+          animation: {
+            'bounce-short': 'bounce 0.5s ease-in-out 1',
+            'heart-pop': 'heartPop 0.3s ease-in-out'
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+  /* --- ORGANIZED ANIMATION STYLES --- */
+#intro-scene { position: relative; width: 100%; max-width: 500px; height: 350px; display: flex; align-items: center; justify-content: center; }
+#truck-group { position: absolute; z-index: 30; width: 250px; height: 120px; opacity: 0; }
+#materials-stack { position: absolute; z-index: 20; bottom: 25%; left: 35%; opacity: 0; transform: scale(0.5); }
+#intro-workers { position: absolute; inset: 0; z-index: 25; opacity: 0; }
+#admin-building-frame { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); z-index: 10; opacity: 0; width: 160px; height: 160px; }
+.logo-char { opacity: 0; transform: translateY(30px); display: inline-block; font-family: 'Space Grotesk', sans-serif; }
+.qc-final-box { width: 110px; height: 110px; background: #FFC107; border-radius: 28px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px #FFC107; transform: scale(0); }
+  /* --- PRESET FOR SMOOTH INDEX-STYLE REVEAL --- */
+#intro-scene { position: relative; width: 100%; max-width: 500px; height: 300px; display: flex; align-items: center; justify-content: center; }
+#truck-group { position: absolute; z-index: 20; width: 280px; height: 140px; opacity: 0; transform-origin: bottom left; }
+#intro-workers { position: absolute; inset: 0; z-index: 10; opacity: 0; }
+#intro-building { position: absolute; bottom: 20%; left: 50%; transform: translateX(-50%); z-index: 5; opacity: 0; width: 180px; height: 180px; }
+.logo-char { opacity: 0; transform: translateY(50px); display: inline-block; font-family: 'Space Grotesk', sans-serif; }
+.qc-admin-box { 
+    width: 110px; height: 110px; background: #FFC107; border-radius: 28px; 
+    display: flex; align-items: center; justify-content: center; 
+    box-shadow: 0 0 60px rgba(255, 193, 7, 0.5); transform: scale(0); 
+}
+  /* --- INDEX-STYLE SPLASH ELEMENTS --- */
+#intro-scene { position: relative; width: 100%; max-width: 400px; height: 300px; display: flex; align-items: center; justify-center; }
+#truck-group { position: absolute; z-index: 20; width: 220px; height: 110px; opacity: 0; }
+#intro-workers { position: absolute; inset: 0; z-index: 10; opacity: 0; }
+.worker-svg { width: 80px; height: 80px; position: absolute; }
+#intro-building { position: absolute; bottom-[20%]; left-1/2 -translate-x-1/2 z-0 opacity: 0; width: 150px; height: 150px; }
+.logo-char { opacity: 0; transform: translateY(100%); display: inline-block; font-family: 'Space Grotesk', sans-serif; }
+.qc-admin-box { width: 90px; height: 90px; background: #FFC107; border-radius: 20px; display: flex; align-items: center; justify-center; box-shadow: 0 0 40px #FFC107; transform: scale(0); }
+  /* --- EXACT INDEX PAGE ANIMATION STYLES --- */
+#intro-scene { position: relative; width: 100%; max-width: 300px; height: 200px; display: flex; items-center; justify-center; }
+.logo-char { opacity: 0; transform: translateY(100%); display: inline-block; }
+#truck-group { position: absolute; z-index: 20; width: 200px; height: 100px; opacity: 0; transform-origin: bottom left; }
+#intro-building { absolute bottom-[10%]; left-1/2 -translate-x-1/2 z-0 opacity: 0; w-48 h-48; }
+.qc-box-admin { width: 80px; height: 80px; background: #FFC107; border-radius: 20px; display: flex; align-items: center; justify-center; box-shadow: 0 0 40px #FFC107; opacity: 0; transform: scale(3); }
+  /* --- NEW QC LOGO REVEAL STYLES --- */
+#splash {
+    background: #050505;
+    display: flex;
+    perspective: 1000px;
+}
+.qc-logo-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.qc-box {
+    width: 100px;
+    height: 100px;
+    background: #FFC107;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 50px rgba(255, 193, 7, 0.4);
+    transform: scale(0);
+    opacity: 0;
+}
+.qc-letter {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 900;
+    font-size: 5rem;
+    color: #000;
+}
+.qc-text {
+    margin-top: 20px;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #FFFFFF;
+    opacity: 0;
+    transform: translateY(10px);
+}
+    /* Premium Background Pattern Implementation with Tool Texture & Slow Animation */
+    @keyframes moveBackground {
+        from { background-position: 0 0; }
+        to { background-position: 240px 240px; }
+    }
+
+    body { 
+        background-color: #050505; 
+        color: #F8FAFC; 
+        -webkit-tap-highlight-color: transparent;
+        position: relative;
+    }
+
+    body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        /* Detailed Construction Tool Texture SVG */
+        background-image: 
+            radial-gradient(circle at 20% 30%, rgba(255, 193, 7, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.04) 0%, transparent 50%),
+            url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M10 10l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM60 10l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM10 40h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zM10 70l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM60 70l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm-60 25h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2z'/%3E%3Cpath d='M100 20l5 5-10 10-5-5 10-10zm-5 40h10v2H95v-2zm15 30l-10 10-2-2 10-10 2 2zM30 90h10v2H30v-2zm40 0l4 4-10 10-4-4 10-10z'/%3E%3C/g%3E%3C/svg%3E");
+        z-index: -1;
+        pointer-events: none;
+        animation: moveBackground 30s linear infinite;
+    }
+    
+    body.light-mode {
+        background-color: #F8FAFC;
+        color: #050505;
+    }
+
+    body.light-mode::before {
+        background-image: 
+            radial-gradient(circle at 50% 20%, rgba(255, 193, 7, 0.12), transparent 60%),
+            url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23FFC107' fill-opacity='0.08'%3E%3Cpath d='M10 10l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM60 10l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM10 40h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zM10 70l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zM60 70l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm-60 25h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2zm25 0h8v2h-8v-2zm25 0l5 5-2 2-5-5 2-2z'/%3E%3Cpath d='M100 20l5 5-10 10-5-5 10-10zm-5 40h10v2H95v-2zm15 30l-10 10-2-2 10-10 2 2zM30 90h10v2H30v-2zm40 0l4 4-10 10-4-4 10-10z'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    body.light-mode .glass-nav {
+        background: rgba(248, 250, 252, 0.95); 
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+        color: #050505; 
+    }
+    body.light-mode .glass-bottom {
+        background: rgba(255, 255, 255, 0.9); 
+        backdrop-filter: blur(16px);
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+        color: #050505; 
+    }
+    body.light-mode .glass-modal,
+    body.light-mode .product-card,
+    body.light-mode .bg-brand-card,
+    body.light-mode .bg-white\/5,
+    body.light-mode .bg-slate-800,
+    body.light-mode .bg-slate-700 {
+        background-color: #FFFFFF !important; 
+        border-color: #E2E8F0 !important; 
+        color: #050505;
+    }
+
+    body.light-mode .text-white:not(.overlay-text),
+    body.light-mode .text-slate-300:not(.overlay-text) {
+        color: #050505 !important;
+    }
+    body.light-mode .overlay-text {
+        color: #ffffff !important;
+    }
+    body.light-mode .text-slate-400,
+    body.light-mode .text-slate-500,
+    body.light-mode .text-slate-600 {
+        color: #475569 !important; 
+    }
+    body.light-mode input {
+        background-color: #F1F5F9 !important; 
+        border-color: #E2E8F0 !important; 
+        color: #050505 !important;
+    }
+    body.light-mode .tab-inactive {
+        background-color: #E2E8F0 !important;
+        color: #475569 !important;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    .glass-nav {
+      background: rgba(5, 5, 5, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-bottom {
+      background: rgba(18, 18, 20, 0.9);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-modal {
+      background: rgba(18, 18, 20, 0.95);
+      backdrop-filter: blur(20px);
+    }
+
+    .tab-active {
+        background-color: #FFC107;
+        color: #000;
+        font-weight: 700;
+    }
+    .tab-inactive {
+        background-color: rgba(255,255,255,0.05);
+        color: #94a3b8;
+    }
+
+    @keyframes addToCart {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    .animate-cart { animation: addToCart 0.3s ease-out; }
+
+    @keyframes heartPop {
+        0% { transform: scale(0.5); opacity: 0.5; }
+        50% { transform: scale(1.4); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-heart-pop { animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+
+    .product-card { transition: transform 0.2s; }
+    .product-card:active { transform: scale(0.98); }
+
+    .auth-transition { transition: all 0.4s ease-in-out; }
+
+    .toggle-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 36px;
+        width: 36px;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    body.light-mode .toggle-button {
+        background-color: rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .referral-box {
+        background: linear-gradient(145deg, #1f1f22, #121214);
+        border: 1px solid #FFC107; 
+        box-shadow: 0 0 20px rgba(255, 193, 7, 0.1), inset 0 0 5px rgba(255, 193, 7, 0.1); 
+        transition: all 0.3s;
+    }
+    .referral-box:hover {
+         box-shadow: 0 0 30px rgba(255, 193, 7, 0.3);
+    }
+
+    .product-image-container {
+        height: 300px;
+        position: relative;
+        overflow: hidden;
+    }
+    .product-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    @media (min-width: 1024px) {
+        #main-content-area main {
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    }
+
+    /* Video Preview Styles */
+    .video-preview-card {
+        flex: 0 0 75%;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        position: relative;
+        background: #121214;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    @media (min-width: 768px) {
+        .video-preview-card { flex: 0 0 30%; }
+    }
+    .video-preview-card video {
+        width: 100%;
+        height: 220px;
+        object-fit: cover;
+    }
+    .video-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+        padding: 1rem;
+        pointer-events: none;
+    }
+
+    /* Offer Slider Styles */
+    .offer-slider-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 1.5rem;
+    }
+    .offer-slider {
+        display: flex;
+        transition: transform 0.5s ease-in-out;
+        width: 100%;
+    }
+    .offer-slide {
+        min-width: 100%;
+        position: relative;
+    }
+    /* Fix for Cut-off Drill and Product Images */
+    .offer-slide img {
+        width: auto !important;
+        max-width: 55%;
+        height: 85% !important;
+        object-fit: contain !important;
+        position: absolute;
+        right: 0.5rem;
+        bottom: 50%;
+        transform: translateY(50%);
+    }
+
+    /* Suggested Services Styling (Urban Company Style) */
+    .suggestion-scroll-container {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+    }
+    .suggestion-item {
+        flex: 0 0 130px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 12px;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    body.light-mode .suggestion-item {
+        background: #F1F5F9;
+        border-color: #E2E8F0;
+    }
+    .suggestion-item:active { transform: scale(0.95); }
+  </style>
+</head>
+
+<body class="pb-24 relative overflow-x-hidden" id="app-body">
+
+<div id="splash" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center overflow-hidden">
+    <div id="intro-scene">
+        <div id="truck-group">
+             <svg viewBox="0 0 300 150" fill="none">
+                <!-- Added Wheels -->
+                <circle cx="60" cy="115" r="14" fill="#1a1a1a" stroke="#333" stroke-width="2" />
+                <circle cx="220" cy="115" r="14" fill="#1a1a1a" stroke="#333" stroke-width="2" />
+                
+                <path d="M20 90 L 250 90 L 250 115 L 20 115 Z" fill="#1a1a1a" />
+                <path d="M190 50 H 240 L 260 90 H 190 V 50 Z" fill="#333" />
+                <g id="admin-truck-bed" transform-origin="20 90">
+                    <path d="M15 30 H 180 V 90 H 15 V 30 Z" fill="#FFC107"/>
+                    <text x="35" y="65" fill="black" font-family="monospace" font-weight="900" font-size="10">QUICK CONSTRUCT</text>
+                </g>
+             </svg>
+        </div>
+
+        <div id="materials-stack">
+            <svg width="80" height="60" viewBox="0 0 120 80">
+                <rect x="0" y="40" width="40" height="40" fill="#F97316" stroke="#C2410C" stroke-width="2"/>
+                <rect x="40" y="40" width="40" height="40" fill="#FB923C" stroke="#EA580C" stroke-width="2"/>
+                <rect x="20" y="0" width="40" height="40" fill="#FFC107" stroke="#C2410C" stroke-width="2"/>
+            </svg>
+        </div>
+
+        <div id="intro-workers">
+            <div id="adm-worker-1" class="absolute left-[58%] bottom-[20%] w-24 h-24">
+                 <svg viewBox="0 0 100 100"><circle cx="50" cy="25" r="12" fill="#FFE4E6"/><path d="M35 95 V 60 H 65 V 95" stroke="#38BDF8" stroke-width="8"/><path id="hammer-arm" d="M50 35 L 75 45" stroke="#0EA5E9" stroke-width="6"/></svg>
+            </div>
+            <div id="adm-worker-2" class="absolute left-[22%] bottom-[20%] w-24 h-24">
+                <svg viewBox="0 0 100 100"><circle cx="50" cy="25" r="12" fill="#FFE4E6"/><path d="M35 95 V 60 H 65 V 95" stroke="#FFF" stroke-width="8"/><rect x="30" y="40" width="40" height="25" fill="#1E293B"/></svg>
+            </div>
+        </div>
+
+        <div id="admin-building-frame">
+             <svg viewBox="0 0 200 200" fill="none"><rect x="40" y="40" width="120" height="140" stroke="#FFC107" stroke-width="2" fill="rgba(255,193,7,0.05)"/></svg>
+        </div>
+
+        <div id="final-qc-reveal" class="absolute flex flex-col items-center z-40 opacity-0">
+            <div class="qc-final-box" id="qc-box-pop">
+                <span class="font-display font-black text-6xl text-black">QC</span>
+            </div>
+            <h1 class="font-display text-2xl font-black text-white tracking-[0.2em] mt-6 flex gap-1">
+                 <span class="logo-char">Q</span><span class="logo-char">U</span><span class="logo-char">I</span><span class="logo-char">C</span><span class="logo-char">K</span>
+                 <span class="logo-char ml-2">C</span><span class="logo-char">O</span><span class="logo-char">N</span><span class="logo-char">S</span><span class="logo-char">T</span><span class="logo-char">R</span><span class="logo-char">U</span><span class="logo-char">C</span><span class="logo-char">T</span>
+            </h1>
+        </div>
+    </div>
+    
+    <!-- New Loading Bar at Bottom -->
+    <div class="absolute bottom-12 w-64 h-1 bg-white/10 rounded-full overflow-hidden">
+        <div id="splash-loader" class="h-full bg-brand-yellow w-0"></div>
+    </div>
+</div>
+  <div id="auth-screen" class="fixed inset-0 z-[90] bg-brand-dark hidden flex-col items-center justify-center">
+    <button onclick="toggleTheme()" class="toggle-button absolute top-4 right-4 z-20">
+        <svg id="theme-icon-auth" class="w-5 h-5 text-brand-yellow transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+    </button>
+    
+    <div class="absolute inset-0 z-0 opacity-40">
+        <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=1000" class="w-full h-full object-cover grayscale">
+        <div class="absolute inset-0 bg-gradient-to-t from-brand-dark via-brand-dark/50 to-transparent"></div>
+    </div>
+
+    <div class="relative z-10 p-6 pt-12 pb-12 w-full max-w-md mx-auto">
+        <div class="mb-8">
+            <div class="h-12 w-12 bg-brand-yellow rounded-xl flex items-center justify-center mb-4">
+                <span class="font-display font-bold text-black text-xl">Q</span>
+            </div>
+            <h1 class="text-3xl font-display font-bold text-white mb-2">Welcome Back</h1>
+            <p class="text-slate-400 text-sm">Quick Construct: Your one-stop shop for materials & pros.</p>
+        </div>
+
+        <div id="login-form" class="space-y-4 auth-transition">
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Mobile Number</label>
+                <div class="flex gap-2">
+                    <span class="bg-white/5 border border-white/10 rounded-xl py-3 px-3 text-slate-400 font-bold flex items-center justify-center">+91</span>
+                    <input type="tel" id="login-mobile" placeholder="98765 43210" maxlength="10" class="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50 font-medium tracking-wide">
+                </div>
+            </div>
+
+            <div id="otp-container" class="space-y-1 hidden">
+                <label class="text-xs font-bold text-slate-500 uppercase">One Time Password (OTP)</label>
+                <input type="text" id="login-otp" placeholder="XXXX" maxlength="4" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white text-center font-bold tracking-[0.5em] text-lg focus:outline-none focus:border-brand-yellow/50">
+            </div>
+
+            <button id="btn-login-action" onclick="handleLoginFlow()" class="w-full bg-brand-yellow text-black font-bold py-3.5 rounded-xl mt-4 active:scale-95 transition-transform">Get OTP</button>
+            
+            <div class="relative flex py-3 items-center">
+                <div class="flex-grow border-t border-white/10"></div>
+                <span class="flex-shrink mx-4 text-slate-500 text-[10px] font-bold uppercase tracking-widest">Or continue with</span>
+                <div class="flex-grow border-t border-white/10"></div>
+            </div>
+
+            <button onclick="window.location.href='https://accounts.google.com/'" class="w-full bg-white text-black font-bold py-3 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-transform shadow-lg">
+                <svg class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign in with Google
+            </button>
+            
+            <div id="demo-otp-display" class="h-6 flex items-center justify-center mt-2"></div>
+            
+            <div class="flex items-center justify-between mt-2">
+                <button onclick="toggleAuthMode('signup')" class="text-xs text-brand-yellow font-bold w-full text-center">Create New Account</button>
+            </div>
+
+            <div class="space-y-3 pt-6">
+                <div id="referral-box" class="referral-box p-5 rounded-xl text-center space-y-3 cursor-pointer">
+                    <h4 class="text-xl font-black text-brand-yellow drop-shadow-md">HAVE A REFERRAL CODE?</h4>
+                    
+                    <div class="mt-4 space-y-2">
+                        <p class="text-xs text-slate-400">Enter a friend's referral code:</p>
+                        <input type="text" id="referral-login-input" placeholder="e.g., QUICK99X4" class="w-full bg-white/5 border border-white/10 rounded-lg py-2 px-3 text-sm text-white focus:outline-none focus:border-brand-yellow/50">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="signup-form" class="space-y-4 auth-transition hidden">
+            <div class="grid grid-cols-2 gap-3">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">First Name</label>
+                    <input type="text" placeholder="John" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Last Name</label>
+                    <input type="text" placeholder="Doe" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Mobile Number</label>
+                <div class="flex gap-2">
+                    <span class="bg-white/5 border border-white/10 rounded-xl py-3 px-3 text-slate-400 font-bold flex items-center justify-center">+91</span>
+                    <input type="tel" placeholder="98765 43210" maxlength="10" class="flex-1 bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50 font-medium tracking-wide">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Email</label>
+                <input type="email" placeholder="user@quickconstruct.com" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50">
+            </div>
+            <div class="space-y-1">
+                <label class="text-xs font-bold text-slate-500 uppercase">Password</label>
+                <input type="password" placeholder="Create password" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50">
+            </div>
+            <button onclick="completeAuth()" class="w-full bg-brand-yellow text-black font-bold py-3.5 rounded-xl mt-4 active:scale-95 transition-transform">Create Account</button>
+            
+            <div class="flex items-center justify-center mt-4">
+                <span class="text-xs text-slate-400 mr-2">Already have an account?</span>
+                <button onclick="toggleAuthMode('login')" class="text-xs text-brand-yellow font-bold">Sign In</button>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="worker-modal" class="fixed inset-0 z-[60] hidden">
+    <div class="absolute inset-0 bg-black/80" onclick="closeWorkerModal()"></div>
+    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transform transition-transform duration-300">
+        <button onclick="closeWorkerModal()" class="absolute top-4 right-4 h-8 w-8 bg-white/5 rounded-full flex items-center justify-center text-slate-400">✕</button>
+        <div id="worker-modal-content" class="flex flex-col items-center text-center"></div>
+    </div>
+  </div>
+
+  <div id="product-details-modal" class="fixed inset-0 z-[65] hidden">
+    <div class="absolute inset-0 bg-black/80" onclick="closeProductModal()"></div>
+    <div id="product-modal-content-container" class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-xl md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+        <div id="product-modal-content"></div>
+        <div id="product-buy-bar" class="sticky bottom-0 left-0 right-0 bg-brand-card p-4 border-t border-brand-border flex justify-between items-center hidden">
+             <div class="flex flex-col">
+                <span class="text-sm text-slate-400">Total Price</span>
+                <span id="buy-bar-price" class="text-xl font-bold text-brand-yellow">₹0</span>
+             </div>
+             <button id="buy-bar-button" onclick="" class="bg-brand-yellow text-black font-bold py-3.5 px-6 rounded-xl active:scale-95 transition-transform shadow-lg">
+                Add to Cart
+             </button>
+        </div>
+    </div>
+  </div>
+  
+  <div id="invoice-modal" class="fixed inset-0 z-[70] hidden">
+    <div class="absolute inset-0 bg-black/80" onclick="closeInvoiceModal()"></div>
+    <div id="invoice-modal-content-container" class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+        <div id="invoice-modal-content"></div>
+    </div>
+  </div>
+  
+  <div id="payment-modal" class="fixed inset-0 z-[75] hidden">
+    <div class="absolute inset-0 bg-black/80" onclick="closePaymentModal()"></div>
+    <div id="payment-modal-content-container" class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl shadow-2xl transform transition-transform duration-300 max-h-[90vh] overflow-y-auto">
+        
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-display font-bold text-white">Payment Options</h2>
+                <button onclick="closePaymentModal()" class="text-sm text-slate-400">Cancel</button>
+            </div>
+
+            <div id="payment-summary" class="bg-white/5 p-4 rounded-xl mb-6">
+                <h4 class="text-sm text-slate-400">Total Payable:</h4>
+                <span id="payment-total-display" class="text-2xl font-bold text-brand-yellow">₹0</span>
+            </div>
+
+            <div id="payment-options" class="space-y-3">
+                <button onclick="selectPayment('cod')" class="payment-option group w-full bg-brand-card p-4 rounded-xl border border-brand-border flex items-center justify-between transition-all hover:border-brand-yellow active:scale-95">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-brand-yellow/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-brand-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 8h6m-5 4h5m-5 8h4M5 12h.01M19 12h.01M5 16h.01M19 16h.01M9 16h6m-5 4h4"></path></svg>
+                        </div>
+                        <span class="text-sm font-bold text-white">Cash on Delivery (COD)</span>
+                    </div>
+                    <span class="text-xs text-slate-500 group-hover:text-brand-yellow">Available</span>
+                </button>
+                
+                <button onclick="selectPayment('upi')" class="payment-option group w-full bg-brand-card p-4 rounded-xl border border-brand-border flex items-center justify-between transition-all hover:border-brand-yellow active:scale-95">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c1.657 0 3 1.343 3 3v2a3 3 0 01-3 3c-1.657 0-3-1.343-3-3v-2c0-1.657 1.343-3 3-3z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 11a6 6 0 00-12 0v2a6 6 0 0012 0v-2z"></path></svg>
+                        </div>
+                        <span class="text-sm font-bold text-white">UPI (GPay, PhonePe, Paytm)</span>
+                    </div>
+                    <span class="text-xs text-slate-500 group-hover:text-brand-yellow">Instant</span>
+                </button>
+                
+                <button onclick="selectPayment('netbanking')" class="payment-option group w-full bg-brand-card p-4 rounded-xl border border-brand-border flex items-center justify-between transition-all hover:border-brand-yellow active:scale-95">
+                    <div class="flex items-center gap-3">
+                        <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                        </div>
+                        <span class="text-sm font-bold text-white">Netbanking / Cards</span>
+                    </div>
+                    <span class="text-xs text-slate-500 group-hover:text-brand-yellow">Secure</span>
+                </button>
+            </div>
+
+            <div id="netbanking-suboptions" class="mt-6 p-4 bg-white/10 rounded-xl space-y-3 hidden">
+                <h4 class="text-sm font-bold text-white mb-2 border-b border-white/10 pb-2">Select Netbanking Bank</h4>
+                <button onclick="processPayment('Netbanking - HDFC')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10">HDFC Bank</button>
+                <button onclick="processPayment('Netbanking - ICICI')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10">ICICI Bank</button>
+                <button onclick="processPayment('Netbanking - SBI')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10">State Bank of India</button>
+            </div>
+            
+            <div id="upi-suboptions" class="mt-6 p-4 bg-white/10 rounded-xl space-y-3 hidden">
+                <h4 class="text-sm font-bold text-white mb-2 border-b border-white/10 pb-2">Select UPI App</h4>
+                <button onclick="processPayment('UPI - GPay')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10 flex justify-center items-center gap-2">
+                    <img src="https://placehold.co/16x16/000/FFF?text=G" class="w-4 h-4 rounded-full">
+                    Google Pay
+                </button>
+                <button onclick="processPayment('UPI - PhonePe')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10 flex justify-center items-center gap-2">
+                    <img src="https://placehold.co/16x16/000/FFF?text=P" class="w-4 h-4 rounded-full">
+                    PhonePe
+                </button>
+                <button onclick="processPayment('UPI - Paytm')" class="w-full bg-white/5 text-sm text-white font-medium py-3 rounded-lg active:scale-95 transition-transform hover:bg-white/10 flex justify-center items-center gap-2">
+                    <img src="https://placehold.co/16x16/000/FFF?text=T" class="w-4 h-4 rounded-full">
+                    Paytm
+                </button>
+            </div>
+            
+            <button id="confirm-cod-button" onclick="processPayment('Cash on Delivery')" class="w-full bg-brand-yellow text-black font-bold py-4 rounded-xl mt-6 active:scale-95 transition-transform hidden">
+                Confirm COD Payment
+            </button>
+            
+        </div>
+    </div>
+  </div>
+
+  <div id="location-modal" class="fixed inset-0 z-[80] hidden">
+      <div class="absolute inset-0 bg-black/80" onclick="closeLocationModal()"></div>
+      <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transform transition-transform duration-300">
+          <h3 class="text-xl font-display font-bold mb-6 text-white">Choose Location</h3>
+          
+          <button onclick="autoFetchLocation()" class="w-full bg-brand-yellow text-black font-bold py-4 rounded-xl active:scale-95 transition-transform flex items-center justify-center gap-3 mb-4">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.828 0L6.343 16.657m4.243-4.243l.707.707M12 21.001V21m0-18a9 9 0 100 18 9 9 0 000-18z"></path></svg>
+              Auto-Fetch Current Location
+          </button>
+
+          <div>
+              <div class="flex items-center justify-between my-4">
+                  <span class="w-5/12 border-t border-white/10"></span>
+                  <span class="text-xs text-slate-500 uppercase">Or</span>
+                  <span class="w-5/12 border-t border-white/10"></span>
+              </div>
+              <div class="space-y-4">
+                  <input type="text" id="manual-location-input" placeholder="Enter City or Pincode manually" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-brand-yellow/50 font-medium">
+                  <button onclick="manualLocationEnter()" class="w-full bg-white/10 text-white font-bold py-3.5 rounded-xl active:scale-95 transition-transform hover:bg-white/20">
+                      Confirm Manual Location
+                  </button>
+              </div>
+          </div>
+
+          <button onclick="closeLocationModal()" class="w-full mt-6 text-slate-400 text-sm">Cancel</button>
+      </div>
+  </div>
+
+  <div id="share-modal" class="fixed inset-0 z-[85] hidden">
+    <div class="absolute inset-0 bg-black/80" onclick="closeShareModal()"></div>
+    <div class="absolute bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:w-full md:max-w-md md:bottom-auto glass-modal border-t md:border border-brand-border rounded-t-3xl md:rounded-3xl p-6 shadow-2xl transform transition-transform duration-300">
+        <h3 class="text-xl font-display font-bold mb-6 text-white text-center">Share Your Referral Link</h3>
+        
+        <div id="share-content" class="space-y-4">
+            <div class="bg-white/5 border border-brand-yellow/30 p-4 rounded-xl space-y-3">
+                <p class="text-sm text-slate-300">Your current referral URL:</p>
+                <div id="current-share-link" class="font-mono text-xs text-brand-accent truncate max-w-full">https://quickconstruct.com/r=QUICK99X4</div>
+            </div>
+            <p class="text-xs text-slate-500 text-center pt-2">Tap an app to share the link.</p>
+        </div>
+
+        <div id="initial-share-apps" class="grid grid-cols-4 gap-4 mt-8"></div>
+        <div id="all-share-apps" class="grid grid-cols-4 gap-4 mt-8 hidden"></div>
+        <div id="view-all-share-container" class="text-center mt-4"></div>
+        
+        <button onclick="closeShareModal()" class="w-full mt-6 text-slate-400 text-sm">Close</button>
+    </div>
+  </div>
+
+
+  <header class="fixed top-0 w-full z-40 glass-nav transition-all duration-300" id="main-header">
+      <div class="px-4 pt-3 pb-3">
+          <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2" onclick="openLocationModal()">
+                  <div class="h-8 w-8 bg-brand-yellow rounded-lg flex items-center justify-center">
+                      <span class="font-display font-bold text-black text-lg">Q</span>
+                  </div>
+                  <div class="flex flex-col">
+                      <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Delivery to</span>
+                      <div class="flex items-center gap-1 cursor-pointer">
+                          <span id="current-location-display" class="text-xs font-bold text-white truncate max-w-[150px]">Home • Anna Nagar, Chennai</span>
+                          <svg class="w-3 h-3 text-brand-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </div>
+                  </div>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                  <button onclick="switchNav('notifications')" id="notification-icon" class="relative toggle-button">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 text-white">
+                          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                      </svg>
+                      <span id="notification-badge" class="absolute top-0 right-0 h-2 w-2 bg-red-500 rounded-full hidden"></span>
+                  </button>
+                  <button onclick="toggleTheme()" class="toggle-button">
+                      <svg id="theme-icon-main" class="w-5 h-5 text-brand-yellow transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                  </button>
+              </div>
+
+          </div>
+
+          <div class="relative z-50">
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input type="text" id="global-search" autocomplete="off" placeholder="Search products..." class="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white focus:outline-none focus:border-brand-yellow/50 transition-colors placeholder:text-slate-600" onkeyup="if(event.key === 'Enter') handleSearchEnter()">
+              
+              <div id="search-suggestions" class="absolute top-full left-0 right-0 mt-2 bg-brand-card border border-brand-border rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden hidden max-h-60 overflow-y-auto z-50"></div>
+          </div>
+      </div>
+  </header>
+
+  <div id="main-content-area">
+      
+      <main id="page-home" class="pt-32 px-4 space-y-8 min-h-screen">
+          
+          <div class="flex p-1 bg-white/5 rounded-xl border border-white/5">
+              <button onclick="switchTab('store')" id="tab-store" class="flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-active flex items-center justify-center gap-2">
+                  <span>🛒</span> Buy Materials
+              </button>
+              <button onclick="switchTab('services')" id="tab-services" class="flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-inactive flex items-center justify-center gap-2">
+                  <span>👷</span> Hire Pros
+              </button>
+          </div>
+
+          <div id="view-store" class="space-y-6">
+              
+              <!-- Offer Slider -->
+              <div class="offer-slider-container">
+                  <div class="offer-slider" id="main-offer-slider">
+                      <div class="offer-slide flex-shrink-0">
+                          <div class="h-52 rounded-2xl bg-gradient-to-br from-yellow-600 to-yellow-400 relative overflow-hidden flex flex-col justify-end p-5 shadow-xl">
+                              <div class="relative z-10 w-full">
+                                  <span class="bg-black/20 text-white text-[10px] font-extrabold px-2 py-1 rounded-full mb-1 inline-block border border-white/10 overlay-text">FLAT 20% OFF</span>
+                                  <h3 class="text-xl sm:text-2xl font-display font-black text-white leading-tight drop-shadow-md overlay-text">Power Tools Sale</h3>
+                                  <button onclick="scrollToGrid()" class="mt-2 text-sm font-bold text-white border-b-2 border-white/50 overlay-text">Shop Now</button>
+                              </div>
+                              <img src="https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&q=80&w=400" class="absolute right-0 bottom-0">
+                          </div>
+                      </div>
+                      <div class="offer-slide flex-shrink-0">
+                          <div class="h-52 rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-400 relative overflow-hidden flex flex-col justify-end p-5 shadow-xl">
+                              <div class="relative z-10 w-full">
+                                  <span class="bg-black/20 text-white text-[10px] font-extrabold px-2 py-1 rounded-full mb-1 inline-block border border-white/10 overlay-text">FAST DELIVERY</span>
+                                  <h3 class="text-xl sm:text-2xl font-display font-black text-white leading-tight drop-shadow-md overlay-text">Paints & Brushes</h3>
+                                  <button onclick="scrollToGrid()" class="mt-2 text-sm font-bold text-white border-b-2 border-white/50 overlay-text">Explore</button>
+                              </div>
+                              <img src="https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&q=80&w=400" class="absolute right-0 bottom-0">
+                          </div>
+                      </div>
+                      <div class="offer-slide flex-shrink-0">
+                          <div class="h-52 rounded-2xl bg-gradient-to-br from-brand-accent to-blue-400 relative overflow-hidden flex flex-col justify-end p-5 shadow-xl">
+                              <div class="relative z-10 w-full">
+                                  <span class="bg-black/20 text-white text-[10px] font-extrabold px-2 py-1 rounded-full mb-1 inline-block border border-white/10 overlay-text">NEW ARRIVALS</span>
+                                  <h3 class="text-xl sm:text-2xl font-display font-black text-white leading-tight drop-shadow-md overlay-text">Luxury Bathroom Fittings</h3>
+                                  <button onclick="scrollToGrid()" class="mt-2 text-sm font-bold text-white border-b-2 border-white/50 overlay-text">View Fittings</button>
+                              </div>
+                              <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&q=80&w=400" class="absolute right-0 bottom-0">
+                          </div>
+                      </div>
+                      <div class="offer-slide flex-shrink-0">
+                          <div class="h-52 rounded-2xl bg-gradient-to-br from-red-600 to-orange-400 relative overflow-hidden flex flex-col justify-end p-5 shadow-xl">
+                              <div class="relative z-10 w-full">
+                                  <span class="bg-black/20 text-white text-[10px] font-extrabold px-2 py-1 rounded-full mb-1 inline-block border border-white/10 overlay-text">CLEARANCE</span>
+                                  <h3 class="text-xl sm:text-2xl font-display font-black text-white leading-tight drop-shadow-md overlay-text">Safety Gear Bulk Deals</h3>
+                                  <button onclick="scrollToGrid()" class="mt-2 text-sm font-bold text-white border-b-2 border-white/50 overlay-text">Grab Deals</button>
+                              </div>
+                              <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&q=80&w=400" class="absolute right-0 bottom-0">
+                          </div>
+                      </div>
+                  </div>
+                  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10" id="offer-dots">
+                      <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+                      <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+                      <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+                      <div class="w-1.5 h-1.5 rounded-full bg-white/40"></div>
+                  </div>
+              </div>
+
+              <div>
+                  <div class="flex justify-between items-center mb-4">
+                      <h3 class="text-lg font-bold text-white">Categories</h3>
+                      <button onclick="filterCategory('all')" class="text-xs text-brand-yellow">View All</button>
+                  </div>
+                  <div class="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4 text-center">
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('tools')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🔨</div>
+                          <span class="text-xs text-slate-400 font-medium">Tools</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('electrical')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">💡</div>
+                          <span class="text-xs text-slate-400 font-medium">Electric</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('plumbing')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🚰</div>
+                          <span class="text-xs text-slate-400 font-medium">Plumbing</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('paint')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🎨</div>
+                          <span class="text-xs text-slate-400 font-medium">Paint</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('construction')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🧱</div>
+                          <span class="text-xs text-slate-400 font-medium">Build</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('hardware')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🔩</div>
+                          <span class="text-xs text-slate-400 font-medium">Fixings</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('safety')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">🦺</div>
+                          <span class="text-xs text-slate-400 font-medium">Safety</span>
+                      </div>
+                      <div class="flex flex-col items-center gap-2 cursor-pointer group" onclick="filterCategory('all')">
+                          <div class="h-16 w-16 rounded-xl bg-slate-800 border border-white/5 flex items-center justify-center text-3xl group-hover:border-brand-yellow/50 transition-colors shadow-lg group-hover:shadow-brand-yellow/30">⚡</div>
+                          <span class="text-xs text-slate-400 font-medium">All</span>
+                      </div>
+                  </div>
+              </div>
+
+              <div>
+                  <h3 class="text-sm font-bold text-white mb-4">Trending Near You</h3>
+                  <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+                  <div id="view-all-container" class="mt-6 text-center"></div>
+              </div>
+
+              <div class="space-y-6 pt-4">
+                  <h3 class="text-lg font-bold text-white border-b border-brand-border pb-2">Why Choose Quick Construct Services?</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div class="bg-brand-card border border-brand-border p-4 rounded-xl space-y-2">
+                          <span class="text-xl text-brand-yellow font-bold block">✅</span>
+                          <h4 class="text-sm font-bold text-white">Verified & Insured Pros</h4>
+                          <p class="text-xs text-slate-400">All professionals are background-checked and service quality is guaranteed by Quick Construct.</p>
+                      </div>
+                      <div class="bg-brand-card border border-brand-border p-4 rounded-xl space-y-2">
+                          <span class="text-xl text-brand-yellow font-bold block">⏱️</span>
+                          <h4 class="text-sm font-bold text-white">On-Time Delivery & Service</h4>
+                          <p class="text-xs text-slate-400">We ensure quick procurement of materials and punctual service appointments every time.</p>
+                      </div>
+                      <div class="bg-brand-card border border-brand-border p-4 rounded-xl space-y-2">
+                          <span class="text-xl text-brand-yellow font-bold block">💰</span>
+                          <h4 class="text-sm font-bold text-white">Transparent Pricing</h4>
+                          <p class="text-xs text-slate-400">No hidden costs. See exactly what you pay for materials and labor upfront.</p>
+                      </div>
+                      <div class="bg-brand-card border border-brand-border p-4 rounded-xl space-y-2">
+                          <span class="text-xl text-brand-yellow font-bold block">🤝</span>
+                          <h4 class="text-sm font-bold text-white">24/7 Support</h4>
+                          <p class="text-xs text-slate-400">Our customer care team is available around the clock for any query or emergency.</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div id="view-services" class="hidden space-y-6">
+              <div class="grid grid-cols-2 gap-3 h-48 rounded-2xl overflow-hidden relative">
+                 <div class="relative overflow-hidden h-full rounded-l-2xl">
+                     <img src="https://images.unsplash.com/photo-1581147036324-c17ac41dfa6c?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover">
+                 </div>
+                 <div class="relative overflow-hidden h-full rounded-r-2xl">
+                     <img src="https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&q=80&w=400" class="w-full h-full object-cover">
+                 </div>
+                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 pointer-events-none">
+                     <h2 class="text-2xl font-display font-bold text-white overlay-text">Home Repairs, <br><span class="text-brand-yellow overlay-text">Sorted.</span></h2>
+                     <p class="text-xs text-slate-300 mt-1 overlay-text">Verified professionals at your doorstep.</p>
+                 </div>
+              </div>
+
+              <div>
+                  <h3 class="text-sm font-bold text-white mb-3">Live Service Previews</h3>
+                  <div class="flex gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory">
+                      <div class="video-preview-card snap-center">
+                          <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1581094288338-2314dddb7ec4?w=400">
+                              <source src="https://assets.mixkit.co/videos/preview/mixkit-technician-checking-the-ac-unit-41007-large.mp4" type="video/mp4">
+                          </video>
+                          <div class="video-overlay">
+                              <span class="text-[10px] bg-brand-yellow text-black px-2 py-0.5 rounded-full font-bold uppercase overlay-text">Maintenance</span>
+                              <h4 class="text-xs font-bold text-white mt-1 overlay-text">AC Service & Repair</h4>
+                          </div>
+                      </div>
+                      <div class="video-preview-card snap-center">
+                          <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=400">
+                              <source src="https://assets.mixkit.co/videos/preview/mixkit-repairman-fixing-a-leaking-pipe-under-a-sink-44583-large.mp4" type="video/mp4">
+                          </video>
+                          <div class="video-overlay">
+                              <span class="text-[10px] bg-brand-accent text-white px-2 py-0.5 rounded-full font-bold uppercase overlay-text">Installation</span>
+                              <h4 class="text-xs font-bold text-white mt-1 overlay-text">Leakage & Plumbing</h4>
+                          </div>
+                      </div>
+                      <div class="video-preview-card snap-center">
+                          <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=400">
+                              <source src="https://assets.mixkit.co/videos/preview/mixkit-worker-painting-a-wall-with-a-roller-44565-large.mp4" type="video/mp4">
+                          </video>
+                          <div class="video-overlay">
+                              <span class="text-[10px] bg-emerald-500 text-white px-2 py-0.5 rounded-full font-bold uppercase overlay-text">Finishing</span>
+                              <h4 class="text-xs font-bold text-white mt-1 overlay-text">Professional Painting</h4>
+                          </div>
+                      </div>
+                      <div class="video-preview-card snap-center">
+                          <video autoplay muted loop playsinline poster="https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=400">
+                              <source src="https://assets.mixkit.co/videos/preview/mixkit-construction-worker-at-a-building-site-41008-large.mp4" type="video/mp4">
+                          </video>
+                          <div class="video-overlay">
+                              <span class="text-[10px] bg-orange-500 text-white px-2 py-0.5 rounded-full font-bold uppercase overlay-text">Structural</span>
+                              <h4 class="text-xs font-bold text-white mt-1 overlay-text">Masonry & Building</h4>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div>
+                  <h3 class="text-sm font-bold text-white mb-3">Browse Categories</h3>
+                  <div id="services-grid" class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4"></div>
+                  <div id="services-toggle-container" class="mt-4 text-center"></div>
+              </div>
+
+              <div id="workers-section">
+                  <div class="flex justify-between items-center mb-4">
+                      <h3 class="text-sm font-bold text-white">Results <span id="worker-filter-label" class="text-brand-yellow text-xs font-normal"></span></h3>
+                      <button onclick="switchTab('services')" class="text-[10px] text-slate-400">Reset</button>
+                  </div>
+                  <div id="workers-grid" class="space-y-3"></div>
+              </div>
+          </div>
+      </main>
+
+      <main id="page-orders" class="pt-32 px-4 space-y-8 min-h-screen hidden">
+          <h2 class="text-xl font-display font-bold mb-4">Your Orders</h2>
+          <div id="orders-list" class="space-y-4"></div>
+      </main>
+
+      <main id="page-notifications" class="pt-32 px-4 space-y-8 min-h-screen hidden">
+          <h2 class="text-xl font-display font-bold mb-6">Your Notifications</h2>
+          <div id="notifications-page-list" class="space-y-4"></div>
+          <div id="notifications-empty-state" class="text-center text-slate-500 py-10 text-sm hidden">
+            You are all caught up! No new notifications.
+          </div>
+      </main>
+
+      <main id="page-edit-profile" class="pt-32 px-4 space-y-8 min-h-screen hidden"></main>
+      <main id="page-manage-addresses" class="pt-32 px-4 space-y-8 min-h-screen hidden"></main>
+      <main id="page-support" class="pt-32 px-4 space-y-8 min-h-screen hidden"></main>
+
+      <main id="page-saved" class="pt-32 px-4 space-y-8 min-h-screen hidden">
+          <h2 class="text-xl font-display font-bold mb-4">Saved Items</h2>
+          <div id="saved-items-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+          <div id="saved-empty-state" class="text-center text-slate-500 py-10 text-sm hidden">
+            You haven't saved any items yet.
+          </div>
+      </main>
+
+      <main id="page-account" class="pt-32 px-4 space-y-8 min-h-screen hidden">
+          <div class="flex items-center gap-4 mb-8">
+              <div class="h-20 w-20 rounded-full bg-slate-700 overflow-hidden border-2 border-brand-yellow">
+                  <img src="https://randomuser.me/api/portraits/men/1.jpg" class="w-full h-full object-cover">
+              </div>
+              <div>
+                  <h2 class="text-xl font-bold" id="account-user-name">John Doe</h2>
+                  <p class="text-sm text-slate-400" id="account-user-mobile">+91 98765 43210</p>
+              </div>
+          </div>
+          
+          <div class="space-y-2">
+              <button onclick="switchNav('edit-profile')" class="w-full bg-brand-card border border-brand-border p-4 rounded-xl flex justify-between items-center active:scale-[0.98] transition-transform">
+                  <span class="text-sm font-bold">Edit Profile</span>
+                  <span>→</span>
+              </button>
+              <button onclick="switchNav('manage-addresses')" class="w-full bg-brand-card border border-brand-border p-4 rounded-xl flex justify-between items-center active:scale-[0.98] transition-transform">
+                  <span class="text-sm font-bold">Manage Addresses</span>
+                  <span>→</span>
+              </button>
+              <button onclick="switchNav('support')" class="w-full bg-brand-card border border-brand-border p-4 rounded-xl flex justify-between items-center active:scale-[0.98] transition-transform">
+                  <span class="text-sm font-bold">Support / Help</span>
+                  <span>→</span>
+              </button>
+              <button onclick="location.reload()" class="w-full text-red-400 font-bold p-4 rounded-xl text-left mt-8">
+                  Log Out
+              </button>
+          </div>
+          
+          <div class="space-y-6 pt-8">
+              <h3 class="text-lg font-bold text-white border-b border-brand-border pb-2">Referral Program</h3>
+              <div id="referral-box-account" class="referral-box p-5 rounded-xl text-center space-y-3 cursor-pointer">
+                  <h4 class="text-xl font-black text-brand-yellow drop-shadow-md">REFER & EARN ₹500!</h4>
+                  <p class="text-sm text-white font-extrabold tracking-wide">Your unique code:</p>
+                  <span id="referral-code" class="font-mono text-lg font-bold text-white bg-white/10 px-3 py-1 rounded-lg border border-brand-yellow/50 shadow-inner">QUICK99X4</span>
+
+                  <button onclick="copyReferralCode()" class="w-full bg-brand-yellow text-black font-bold py-3 rounded-xl active:scale-95 transition-transform hover:bg-yellow-400 shadow-md mt-4">
+                      COPY CODE
+                  </button>
+
+                  <button onclick="openShareModal('QUICK99X4')" class="w-full bg-white/10 text-white font-bold py-3 rounded-xl active:scale-95 transition-transform hover:bg-white/20 shadow-lg mt-2">
+                      SEND YOUR REFERRAL LINK
+                  </button>
+              </div>
+          </div>
+      </main>
+  </div>
+
+  <div id="cart-drawer" class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-in-out">
+      <div class="bg-brand-card border-t border-brand-border rounded-t-3xl p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] max-h-[80vh] overflow-y-auto">
+          <div class="w-12 h-1 bg-white/20 rounded-full mx-auto mb-6"></div>
+          
+          <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-display font-bold">Your Cart <span id="cart-count-title" class="text-brand-yellow">(0)</span></h3>
+              <button onclick="toggleCart()" class="text-sm text-slate-400">Close</button>
+          </div>
+
+          <div id="cart-items" class="space-y-4 mb-4">
+              <div class="text-center text-slate-500 py-10 text-sm">Your cart is empty. Start building! 🏗️</div>
+          </div>
+
+          <!-- Suggested Services Container (Added for Urban Company functionality) -->
+          <div id="cart-suggestions-container" class="hidden mb-6 pt-4 border-t border-white/5">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Frequently Added Together</h4>
+              <div id="cart-suggestions-list" class="suggestion-scroll-container no-scrollbar">
+                  <!-- Suggestions injected via JS -->
+              </div>
+          </div>
+
+          <div id="cart-summary" class="hidden">
+              <div class="border-t border-dashed border-white/20 my-4"></div>
+              <div class="flex justify-between text-sm mb-2">
+                  <span class="text-slate-400">Item Total</span>
+                  <span class="text-white" id="bill-total">₹0</span>
+              </div>
+              <div class="flex justify-between text-sm mb-4">
+                  <span class="text-slate-400">Delivery Fee</span>
+                  <span class="text-emerald-400 font-bold">FREE</span>
+              </div>
+              <div class="flex justify-between text-lg font-bold mb-6">
+                  <span class="text-white">To Pay</span>
+                  <span class="text-brand-yellow" id="bill-final">₹0</span>
+              </div>
+              <button onclick="openPaymentModal()" class="w-full bg-brand-yellow text-black font-bold py-4 rounded-xl active:scale-95 transition-transform flex justify-between px-6">
+                  <span>Checkout</span>
+                  <span id="btn-total">₹0</span>
+              </button>
+          </div>
+      </div>
+  </div>
+  <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/80 z-40 hidden fade-in"></div>
+
+  <nav class="fixed bottom-0 w-full glass-bottom z-40 pb-safe">
+      <div class="flex justify-around items-center h-16 px-2">
+          <button onclick="switchNav('home')" id="nav-home" class="flex flex-col items-center gap-1 p-2 text-brand-yellow transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+              <span class="text-[10px] font-medium">Home</span>
+          </button>
+          <button onclick="switchNav('orders')" id="nav-orders" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              <span class="text-[10px] font-medium">Orders</span>
+          </button>
+          
+          <button onclick="toggleCart()" class="relative flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-white transition-colors">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              <div id="cart-badge" class="absolute top-1 right-2 bg-red-500 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full opacity-0 transition-opacity">0</div>
+              <span class="text-[10px] font-medium">Cart</span>
+          </button>
+
+          <button onclick="switchNav('saved')" id="nav-saved" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-white transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+              <span class="text-[10px] font-medium">Saved</span>
+          </button>
+          <button onclick="switchNav('account')" id="nav-account" class="flex flex-col items-center gap-1 p-2 text-slate-400 hover:text-white transition-colors">
+              <div class="h-5 w-5 rounded-full bg-slate-700 overflow-hidden">
+                  <img src="https://randomuser.me/api/portraits/men/1.jpg" class="w-full h-full object-cover">
+              </div>
+              <span class="text-[10px] font-medium">Account</span>
+          </button>
+      </div>
+  </nav>
+
+  <script>
+    let userName = "John Doe";
+    let userMobile = "+91 98765 43210";
+    let userAddresses = [
+        { id: 1, name: "Home", street: "123 Anna Nagar Main Rd", city: "Chennai, 600040", isDefault: true },
+        { id: 2, name: "Office", street: "45 GST Road, Guindy", city: "Chennai, 600032", isDefault: false }
+    ];
+
+    const products = [
+        { id: 1, name: "Estwing 20oz Curved Claw Hammer", category: "tools", brand: "Estwing", model: "E3/20C", price: 1899, image: "https://images.unsplash.com/photo-1596496464730-1c0702d733c3?auto=format&fit=crop&w=300", rating: "4.9", description: "One-piece solid steel construction for maximum durability and balance. Polished head and smooth face. Perfect for pulling nails and general carpentry.", type: 'product' },
+        { id: 2, name: "Stanley 16oz Fiberglass Handle Claw Hammer", category: "tools", brand: "Stanley", model: "STHT51372", price: 499, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.5", description: "Fiberglass core adds strength and durability while reducing vibration. Yellow color handle for easy sight on the job site. Suitable for light-duty home projects.", type: 'product' },
+        { id: 3, name: "Taparia 300g Ball Peen Hammer", category: "tools", brand: "Taparia", model: "BH300", price: 320, image: "https://images.unsplash.com/photo-1507646153676-e3d09a207218?auto=format&fit=crop&w=300", rating: "4.6", description: "Used for shaping soft metals, riveting, and setting rivets. Features a high-quality wooden handle. Essential for metal fabrication and automotive repair.", type: 'product' },
+        { id: 4, name: "Black+Decker 10lb Sledge Hammer", category: "tools", brand: "Black+Decker", model: "BDHS10", price: 2800, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.8", description: "Heavy-duty sledge hammer for demolition work, breaking concrete, and driving stakes. Dual-face hardened steel head with anti-slip grip.", type: 'product' },
+        { id: 5, name: "AmazonBasics Rubber Mallet (16oz)", category: "tools", brand: "AmazonBasics", model: "AMZR16", price: 299, image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=300", rating: "4.3", description: "Non-marring rubber head for use on wood, plastic, or delicate surfaces. Perfect for furniture assembly and tile setting without causing damage.", type: 'product' },
+        { id: 6, name: "Vorel Magnetic Tacker Hammer", category: "tools", brand: "Vorel", model: "VTK12", price: 750, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=400", rating: "4.7", description: "Lightweight hammer designed for tacking upholstery or installing carpet. Features a magnetic head to hold nails/tacks easily.", type: 'product' },
+        { id: 7, name: "Fiskars Drywall Hammer (Hatchet Style)", category: "tools", brand: "Fiskars", model: "FDRW14", price: 1250, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.5", description: "Specialized hammer with a hatchet blade for trimming drywall and a scoring edge. Ideal for professional drywall installation and repair.", type: 'product' },
+        { id: 8, name: "Kore 16oz Anti-Vibe Ripping Hammer", category: "tools", brand: "Kore", model: "KV16RH", price: 1450, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.8", description: "Unique anti-vibration technology reduces shock impact by 70%. Straight claw for prying and splitting wood. High carbon steel head.", type: 'product' },
+        { id: 9, name: "Tacklife Precision Jewelers Hammer Set", category: "tools", brand: "Tacklife", model: "TJP3S", price: 950, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.4", description: "Miniature hammer set for detailed work, watch repair, and jewelry making. Includes brass and nylon faces.", type: 'product' },
+        { id: 10, name: "Titan 5lb Cross Peen Hammer", category: "tools", brand: "Titan", model: "T5CP", price: 1100, image: "https://images.unsplash.com/photo-1507646153676-e3d09a207218?auto=format&fit=crop&w=300", rating: "4.7", description: "Heavy-duty hammer often used by blacksmiths and stone masons for striking, shaping, and dressing materials.", type: 'product' },
+        { id: 11, name: "Ironwood Upholstery Tacking Hammer", category: "tools", brand: "Ironwood", model: "IWUH01", price: 650, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.3", description: "Specialized hammer for setting tacks in furniture. Features a slim neck and split end for holding tacks in place before striking.", type: 'product' },
+        { id: 101, name: "Adjustable Wrench (8 inch)", category: "tools", brand: "Wipro", model: "AW8", price: 350, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.5", description: "Chrome vanadium steel construction with a comfortable grip. Perfect for tightening and loosening bolts of various sizes.", type: 'product' },
+        { id: 102, name: "Angle Grinder (Bosch)", category: "tools", brand: "Bosch", model: "GWS 600", price: 2400, image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=300", rating: "4.8", description: "Powerful 600W motor for grinding and cutting. Lightweight design for effortless use over extended periods.", type: 'product' },
+        { id: 103, name: "Adhesive Tape (3M)", category: "hardware", brand: "3M", model: "Scotch 700", price: 150, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.2", description: "General-purpose clear adhesive tape. High tack and reliable hold for temporary or light packaging needs.", type: 'product' },
+        { id: 104, name: "Bolts & Nuts Assorted Box", category: "hardware", brand: "Fastfix", model: "MAB250", price: 299, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.6", description: "250 pieces of various sizes (M3-M8) galvanized steel bolts and corresponding nuts. Includes storage case.", type: 'product' },
+        { id: 105, name: "Brush Set (Paint)", category: "paint", brand: "Asian Paints", model: "PB5", price: 180, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.3", description: "Set of 5 professional synthetic paint brushes for various finishes and details.", type: 'product' },
+        { id: 106, name: "Bucket (Plastic 20L)", category: "construction", brand: "Supreme", model: "BKT20L", price: 120, image: "https://images.unsplash.com/photo-1600326145359-543138b30962?auto=format&fit=crop&w=300", rating: "4.1", description: "Heavy-duty 20-liter plastic bucket with metal handle. Ideal for mixing cement or carrying water.", type: 'product' },
+        { id: 107, name: "Bulb LED 9W (Philips)", category: "electrical", brand: "Philips", model: "EconLED", price: 99, image: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=300", rating: "4.9", description: "Energy-efficient 9 Watt LED bulb. Cool daylight color (6500K). Lifetime up to 15,000 hours.", type: 'product' },
+        { id: 108, name: "Cement Bag (Ultratech)", category: "construction", brand: "Ultratech", model: "PPC 50kg", price: 420, image: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?auto=format&fit=crop&w=300", rating: "5.0", description: "High-quality Portland Pozzolana Cement (PPC). Ideal for general construction, plastering, and masonry.", type: 'product' },
+        { id: 109, name: "Chisel Set (Wood)", category: "tools", brand: "Pangolin", model: "CS5", price: 450, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.4", description: "Set of 5 professional synthetic wood chisels with polished blades and ergonomic handles. For fine woodworking.", type: 'product' },
+        { id: 110, name: "Circuit Breaker (MCB)", category: "electrical", brand: "Havells", model: "DH16A", price: 350, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.7", description: "Single pole 16 Amps MCB. Overload and short circuit protection. ISI certified.", type: 'product' },
+        { id: 111, name: "Screwdriver Set (25-in-1)", category: "tools", brand: "Jackly", model: "JK6089", price: 499, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.5", description: "25 piece precision screwdriver set for electronics and fine repairs.", type: 'product' },
+        { id: 112, name: "Cordless Drill 12V", category: "tools", brand: "Dewalt", model: "DCD710", price: 2999, image: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=300", rating: "4.8", description: "Compact and lightweight 12V Li-Ion drill/driver. Two speed settings and 15 torque positions. Includes battery and charger.", type: 'product' },
+        { id: 113, name: "Drill Bit Set (Masonry)", category: "tools", brand: "BOSCH", model: "MDB10", price: 350, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.3", description: "Set of 10 Tungsten Carbide Tipped masonry drill bits for concrete and stone.", type: 'product' },
+        { id: 114, name: "Door Handle (Steel)", category: "hardware", brand: "Godrej", model: "DH70", price: 250, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.5", description: "Sleek stainless steel door pull handle. Corrosion resistant finish.", type: 'product' },
+        { id: 115, name: "Duct Tape (Heavy Duty)", category: "hardware", brand: "Fevicol", model: "DT10", price: 180, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.6", description: "10-meter heavy-duty silver duct tape. Strong adhesive for permanent repairs.", type: 'product' },
+        { id: 116, name: "Extension Cord (5m)", category: "electrical", brand: "GM", model: "EC5M", price: 450, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.4", description: "5-meter 3-pin power extension cord with individual switches and surge protection.", type: 'product' },
+        { id: 117, name: "Electrical Tape (Red)", category: "electrical", brand: "Anchor", model: "ET18", price: 20, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.2", description: "Vinyl insulating electrical tape, 18mm width. Flame retardant.", type: 'product' },
+        { id: 118, name: "Fan Regulator", category: "electrical", brand: "Legrand", model: "FRM7", price: 120, image: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=300", rating: "4.1", description: "7-step modular fan speed regulator. Smooth operation and high durability.", type: 'product' },
+        { id: 119, name: "File Set (Metal)", category: "tools", brand: "Preston", model: "FS4", price: 320, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.3", description: "4-piece high carbon steel metal file set (flat, round, half-round, square).", type: 'product' },
+        { id: 120, name: "Fuse (10A Pack)", category: "electrical", brand: "Finolex", model: "FP10", price: 50, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.8", description: "Pack of 5 ceramic fuses (10 Amps). Essential electrical safety.", type: 'product' },
+        { id: 121, name: "Garden Hose (10m)", category: "plumbing", brand: "Kisan", model: "GH10M", price: 400, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.5", description: "10-meter braided garden hose with adjustable nozzle. UV stabilized.", type: 'product' },
+        { id: 122, name: "Glue Gun (Hot Melt)", category: "tools", brand: "Stanley", model: "GG150", price: 350, image: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=300", rating: "4.6", description: "150 Watt hot melt glue gun for fast and secure bonding on wood, plastic, and fabric.", type: 'product' },
+        { id: 123, name: "Gloves (Safety Rubber)", category: "safety", brand: "Karam", model: "SG-R", price: 80, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=300", rating: "4.7", description: "Heavy-duty rubber safety gloves. Chemical and slip resistant. Ideal for cleaning and masonry.", type: 'product' },
+        { id: 124, name: "Hacksaw Frame", category: "tools", brand: "Taparia", model: "HSF12", price: 150, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.2", description: "Adjustable 12-inch hacksaw frame. Includes bi-metal blade for cutting metal and wood.", type: 'product' },
+        { id: 125, name: "Helmet (Safety Yellow)", category: "safety", brand: "Venus", model: "V-SAFE", price: 250, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=300", rating: "4.9", description: "Industrial safety helmet (Yellow) with adjustable ratchet suspension. High impact resistance.", type: 'product' },
+        { id: 126, name: "Hinge (Steel 3 inch)", category: "hardware", brand: "Ozone", model: "HS3", price: 40, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.4", description: "Pack of 2 stainless steel butt hinges (3x2 inch). Rustproof and durable.", type: 'product' },
+        { id: 127, name: "Impact Driver (Dewalt)", category: "tools", brand: "Dewalt", model: "DCF887", price: 4500, image: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=300", rating: "4.9", description: "20V MAX XR Brushless Cordless 1/4 in. 3-Speed Impact Driver. High torque for demanding tasks.", type: 'product' },
+        { id: 128, name: "Jigsaw (Wood Cutter)", category: "tools", brand: "Black+Decker", model: "JS20", price: 1800, image: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=300", rating: "4.7", description: "450W Jigsaw for curved and straight cutting in wood, metal, and plastic. Variable speed control.", type: 'product' },
+        { id: 129, name: "Knife (Utility Cutter)", category: "tools", brand: "Stanley", model: "10-299", price: 99, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.3", description: "Retractable utility knife with hardened steel blade. Quick-change mechanism.", type: 'product' },
+        { id: 130, name: "Ladder (Aluminum 6ft)", category: "construction", brand: "Bathla", model: "AL6", price: 2200, image: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?auto=format&fit=crop&w=300", rating: "4.6", description: "6-foot lightweight aluminum step ladder. Anti-skid shoes and wide steps for stability.", type: 'product' },
+        { id: 131, name: "Level (Spirit Level)", category: "tools", brand: "Bosch", model: "GLL 5", price: 250, image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=300", rating: "4.5", description: "12-inch magnetic aluminum spirit level with 3 vials (horizontal, vertical, 45°).", type: 'product' },
+        { id: 132, name: "Masking Tape", category: "paint", brand: "3M", model: "M25", price: 60, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.2", description: "1-inch wide painter's masking tape. Clean removal for sharp paint lines.", type: 'product' },
+        { id: 133, name: "Multimeter (Digital)", category: "electrical", brand: "Fluke", model: "F101", price: 400, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.7", description: "Compact digital multimeter for measuring voltage, current, and resistance. Auto-ranging feature.", type: 'product' },
+        { id: 134, name: "Measuring Tape (5m)", category: "tools", brand: "Freemans", model: "MT5", price: 150, image: "https://images.unsplash.com/photo-1586864387967-d02ef85d93e8?auto=format&fit=crop&w=300", rating: "4.8", description: "5-meter/16-foot measuring tape with magnetic hook and anti-wear blade coating.", type: 'product' },
+        { id: 135, name: "Nails (Iron 2 inch)", category: "hardware", brand: "TATA", model: "N2I", price: 80, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.4", description: "1kg pack of 2-inch common iron nails. Ideal for general construction and wood framing.", type: 'product' },
+        { id: 136, name: "Nut Driver Set", category: "tools", brand: "Wipro", model: "ND7", price: 350, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.3", description: "7-piece professional nut driver set (6mm to 12mm) with comfortable handle grips.", type: 'product' },
+        { id: 137, name: "Paint Roller", category: "paint", brand: "Asian Paints", model: "TruRoll 9in", price: 220, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.5", description: "9-inch microfiber roller for a smooth, lint-free finish. Suitable for all types of emulsion and oil-based paints.", type: 'product' },
+        { id: 138, name: "Pliers (Combination)", category: "tools", brand: "Stanley", model: "SP8", price: 180, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.6", description: "8-inch combination pliers with induction hardened cutting edges. Chrome vanadium steel.", type: 'product' },
+        { id: 139, name: "PVC Pipe (1 inch)", category: "plumbing", brand: "Finolex", model: "PVC1", price: 180, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.1", description: "1-inch diameter Schedule 40 PVC pipe, 1-meter length. For household plumbing.", type: 'product' },
+        { id: 140, name: "Padlock (Brass)", category: "hardware", brand: "Godrej", model: "P40", price: 300, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.7", description: "40mm solid brass padlock with hardened shackle. Highly secure and weather resistant.", type: 'product' },
+        { id: 141, name: "Rope (Nylon 10m)", category: "hardware", brand: "Safetex", model: "R10N", price: 120, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.3", description: "10-meter braided nylon utility rope. 6mm thickness. High tensile strength.", type: 'product' },
+        { id: 142, name: "Saw (Hand Saw)", category: "tools", brand: "Jaguar", model: "HS18", price: 250, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.4", description: "18-inch hardened steel hand saw for cutting wood and timber.", type: 'product' },
+        { id: 143, name: "Screwdriver Set (12-in-1)", category: "tools", brand: "Taparia", model: "SD12", price: 299, image: "https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&w=300", rating: "4.6", description: "Multi-bit precision screwdriver set with ergonomic handle. Includes Phillips, Flathead, and Torx bits in a compact case.", type: 'product' },
+        { id: 144, name: "Sandpaper Pack", category: "paint", brand: "Norton", model: "SPG10", price: 50, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.2", description: "Pack of 10 assorted grit sandpaper sheets (80-220 grit). For wood and metal finishing.", type: 'product' },
+        { id: 145, name: "Switch (Modular)", category: "electrical", brand: "Legrand", model: "Myrius 6A", price: 45, image: "https://images.unsplash.com/photo-1550525811-e5869dd03032?auto=format&fit=crop&w=300", rating: "4.5", description: "6 Amps, 1-way modular switch. Fire retardant polycarbonate material. Easy installation.", type: 'product' },
+        { id: 146, name: "Safety Shoes", category: "safety", brand: "Allen Cooper", model: "AC-S1", price: 899, image: "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=300", rating: "4.8", description: "Steel toe safety shoes with anti-skid sole. Provides protection against impacts and punctures.", type: 'product' },
+        { id: 147, name: "Trowel (Masonry)", category: "construction", brand: "Jhalani", model: "MT8", price: 150, image: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?auto=format&fit=crop&w=300", rating: "4.3", description: "8-inch rectangular masonry trowel. High carbon steel blade and comfortable wooden handle.", type: 'product' },
+        { id: 148, name: "Thinner (Paint 1L)", category: "paint", brand: "Asian Paints", model: "PT1L", price: 120, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.1", description: "1 liter paint thinner for cleaning and reducing paint viscosity.", type: 'product' },
+        { id: 149, name: "Tester (Line)", category: "electrical", brand: "Wipro", model: "LT1", price: 40, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.6", description: "Insulated neon phase line voltage tester screwdriver.", type: 'product' },
+        { id: 150, name: "Varnish (Wood)", category: "paint", brand: "Fevicol", model: "WV1L", price: 280, image: "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?auto=format&fit=crop&w=300", rating: "4.4", description: "1 liter glossy polyurethane wood varnish. Provides durable and water-resistant finish.", type: 'product' },
+        { id: 151, name: "Vice (Bench)", category: "tools", brand: "Taparia", model: "BV4", price: 1200, image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=300", rating: "4.7", description: "4-inch cast iron swivel bench vice. For securing workpieces during drilling, filing, or sawing.", type: 'product' },
+        { id: 152, name: "Wire (Copper 1mm)", category: "electrical", brand: "Finolex", model: "CW1", price: 900, image: "https://images.unsplash.com/photo-1563770095-39d468f95742?auto=format&fit=crop&w=300", rating: "4.8", description: "90-meter roll of 1.0mm fire-retardant copper wire (Red). ISI marked.", type: 'product' },
+        { id: 153, name: "Wheelbarrow", category: "construction", brand: "Jhalani", model: "WB100", price: 2500, image: "https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?auto=format&fit=crop&w=300", rating: "4.9", description: "Heavy-duty single-wheel metal wheelbarrow. 100 liter capacity for transporting construction materials.", type: 'product' },
+        { id: 154, name: "Wall Anchor Set", category: "hardware", brand: "Fischer", model: "WAS100", price: 90, image: "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&w=300", rating: "4.3", description: "Pack of 100 plastic wall plugs with screws for fixing items to masonry and drywall.", type: 'product' },
+        { id: 155, name: "Zip Ties (Pack of 100)", category: "hardware", brand: "HellermannTyton", model: "ZT100", price: 100, image: "https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=300", rating: "4.5", description: "100-pack UV resistant nylon cable ties. 4-inch length, black color.", type: 'product' }
+    ];
+
+    const services = [
+        { id: 201, name: "AC Repair & Service", icon: "❄️", type: "appliance", price: 499 },
+        { id: 202, name: "Appliance Repair", icon: "🧺", type: "appliance", price: 399 },
+        { id: 208, name: "Electrician", icon: "🔌", type: "electrical", price: 299 },
+        { id: 212, name: "Geyser Repair", icon: "🔥", type: "appliance", price: 399 },
+        { id: 219, name: "Plumber", icon: "🚰", type: "plumbing", price: 299 },
+        { id: 207, name: "Door Lock Repair", icon: "🔐", type: "woodwork", price: 249 },
+        { id: 237, name: "TV Repair", icon: "📺", type: "appliance", price: 399 },
+        { id: 238, name: "Fridge Repair", icon: "🧊", type: "appliance", price: 449 },
+        { id: 239, name: "Washing Machine Repair", icon: "🧺", type: "appliance", price: 499 },
+        { id: 240, name: "Microwave Repair", icon: "♨️", type: "appliance", price: 349 },
+        { id: 221, name: "RO Water Purifier Service", icon: "💧", type: "appliance", price: 350 },
+        { id: 226, name: "Mason (Mistri)", icon: "🧱", type: "construction", price: 699 },
+        { id: 227, name: "Tile Setter", icon: "⬛", type: "flooring", price: 599 },
+        { id: 228, name: "Welders and Fabricators", icon: "👨‍🏭", type: "metalwork", price: 499 },
+        { id: 204, name: "Carpenter Work", icon: "🪚", type: "woodwork", price: 299 },
+        { id: 213, name: "House Painting", icon: "🎨", type: "painting", price: 999 },
+        { id: 209, name: "Flooring & Tiling", icon: "🧱", type: "construction", price: 450 },
+        { id: 217, name: "Masonry Work", icon: "🏗️", type: "construction", price: 599 },
+        { id: 224, name: "Waterproofing", icon: "🌧️", type: "construction", price: 1200 },
+        { id: 229, name: "False Ceiling Specialist", icon: "🏠", type: "interior", price: 399 },
+        { id: 233, name: "Aluminum Fabricator", icon: "🚪", type: "metalwork", price: 550 },
+        { id: 232, name: "Glass Worker (Glazier)", icon: "🪟", type: "glasswork", price: 450 },
+        { id: 203, name: "Bathroom Cleaning", icon: "🚽", type: "cleaning", price: 599 },
+        { id: 206, name: "Deep Cleaning (Home)", icon: "🧹", type: "cleaning", price: 1999 },
+        { id: 215, name: "Kitchen Cleaning", icon: "🍳", type: "cleaning", price: 699 },
+        { id: 218, name: "Pest Control", icon: "🦟", type: "cleaning", price: 899 },
+        { id: 222, name: "Sofa Cleaning", icon: "🛋️", type: "cleaning", price: 499 },
+        { id: 225, name: "Window Cleaning", icon: "🪟", type: "cleaning", price: 399 },
+        { id: 234, name: "Water Tank Cleaner", icon: "💧", type: "cleaning", price: 999 },
+        { id: 214, name: "Interior Design", icon: "🏠", type: "design", price: 1500 },
+        { id: 230, name: "Civil Engineer", icon: "👷‍♂️", type: "consultation", price: 1999 },
+        { id: 231, name: "Architect", icon: "📐", type: "design", price: 2999 },
+        { id: 205, name: "CCTV Installation", icon: "📹", type: "security", price: 799 },
+        { id: 210, name: "Furniture Assembly", icon: "🪑", type: "woodwork", price: 349 },
+        { id: 211, name: "Gardening & Landscaping", icon: "🌿", type: "outdoor", price: 499 },
+        { id: 216, name: "Locksmith", icon: "🔑", type: "security", price: 399 },
+        { id: 220, name: "Packers & Movers", icon: "📦", type: "logistics", price: 2500 },
+        { id: 223, name: "Solar Panel Installation", icon: "☀️", type: "electrical", price: 2000 },
+        { id: 235, name: "Watchman / Security", icon: "👮", type: "security", price: 1500 }, 
+        { id: 236, name: "Laborer (Helper)", icon: "💪", type: "labor", price: 499 },
+        { id: 241, name: "Driver (Temporary)", icon: "🚗", type: "transport", price: 599 },
+        { id: 242, name: "Cook / Chef", icon: "👨‍🍳", type: "household", price: 499 },
+    ];
+
+    const allShareApps = [
+        { name: 'WhatsApp', icon: 'M12.04 2.1c-5.46 0-9.9 4.44-9.9 9.9 0 1.77.47 3.45 1.34 4.93L2.1 21.9l5.06-1.37c1.47.81 3.1 1.25 4.88 1.25 5.46 0 9.9-4.44 9.9-9.9.01-5.46-4.43-9.9-9.89-9.9zm-4.4 3.7c.39 0 .66.18.9.43l.41.44c.16.16.29.3.43.43.08.08.27.18.27.42.01.25-.08.43-.08.43l-.15.43c-.15.41-.3.72-.5 1.15-.3.69-.58 1.29-.69 1.48-.12.2-.23.41-.23.63 0 .34.19.68.45 1.01l1.1 1.3c.75.92 1.63 1.58 2.62 1.95 1.14.43 2.19.46 3.06.41 1.21-.08 1.83-.58 2.29-1.29.35-.55.51-1.07.51-1.4 0-.17-.07-.36-.18-.46l-.55-.65c-.2-.23-.42-.3-.66-.3-.2 0-.47.16-.67.48-.13.19-.24.36-.34.52-.16.25-.33.37-.5.42-.17.06-.39.02-.6-.08l-.2-.11c-.34-.18-.75-.35-1.2-.55-.71-.32-1.36-.7-1.88-1.12-.42-.33-.8-.71-1.13-1.1-.38-.45-.69-.9-.94-1.35-.1-.17-.18-.32-.23-.47-.11-.3-.14-.5-.07-.63.09-.17.37-.42.54-.53l.36-.26c.26-.17.4-.33.45-.5.06-.18.06-.33.01-.5-.04-.13-.15-.34-.33-.63l-.44-.65c-.26-.38-.5-.54-.85-.54-.15 0-.3.04-.45.12z', color: '#25D366' },
+        { name: 'Facebook', icon: 'M20.89 0H3.11A3.11 3.11 0 000 3.11v17.78A3.11 3.11 0 003.11 24h8.44V14.7H8.84v-3.79h2.71v-2.8c0-2.69 1.64-4.16 4.05-4.16.89 0 1.66.07 1.88.1v3.25h-1.92c-1.26 0-1.5.6-1.5 1.48v1.98h3.33l-.53 3.79h-2.8V24h5.27A3.11 3.11 0 0024 20.89V3.11A3.11 3.11 0 0020.89 0z', color: '#1877F2' },
+        { name: 'Instagram', icon: 'M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.974 4.957.045 1.05.063 1.383.063 4.839 0 3.454-.018 3.787-.063 4.838-.203 3.266-1.723 4.784-4.974 4.957-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.974-4.957-.045-1.05-.063-1.383-.063-4.839s.018-3.787.063-4.838c.203-3.266 1.723-4.784 4.974-4.957 1.266-.058 1.646-.07 4.85-.07zm0 2.163c-3.18 0-3.568.01-4.772.064-2.43.111-3.326.963-3.411 3.393-.053 1.125-.062 1.487-.062 4.21s.009 3.085.062 4.21c.085 2.43 1.02 3.282 3.411 3.393 1.204.054 1.592.064 4.772.064s3.568-.01 4.772-.064c2.39-.111 3.326-.963 3.411-3.393.053-1.125.062-1.487.062-4.21s-.009-3.085-.062-4.21c-.085-2.43-1.02-3.282-3.411-3.393-1.204-.05-1.592-.064-4.772-.064zm0 1.265c3.089 0 3.46.011 4.664.061 2.348.106 3.25.922 3.332 3.272.05 1.085.06 1.428.06 4.025s-.01 2.94-.06 4.025c-.082 2.35-1.018 3.166-3.332 3.272-1.204.05-1.575.061-4.664.061s-3.46-.011-4.664-.061c-2.348-.106-3.25-.922-3.332-3.272-.05-1.085-.06-1.428-.06-4.025s.01-2.94.06-4.025c.082-2.35 1.018-3.166 3.332-3.272 1.204-.05 1.575-.061 4.664-.061zm0 2.222c-2.091 0-3.784 1.693-3.784 3.784s1.693 3.784 3.784 3.784 3.784-1.693 3.784-3.784c0-2.091-1.693-3.784-3.784-3.784zm0 2.163c.961 0 1.621.758 1.621 1.621 0 .863-.66 1.621-1.621 1.621s-1.621-.758-1.621-1.621c0-.863.66-1.621 1.621-1.621zm6.058-2.61c.427 0 .774.347.774.774s-.347.774-.774.774-.774-.347-.774-.774.347-.774.774-.774z', color: 'bg-gradient-to-tr from-[#feda75] via-[#fa7e1e] to-[#d62976]' },
+        { name: 'Messenger', icon: 'M2.1 12.01c0 5.4 4.3 9.79 9.6 9.79 3.01 0 5.67-1.39 7.42-3.56l2.12 1.34 1.24-4.83c.89-2.09 1.37-4.3 1.37-6.74 0-5.4-4.3-9.79-9.6-9.79C6.41 2.22 2.1 6.61 2.1 12.01zM14.7 9.81l-3.3 3.48-1.92-2.18c-.28-.32-.7-.49-1.12-.49-.47 0-.9.23-1.17.65L4.8 11.23c-.37.54-.3 1.28.17 1.77l2.85 2.92c.3.31.69.47 1.13.47.45 0 .85-.16 1.15-.47l4.31-4.57c.4-.42.43-1.04.08-1.51-.35-.47-.97-.56-1.42-.23z', color: '#0078FF' },
+        { name: 'Email', icon: 'M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z', color: '#D93025' },
+        { name: 'SMS', icon: 'M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM8 14c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm4 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm4 0c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z', color: '#00A8FF' },
+        { name: 'Twitter', icon: 'M22.46 6c-.8.36-1.63.6-2.52.73 1-.6 1.7-1.5 2.05-2.61-.9.53-1.92.93-2.97 1.15-1.78-1.87-4.66-1.87-6.44 0-1.8 1.86-1.8 4.87 0 6.73-.82-.04-1.65-.2-2.4-.53-2.6-1.16-4.5-3.08-5.3-5.34C4.1 6.5 4 6 4 5.48c0-.3.04-.59.12-.86C2.08 6.45 1 8.87 1 11.53c0 2.27 1.17 4.3 3.01 5.48-.68-.02-1.32-.2-1.9-.53.01.02.01.03.01.05 0 1.95 1.38 3.58 3.23 3.96-.3.08-.6.12-.92.12-.23 0-.46-.02-.68-.07.51 1.6 1.99 2.76 3.75 2.79C7.43 21 5 21 5 21c-1.3 0-2.5-.26-3.64-.78.43.05.86.07 1.3.07 1.8 0 3.5-.6 4.9-1.64C12.44 15.6 15.32 13.8 17.1 11.95c1.77-1.86 1.77-4.87 0-6.73-.13-.13-.26-.26-.4-.38z', color: '#1DA1F2' },
+    ];
+    
+    let cart = [];
+    let workers = [];
+    let savedItems = []; 
+    let loginState = 'mobile'; 
+    let generatedOTP = null;
+    let orders = []; 
+    let currentLocation = { text: 'Home • Anna Nagar, Chennai', lat: 13.0645, lng: 80.2474 }; 
+    let isShowingAllProducts = false; 
+    let isShowingAllServices = false; 
+    let notifications = []; 
+
+    function getSavedItemIndex(type, id) {
+        return savedItems.findIndex(item => item.id === id && item.type === type);
+    }
+    
+    function isItemSaved(type, id) {
+        return getSavedItemIndex(type, id) !== -1;
+    }
+
+    function toggleSavedItem(type, id) {
+        const index = getSavedItemIndex(type, id);
+        
+        if (index !== -1) {
+            savedItems.splice(index, 1);
+            addNotification(`Removed item from Saved list.`, 'info');
+        } else {
+            let item;
+            if (type === 'product') {
+                item = products.find(p => p.id === id);
+            } else if (type === 'worker') {
+                item = workers.find(w => w.id === id);
+            }
+
+            if (item) {
+                savedItems.push({ ...item, type: type }); 
+                addNotification(`Saved item successfully!`, 'success');
+            }
+        }
+        
+        localStorage.setItem('quickconstruct_saved', JSON.stringify(savedItems));
+        const activePage = document.querySelector('main:not(.hidden)').id;
+
+        const modal = document.getElementById('product-details-modal');
+        if (type === 'product' && !modal.classList.contains('hidden')) {
+            const heartSvg = modal.querySelector('.product-image-container button svg');
+            if (heartSvg) {
+                const isSaved = isItemSaved('product', id);
+                heartSvg.setAttribute('class', `w-5 h-5 ${isSaved ? 'text-red-500 fill-red-500 animate-heart-pop' : 'text-white fill-none'}`);
+            }
+        }
+
+        if (activePage === 'page-home') {
+            const activeTab = document.getElementById('tab-store').classList.contains('tab-active') ? 'store' : 'services';
+            if (activeTab === 'store') renderProducts(products, isShowingAllProducts);
+            const label = document.getElementById('worker-filter-label').innerText;
+            if (activeTab === 'services' && label !== "") {
+            }
+        }
+        if (activePage === 'page-saved') {
+            renderSavedPage(); 
+        }
+    }
+
+    function addNotification(message, type = 'info') {
+        const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        notifications.unshift({ message, type, time: timestamp }); 
+        updateNotificationBadge(); 
+    }
+
+    function renderNotificationsPage() {
+        const list = document.getElementById('notifications-page-list');
+        const emptyState = document.getElementById('notifications-empty-state');
+        
+        updateNotificationBadge();
+
+        if (list) {
+            if (notifications.length === 0) {
+                list.innerHTML = '';
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                list.innerHTML = notifications.map(n => {
+                    const colorClass = n.type === 'success' ? 'text-emerald-400' : (n.type === 'error' ? 'text-red-400' : 'text-white');
+                    const icon = n.type === 'success' ? '✔' : (n.type === 'error' ? '❌' : 'ℹ️');
+                    return `
+                        <div class="bg-brand-card p-4 rounded-xl border border-brand-border flex justify-between items-start hover:bg-white/5 transition-colors">
+                            <div class="flex items-start gap-3">
+                                <div class="text-xl ${colorClass}">${icon}</div>
+                                <div>
+                                    <span class="text-sm font-medium text-white">${n.message}</span>
+                                    <p class="text-[10px] text-slate-500 mt-1">Received at ${n.time}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+    }
+    
+    function updateNotificationBadge() {
+        const badge = document.getElementById('notification-badge');
+        if (badge) badge.classList.toggle('hidden', notifications.length === 0);
+    }
+
+    function updateThemeIcons(isLightMode) {
+        const icons = [document.getElementById('theme-icon-auth'), document.getElementById('theme-icon-main')];
+        icons.forEach(icon => {
+            if (icon) {
+                icon.innerHTML = isLightMode
+                    ? `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>` 
+                    : `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>`; 
+            }
+        });
+    }
+
+    function toggleTheme() {
+        const body = document.getElementById('app-body');
+        const isLightMode = body.classList.toggle('light-mode');
+        localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+        updateThemeIcons(isLightMode);
+    }
+    
+    function loadTheme() {
+        const theme = localStorage.getItem('theme') || 'dark'; 
+        const body = document.getElementById('app-body');
+        if (theme === 'light') {
+            body.classList.add('light-mode');
+            updateThemeIcons(true);
+        } else {
+            body.classList.remove('light-mode');
+            updateThemeIcons(false);
+        }
+    }
+
+    function generateWorkers() {
+        const firstNames = ["Rajesh", "Amit", "Suresh", "Vikram", "Rohan", "Priya", "Anjali", "Karthik", "Vijay", "Anita", "Sunil", "Dinesh", "Manoj", "Sanjay", "Rahul", "Arjun", "Deepak", "Sneha", "Kavita", "Ramesh", "Ganesh", "Lakshmi", "Meena", "Kamal", "Vinod", "Ashok"];
+        const lastNames = ["Kumar", "Sharma", "Singh", "Patel", "Reddy", "Nair", "Iyer", "Rao", "Varma", "Yadav", "Gupta", "Malhotra", "Verma", "Jha", "Das", "Chowdhury"];
+        const professions = [
+            { type: "electrical", label: "Electrician", price: 299 },
+            { type: "plumbing", label: "Plumber", price: 299 },
+            { type: "appliance", label: "Appliance Technician", price: 399 },
+            { type: "woodwork", label: "Carpenter", price: 299 },
+            { type: "painting", label: "Painter", price: 999 },
+            { type: "cleaning", label: "Cleaner", price: 599 },
+            { type: "construction", label: "Mason", price: 699 },
+            { type: "metalwork", label: "Welders and Fabricators", price: 499 }
+        ];
+
+        let generated = [];
+        for(let i=1; i<=120; i++) {
+            const fName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const prof = professions[Math.floor(Math.random() * professions.length)];
+            const gender = ["Priya","Anjali","Anita","Sneha","Kavita","Lakshmi","Meena"].includes(fName) ? "women" : "men";
+            const imgId = Math.floor(Math.random() * 70); 
+            
+            generated.push({
+                id: 1000 + i,
+                name: `${fName} ${lName}`,
+                age: 22 + Math.floor(Math.random() * 30),
+                experience: 1 + Math.floor(Math.random() * 20),
+                profession: prof.label,
+                type: prof.type,
+                price: prof.price,
+                rating: (3.5 + Math.random() * 1.5).toFixed(1),
+                jobs: 50 + Math.floor(Math.random() * 400),
+                image: `https://randomuser.me/api/portraits/${gender}/${imgId}.jpg`,
+                contact: `+91 ${9000000000 + Math.floor(Math.random() * 999999999)}`,
+                bio: `Expert in ${prof.label} works with over ${1 + Math.floor(Math.random() * 15)} years of field experience.`,
+                itemType: 'worker' 
+            });
+        }
+        return generated;
+    }
+
+    let offerSlideIndex = 0;
+    function autoScrollOffers() {
+        const slider = document.getElementById('main-offer-slider');
+        const dots = document.getElementById('offer-dots')?.children;
+        if (!slider || !dots) return;
+
+        offerSlideIndex++;
+        if (offerSlideIndex >= 4) offerSlideIndex = 0;
+
+        slider.style.transform = `translateX(-${offerSlideIndex * 100}%)`;
+        
+        Array.from(dots).forEach((dot, idx) => {
+            dot.style.backgroundColor = idx === offerSlideIndex ? 'white' : 'rgba(255,255,255,0.4)';
+            dot.style.width = idx === offerSlideIndex ? '12px' : '6px';
+        });
+    }
+
+    window.addEventListener('load', () => {
+        loadTheme();
+
+        const storedOrders = localStorage.getItem('quickconstruct_orders');
+        if (storedOrders) {
+            orders = JSON.parse(storedOrders);
+        }
+        
+        const storedSaved = localStorage.getItem('quickconstruct_saved');
+        if (storedSaved) {
+            savedItems = JSON.parse(storedSaved);
+        }
+
+        workers = generateWorkers();
+        
+        document.getElementById('auth-screen').classList.remove('hidden');
+        document.getElementById('auth-screen').classList.add('flex');
+
+        // --- START OF NEW 2-SECOND ANIMATION ---
+   // --- EXACT 2-SECOND INDEX-STYLE TIMELINE ---
+    // --- HIGH-SPEED 2-SECOND INDEX ANIMATION ---
+    // --- REFINED 3-SECOND SMOOTH LOGO REVEAL ---
+    const storyTl = gsap.timeline({
+        onComplete: () => {
+            gsap.to("#splash", { 
+                opacity: 0, duration: 0.6, 
+                onComplete: () => {
+                    document.getElementById('splash').style.display = 'none';
+                    // Re-init components
+                    renderProducts(products); renderServices(services); renderWorkers([], true);
+                    renderSavedPage(); renderOrdersPage(); updateNotificationBadge();
+                    setInterval(autoScrollOffers, 3000);
+                    // --- NEW CODE: Check for "Find Workers" signal ---
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const requestedTab = urlParams.get('tab');
+
+                    if (requestedTab === 'services') {
+                        // Switch tabs automatically
+                        switchTab('services');
+                        
+                        // Scroll down to the workers list smoothly
+                        setTimeout(() => {
+                            document.getElementById('workers-section').scrollIntoView({behavior: 'smooth'});
+                        }, 800);
+                    }
+                    // ------------------------------------------------
+                }
+            });
+        }
+    });
+
+    storyTl
+        .to("#splash-loader", { width: "100%", duration: 2.5, ease: "power1.inOut" }, 0)
+        // 1. Truck Drives in and stops
+        .fromTo("#truck-group", { x: -500, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "power2.out" }, 0)
+        
+        // 2. Truck Bed Tilts and Drops Materials
+        .to("#admin-truck-bed", { rotation: -25, duration: 0.4, ease: "power1.inOut" })
+        .to("#materials-stack", { opacity: 1, scale: 1, duration: 0.1 }, "-=0.2")
+        .to("#materials-stack", { y: 30, x: -40, duration: 0.4, ease: "bounce.out" }, "-=0.1")
+        .to("#admin-truck-bed", { rotation: 0, duration: 0.3 })
+        
+        // 3. Truck Drives Away & Workers Appear
+        .to("#truck-group", { x: 500, opacity: 0, duration: 0.6, ease: "power2.in" })
+        .to("#intro-workers", { opacity: 1, duration: 0.2 }, "-=0.3")
+        
+        // 4. Workers Construct (Hammering & Building)
+        .fromTo("#admin-building-frame", { scale: 0.8, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: "back.out" }, "-=0.2")
+        .to("#hammer-arm", { rotation: -40, transformOrigin: "left", duration: 0.15, yoyo: true, repeat: 3 }, "-=0.4")
+        
+        // 5. Final Transformation to Logo
+        .to(["#admin-building-frame", "#intro-workers", "#materials-stack"], { scale: 0.5, opacity: 0, duration: 0.3, ease: "power2.in", delay: 0.2 })
+        .to("#final-qc-reveal", { opacity: 1, duration: 0.1 }, "<")
+        .to("#qc-box-pop", { scale: 1, duration: 0.6, ease: "back.out(1.7)" })
+        .to(".logo-char", { opacity: 1, y: 0, stagger: 0.03, duration: 0.4, ease: "power2.out" }, "-=0.3");
+    // --- END OF NEW ANIMATION ---
+
+        const header = document.getElementById('main-header');
+        window.addEventListener('scroll', () => {
+            if(window.scrollY > 10) {
+                header.classList.add('shadow-lg');
+            } else {
+                header.classList.remove('shadow-lg');
+            }
+        });
+
+        const searchInput = document.getElementById('global-search');
+        const suggestionsBox = document.getElementById('search-suggestions');
+
+        window.selectSuggestion = function(name, type) {
+            searchInput.value = name;
+            suggestionsBox.classList.add('hidden');
+            const term = name.toLowerCase();
+            
+            if(type === 'service' || type === 'worker') {
+                switchTab('services');
+                const filteredWorkers = workers.filter(w => w.name.toLowerCase().includes(term) || w.profession.toLowerCase().includes(term));
+                renderWorkers(filteredWorkers);
+                document.getElementById('workers-section').scrollIntoView({behavior:'smooth'});
+            } else {
+                switchTab('store');
+                const filteredProducts = products.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    p.category.toLowerCase().includes(term) ||
+                    p.brand.toLowerCase().includes(term)
+                );
+                renderProducts(filteredProducts, true); 
+                scrollToGrid();
+            }
+        };
+
+        window.handleSearchEnter = function() {
+            const term = searchInput.value.toLowerCase().trim();
+            if(term.length === 0) return;
+            
+            suggestionsBox.classList.add('hidden'); 
+            
+            const activeTab = document.getElementById('tab-store').classList.contains('tab-active') ? 'store' : 'services';
+
+            if(activeTab === 'store') {
+                const filteredProducts = products.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    p.category.toLowerCase().includes(term) ||
+                    p.brand.toLowerCase().includes(term)
+                );
+                renderProducts(filteredProducts, true); 
+                scrollToGrid();
+                addNotification(`Showing search results for '${term}'`, 'info');
+            } else {
+                const filteredWorkers = workers.filter(w => 
+                    w.name.toLowerCase().includes(term) || 
+                    w.profession.toLowerCase().includes(term)
+                );
+                renderWorkers(filteredWorkers);
+                document.getElementById('workers-section').scrollIntoView({behavior:'smooth'});
+                addNotification(`Showing search results for '${term}'`, 'info');
+            }
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase().trim();
+            const activeTab = document.getElementById('tab-store').classList.contains('tab-active') ? 'store' : 'services';
+            
+            if(term.length === 0) {
+                suggestionsBox.classList.add('hidden');
+                if(activeTab === 'store') renderProducts(products, false);
+                if(activeTab === 'services') renderWorkers([], true); 
+                return;
+            }
+
+            let html = '';
+            if(activeTab === 'store') {
+                const productMatches = products.filter(p => 
+                    p.name.toLowerCase().includes(term) || 
+                    p.category.toLowerCase().includes(term) ||
+                    p.brand.toLowerCase().includes(term)
+                );
+                
+                renderProducts(productMatches, true); 
+
+                if(productMatches.length > 0) {
+                    html += `<div class="px-4 py-1 text-[10px] font-bold text-slate-500 uppercase bg-white/5">Products</div>`;
+                    html += productMatches.slice(0, 5).map(p => `
+                        <div class="px-4 py-2 hover:bg-white/5 cursor-pointer flex items-center gap-3 border-b border-white/5" onclick="selectSuggestion('${p.name.replace(/'/g, "\\'")}', 'product')">
+                            <img src="${p.image}" class="w-8 h-8 rounded object-cover">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-white">${p.name}</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-wider">${p.brand} - ${p.category}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                const filteredWorkers = workers.filter(w => w.name.toLowerCase().includes(term) || w.profession.toLowerCase().includes(term));
+                
+                renderWorkers(filteredWorkers); 
+
+                if(filteredWorkers.length > 0) {
+                    html += `<div class="px-4 py-1 text-[10px] font-bold text-slate-500 uppercase bg-white/5">Professionals</div>`;
+                    const uniqueProfs = [...new Set(filteredWorkers.map(w => w.profession))].slice(0, 2);
+                    uniqueProfs.forEach(prof => {
+                         html += `
+                            <div class="px-4 py-2 hover:bg-white/5 cursor-pointer flex items-center gap-3 border-b border-white/5" onclick="selectSuggestion('${prof}', 'worker')">
+                                <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-lg">👷</div>
+                                <div class="flex flex-col">
+                                    <span class="text-xs font-bold text-white">Search all ${prof}s</span>
+                                </div>
+                            </div>
+                         `;
+                    });
+
+                    html += filteredWorkers.slice(0, 3).map(s => `
+                        <div class="px-4 py-2 hover:bg-white/5 cursor-pointer flex items-center gap-3 border-b border-white/5" onclick="selectSuggestion('${s.name.replace(/'/g, "\\'")}', 'worker')">
+                            <img src="${s.image}" class="w-8 h-8 rounded-full object-cover">
+                            <div class="flex flex-col">
+                                <span class="text-xs font-bold text-white">${s.name}</span>
+                                <span class="text-[9px] text-slate-400 uppercase tracking-wider">${s.profession}</span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+            suggestionsBox.innerHTML = html || `<div class="px-4 py-3 text-xs text-slate-500 italic">No matches found.</div>`;
+            suggestionsBox.classList.toggle('hidden', term.length === 0);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
+    });
+
+    function toggleAuthMode(mode) {
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        
+        if(mode === 'signup') {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+        } else {
+            signupForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+        }
+    }
+
+    function handleLoginFlow() {
+        const mobileInput = document.getElementById('login-mobile');
+        const otpInput = document.getElementById('login-otp');
+        const referralLoginInput = document.getElementById('referral-login-input');
+        const otpContainer = document.getElementById('otp-container');
+        const btn = document.getElementById('btn-login-action');
+        const demoDisplay = document.getElementById('demo-otp-display');
+
+        if (loginState === 'mobile') {
+            if(mobileInput.value.length < 10) {
+                demoDisplay.innerHTML = `<span class="text-xs text-red-400 font-mono bg-red-400/10 px-2 py-1 rounded">Error: Invalid mobile number.</span>`;
+                return;
+            }
+            generatedOTP = Math.floor(1000 + Math.random() * 9000);
+            mobileInput.disabled = true;
+            otpContainer.classList.remove('hidden');
+            btn.innerText = "Verify & Login";
+            demoDisplay.innerHTML = `<span class="text-xs text-green-400 font-mono bg-green-400/10 px-2 py-1 rounded">DEMO OTP: <b>${generatedOTP}</b></span>`;
+            setTimeout(() => otpInput.focus(), 100);
+            gsap.from(otpContainer, {y: 10, opacity: 0, duration: 0.3});
+            loginState = 'otp';
+        } else {
+            if(otpInput.value == generatedOTP) {
+                const referredCode = referralLoginInput.value.trim();
+                if (referredCode && referredCode.length > 3) {
+                    addNotification(`Referral code ${referredCode} applied successfully! Enjoy your ₹500 discount.`, 'success');
+                } else if (referredCode.length > 0 && referredCode.length <= 3) {
+                    addNotification(`Invalid referral code entered.`, 'error');
+                }
+                completeAuth();
+            } else {
+                demoDisplay.innerHTML = `<span class="text-xs text-red-400 font-mono bg-red-400/10 px-2 py-1 rounded">Error: Incorrect OTP.</span>`;
+            }
+        }
+    }
+
+    function completeAuth() {
+        const authScreen = document.getElementById('auth-screen');
+        gsap.to(authScreen, {opacity: 0, duration: 0.3, onComplete: () => {
+            authScreen.classList.remove('flex');
+            authScreen.classList.add('hidden');
+            authScreen.style.opacity = 1; 
+        }});
+    }
+
+    function updateLocationDisplay(text) {
+        const displayEl = document.getElementById('current-location-display');
+        if(displayEl) {
+            displayEl.innerText = text;
+        }
+    }
+    
+    function openLocationModal() {
+        const modal = document.getElementById('location-modal');
+        modal.classList.remove('hidden');
+        gsap.from(modal.querySelector('.glass-modal'), {y: 100, opacity: 0, duration: 0.3});
+    }
+
+    function closeLocationModal() {
+        const modal = document.getElementById('location-modal');
+        gsap.to(modal.querySelector('.glass-modal'), {y: 100, opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.querySelector('.glass-modal').style.opacity = 1; 
+            modal.querySelector('.glass-modal').style.transform = 'translate(-50%, -50%)'; 
+        }});
+    }
+
+    function autoFetchLocation() {
+        const newLocation = `Current Location, Chennai`;
+        currentLocation = { text: newLocation, lat: 13.06, lng: 80.24 }; 
+        updateLocationDisplay(newLocation);
+        closeLocationModal();
+    }
+
+    function manualLocationEnter() {
+        const input = document.getElementById('manual-location-input');
+        const newLocation = input.value.trim();
+        if (newLocation.length > 3) {
+            currentLocation = { text: `Manual • ${newLocation}`, lat: null, lng: null }; 
+            updateLocationDisplay(`Manual • ${newLocation}`);
+            closeLocationModal();
+        }
+    }
+
+    const referralLink = "https://quickconstruct.com/r="; 
+    const defaultReferralCode = "QUICK99X4";
+
+    function renderShareApps(apps, containerId, limit = null) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const appsToRender = limit ? apps.slice(0, limit) : apps;
+        
+        container.innerHTML = appsToRender.map(app => `
+            <div onclick="shareApp('${app.name}')" class="flex flex-col items-center cursor-pointer group">
+                <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl group-hover:scale-110 transition-transform" style="background-color: ${app.color.startsWith('#') ? app.color : 'transparent'}; background: ${!app.color.startsWith('#') ? app.color : 'none'};">
+                    <svg viewBox="0 0 24 24" class="w-6 h-6 fill-white"><path d="${app.icon}"/></svg>
+                </div>
+                <span class="text-[10px] text-slate-400 mt-1">${app.name}</span>
+            </div>
+        `).join('');
+    }
+
+    function openShareModal(customCode) {
+        const modal = document.getElementById('share-modal');
+        const viewAllContainer = document.getElementById('view-all-share-container');
+        
+        const finalCode = customCode && customCode.length > 0 ? customCode : defaultReferralCode;
+        const finalLink = referralLink + finalCode;
+
+        document.getElementById('current-share-link').innerText = finalLink;
+        
+        const initialApps = allShareApps.filter(app => ['WhatsApp', 'Messenger', 'Email', 'Facebook'].includes(app.name));
+        renderShareApps(initialApps, 'initial-share-apps');
+        
+        document.getElementById('all-share-apps').classList.add('hidden');
+        document.getElementById('initial-share-apps').classList.remove('hidden');
+
+        if (allShareApps.length > initialApps.length) {
+            viewAllContainer.innerHTML = `<button onclick="openAllShareApps()" class="text-xs text-brand-yellow font-bold mt-2">View All Apps</button>`;
+        } else {
+            viewAllContainer.innerHTML = '';
+        }
+
+        modal.classList.remove('hidden');
+        gsap.from(modal.querySelector('.glass-modal'), {y: 100, opacity: 0, duration: 0.3});
+    }
+    
+    function openAllShareApps() {
+        document.getElementById('initial-share-apps').classList.add('hidden');
+        document.getElementById('view-all-share-container').innerHTML = '';
+        renderShareApps(allShareApps, 'all-share-apps');
+        document.getElementById('all-share-apps').classList.remove('hidden');
+    }
+
+    function closeShareModal() {
+        const modal = document.getElementById('share-modal');
+        gsap.to(modal, {opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.querySelector('.glass-modal').style.opacity = 1; 
+            modal.querySelector('.glass-modal').style.transform = 'translate(-50%, -50%)'; 
+        }});
+    }
+
+    function shareApp(app) {
+        const customCode = defaultReferralCode; 
+        const finalLink = referralLink + customCode;
+        const message = `Check out Quick Construct! Shop materials and hire pros. Use my unique code (${customCode}) to get ₹500 off! Download here: ${finalLink}`;
+
+        let shareUrl = '';
+        const encodedMessage = encodeURIComponent(message);
+        
+        switch(app) {
+            case 'WhatsApp': shareUrl = `https://wa.me/?text=${encodedMessage}`; break;
+            case 'Facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(finalLink)}&quote=${encodedMessage}`; break;
+            case 'Messenger': shareUrl = `https://m.me/?text=${encodedMessage}`; break;
+            case 'Email': shareUrl = `mailto:?subject=${encodeURIComponent("Check out Quick Construct! Get ₹500 Off.")}&body=${encodedMessage}`; break;
+            case 'SMS': shareUrl = `sms:?body=${encodedMessage}`; break;
+            case 'Twitter': shareUrl = `https://twitter.com/intent/tweet?text=${encodedMessage}`; break;
+            case 'Instagram': closeShareModal(); return;
+        }
+
+        if (shareUrl) {
+             window.open(shareUrl, '_blank');
+             closeShareModal();
+        }
+    }
+
+    function copyReferralCode() {
+        const code = defaultReferralCode; 
+        const el = document.createElement('textarea');
+        el.value = code;
+        document.body.appendChild(el);
+        el.select();
+        try { document.execCommand('copy'); } catch (err) {}
+        document.body.removeChild(el);
+
+        const button = document.querySelector('#referral-box-account button:first-of-type');
+        const originalText = button.innerText;
+        button.innerText = 'COPIED!';
+        setTimeout(() => button.innerText = originalText, 1500);
+    }
+
+    function switchNav(pageId) {
+        ['page-home', 'page-orders', 'page-saved', 'page-account', 'page-notifications', 'page-edit-profile', 'page-manage-addresses', 'page-support'].forEach(id => {
+            document.getElementById(id).classList.add('hidden');
+        });
+        document.getElementById(`page-${pageId}`).classList.remove('hidden');
+        window.scrollTo(0,0);
+ if(pageId === 'orders') renderOrdersPage();
+        if(pageId === 'saved') renderSavedPage();
+        if(pageId === 'notifications') renderNotificationsPage();
+        if(pageId === 'edit-profile') renderEditProfilePage();
+        if(pageId === 'manage-addresses') renderManageAddressesPage();
+        if(pageId === 'support') renderSupportPage();
+
+        const navIds = ['home', 'orders', 'saved', 'account'];
+        navIds.forEach(id => {
+            const el = document.getElementById(`nav-${id}`);
+            if(el) {
+                if(id === pageId) {
+                    el.classList.remove('text-slate-400', 'hover:text-white');
+                    el.classList.add('text-brand-yellow');
+                } else {
+                    el.classList.add('text-slate-400', 'hover:text-white');
+                    el.classList.remove('text-brand-yellow');
+                }
+            }
+        });
+    }
+
+    function switchTab(tab) {
+        const viewStore = document.getElementById('view-store');
+        const viewServices = document.getElementById('view-services');
+        const btnStore = document.getElementById('tab-store');
+        const btnServices = document.getElementById('tab-services');
+        const searchInput = document.getElementById('global-search');
+
+        if(tab === 'store') {
+            viewStore.classList.remove('hidden');
+            viewServices.classList.add('hidden');
+            btnStore.className = "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-active flex items-center justify-center gap-2";
+            btnServices.className = "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-inactive flex items-center justify-center gap-2";
+            searchInput.placeholder = "Search products...";
+            renderProducts(products, isShowingAllProducts);
+        } else {
+            viewStore.classList.add('hidden');
+            viewServices.classList.remove('hidden');
+            btnStore.className = "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-inactive flex items-center justify-center gap-2";
+            btnServices.className = "flex-1 py-2 text-xs font-bold uppercase tracking-wider rounded-lg transition-all tab-active flex items-center justify-center gap-2";
+            searchInput.placeholder = "Search plumbers, electricians...";
+            
+            renderWorkers([], true); 
+            document.getElementById('worker-filter-label').innerText = "";
+            renderServices(services); 
+        }
+        searchInput.value = '';
+        isShowingAllProducts = false;
+    }
+
+    function scrollToGrid() {
+        gsap.to(window, {duration: 0.5, scrollTo: '#products-grid'});
+    }
+
+    function renderAllProducts() {
+        isShowingAllProducts = true;
+        renderProducts(products, true);
+    }
+
+    function closeInventory() {
+        isShowingAllProducts = false;
+        renderProducts(products, false);
+        scrollToGrid();
+    }
+
+    function renderProducts(items, showAll = false) {
+        const grid = document.getElementById('products-grid');
+        const viewAllContainer = document.getElementById('view-all-container');
+        grid.innerHTML = "";
+
+        const itemsToDisplay = showAll ? items : items.slice(0, 10); 
+        isShowingAllProducts = showAll; 
+        
+        if(items.length === 0) {
+            grid.innerHTML = `<div class="col-span-2 lg:col-span-5 text-center text-slate-500 py-10">No items found matching your search.</div>`;
+            viewAllContainer.style.display = 'none';
+            return;
+        }
+
+        if (showAll) {
+             viewAllContainer.innerHTML = `<button onclick="closeInventory()" class="bg-white/10 text-white text-sm font-bold px-6 py-2.5 rounded-full hover:bg-white/20 transition-colors border border-white/10">Close Inventory</button>`;
+             viewAllContainer.style.display = 'block';
+        } else if (items.length > 10) {
+             viewAllContainer.innerHTML = `<button onclick="renderAllProducts()" class="bg-white/10 text-white text-sm font-bold px-6 py-2.5 rounded-full hover:bg-white/20 transition-colors">View All Products</button>`;
+             viewAllContainer.style.display = 'block';
+        } else {
+             viewAllContainer.style.display = 'none';
+        }
+
+        itemsToDisplay.forEach(product => {
+            const isSaved = isItemSaved('product', product.id);
+            const heartColor = isSaved ? 'text-red-500 fill-red-500' : 'text-white fill-none';
+
+            const el = document.createElement('div');
+            el.className = "product-card bg-brand-card border border-brand-border rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden group cursor-pointer shadow-lg";
+            el.onclick = () => openProductModal(product.id);
+            el.innerHTML = `
+                <button onclick="toggleSavedItem('product', ${product.id}); event.stopPropagation();" 
+                    class="absolute top-3 left-3 z-10 bg-black/40 backdrop-blur rounded-full p-2 transition-transform active:scale-125 hover:scale-110">
+                    <svg class="w-4 h-4 ${heartColor}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                </button>
+                <div class="absolute top-3 right-3 z-10 bg-black/40 backdrop-blur rounded-lg px-2 py-1 text-[10px] text-brand-yellow font-bold flex items-center gap-1 overlay-text">
+                    <span>★</span> ${product.rating}
+                </div>
+                <div class="aspect-square w-full bg-slate-800 rounded-xl overflow-hidden relative">
+                    <img src="${product.image}" onerror="this.onerror=null; this.src='https://placehold.co/300x300/1E293B/94A3B8?text=Product'" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                </div>
+                <div class="flex-1 flex flex-col justify-between">
+                    <div>
+                        <h4 class="text-sm font-semibold text-white line-clamp-2 leading-snug">${product.name}</h4>
+                        <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-1 inline-block">${product.brand}</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-3">
+                        <button onclick="addToCart(${product.id}); event.stopPropagation();" class="bg-brand-yellow/10 text-brand-yellow p-2 rounded-xl active:scale-95 transition-transform hover:bg-brand-yellow hover:text-black">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </button>
+                        <button onclick="openProductModal(${product.id}); event.stopPropagation();" class="flex-1 bg-white text-black text-xs font-bold py-2 rounded-xl active:scale-95 transition-transform hover:bg-brand-yellow">View</button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+    }
+
+    function openProductModal(productId) {
+        const product = products.find(p => p.id === productId);
+        if(!product) return;
+
+        const isSaved = isItemSaved('product', product.id);
+        const heartColor = isSaved ? 'text-red-500 fill-red-500' : 'text-white fill-none';
+
+        const content = document.getElementById('product-modal-content');
+        const buyBar = document.getElementById('product-buy-bar');
+        
+        content.innerHTML = `
+            <div class="product-image-container rounded-t-3xl md:rounded-t-3xl overflow-hidden">
+                <img src="${product.image}" onerror="this.onerror=null; this.src='https://placehold.co/600x400/121214/FFC107?text=${product.name.substring(0, 15)}'" alt="${product.name}" class="w-full h-full object-cover">
+                <button onclick="toggleSavedItem('product', ${product.id}); event.stopPropagation();" 
+                    class="absolute top-4 right-4 z-10 bg-black/40 backdrop-blur rounded-full p-2 transition-transform active:scale-125 hover:scale-110">
+                    <svg class="w-5 h-5 ${heartColor}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                </button>
+                <div class="absolute bottom-4 left-4 z-10 bg-black/40 backdrop-blur rounded-full px-3 py-1 text-sm text-brand-yellow font-bold flex items-center gap-1 overlay-text">
+                    <span>★</span> ${product.rating}
+                </div>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <h1 class="text-2xl font-display font-bold text-white">${product.name}</h1>
+                <div class="flex items-center gap-3 text-sm text-slate-400">
+                    <span class="font-bold text-white">Brand: ${product.brand}</span>
+                    <span class="text-brand-accent">|</span>
+                    <span class="uppercase">${product.category}</span>
+                </div>
+
+                <div class="w-full bg-white/5 rounded-xl p-4 border border-white/10">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase mb-2 border-b border-white/10 pb-2">Product Details</h4>
+                    <p class="text-sm text-slate-300 leading-relaxed">${product.description}</p>
+                    <div class="mt-4 space-y-1">
+                        <p class="text-xs text-slate-400">Model: <span class="text-white">${product.model}</span></p>
+                        <p class="text-xs text-slate-400">Availability: <span class="text-emerald-400">In Stock</span></p>
+                    </div>
+                </div>
+
+                <div class="w-full bg-white/5 rounded-xl p-4 border border-white/10">
+                    <h4 class="text-sm font-bold text-slate-500 uppercase mb-2">Specifications</h4>
+                    <ul class="list-disc list-inside text-xs text-slate-300 space-y-1">
+                        <li>Material: High Carbon Forged Steel</li>
+                        <li>Handle: Ergonomic Rubber Grip</li>
+                        <li>Warranty: 1 Year Manufacturer Warranty</li>
+                    </ul>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('buy-bar-price').innerText = `₹${product.price}`;
+        document.getElementById('buy-bar-button').onclick = () => {
+             addToCart(product.id);
+             closeProductModal(); 
+             addNotification(`${product.name} added to cart!`, 'success');
+        };
+        buyBar.classList.remove('hidden');
+
+        const modal = document.getElementById('product-details-modal');
+        modal.classList.remove('hidden');
+        gsap.from("#product-modal-content-container", {y: 100, opacity: 0, duration: 0.3});
+    }
+
+    function closeProductModal() {
+        const modal = document.getElementById('product-details-modal');
+        const buyBar = document.getElementById('product-buy-bar');
+        
+        gsap.to(modal, {opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.style.opacity = 1; 
+            buyBar.classList.add('hidden'); 
+        }});
+    }
+
+    function showAllServices() {
+        isShowingAllServices = true;
+        renderServices(services);
+    }
+
+    function closeServices() {
+        isShowingAllServices = false;
+        renderServices(services);
+        document.getElementById('services-grid').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function renderServices(items) {
+        const grid = document.getElementById('services-grid');
+        const toggleContainer = document.getElementById('services-toggle-container');
+        grid.innerHTML = "";
+
+        const itemsToDisplay = isShowingAllServices ? items : items.slice(0, 9); 
+
+        if(items.length === 0) {
+            grid.innerHTML = `<div class="col-span-3 text-center text-slate-500 py-10">No services found.</div>`;
+            toggleContainer.innerHTML = '';
+            return;
+        }
+
+        itemsToDisplay.forEach(service => {
+            const el = document.createElement('div');
+            el.className = "bg-brand-card border border-brand-border rounded-xl p-4 flex flex-col items-center justify-center gap-3 active:scale-95 transition-transform cursor-pointer";
+            el.onclick = () => filterWorkersByCategory(service.type, service.name);
+            el.innerHTML = `
+                <div class="text-3xl">${service.icon}</div>
+                <div class="text-center">
+                    <span class="text-xs font-bold block leading-tight">${service.name}</span>
+                    <span class="text-[10px] text-slate-500 mt-1">₹${service.price} +</span>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+
+        if (isShowingAllServices) {
+            toggleContainer.innerHTML = `<button onclick="closeServices()" class="bg-white/10 text-white text-xs font-bold px-5 py-2 rounded-full hover:bg-white/20 transition-colors border border-white/10">Close</button>`;
+        } else if (items.length > 9) {
+            toggleContainer.innerHTML = `<button onclick="showAllServices()" class="bg-white/10 text-white text-xs font-bold px-5 py-2 rounded-full hover:bg-white/20 transition-colors">View More</button>`;
+        } else {
+            toggleContainer.innerHTML = '';
+        }
+    }
+
+    function renderWorkers(items, isInitial = false) {
+        const grid = document.getElementById('workers-grid');
+        grid.innerHTML = "";
+
+        if(isInitial) {
+            grid.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 px-6 text-center bg-white/5 border border-dashed border-white/10 rounded-2xl">
+                    <div class="text-5xl mb-4 grayscale opacity-40">👷‍♂️</div>
+                    <h4 class="text-white font-bold text-sm">Need a Professional?</h4>
+                    <p class="text-xs text-slate-500 mt-2 max-w-[200px]">Click a category above or search to find pros in your area.</p>
+                </div>
+            `;
+            return;
+        }
+
+        if(items.length === 0) {
+            grid.innerHTML = `
+                <div class="text-center text-slate-500 py-10 text-sm">
+                    <p>No professionals found.</p>
+                    <button onclick="switchTab('services')" class="text-brand-yellow mt-2 underline">Show all pros</button>
+                </div>
+            `;
+            return;
+        }
+
+        const displayItems = items.slice(0, 50);
+
+        displayItems.forEach(worker => {
+            const isSaved = isItemSaved('worker', worker.id);
+            const heartColor = isSaved ? 'text-red-500 fill-red-500' : 'text-white fill-none';
+
+            const el = document.createElement('div');
+            el.className = "bg-brand-card border border-brand-border p-3 rounded-xl flex gap-3 cursor-pointer hover:bg-white/5 transition-colors";
+            
+            el.onclick = (e) => {
+                if (!e.target.closest('.save-button')) {
+                    openWorkerModal(worker.id);
+                }
+            };
+
+            el.innerHTML = `
+                <div class="h-16 w-16 bg-slate-700 rounded-lg overflow-hidden shrink-0">
+                    <img src="${worker.image}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/334155/F8FAFC?text=PRO'" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                        <h4 class="font-bold text-sm text-white">${worker.name}</h4>
+                        <span class="text-[10px] bg-brand-yellow text-black px-1.5 py-0.5 rounded font-bold">${worker.rating} ★</span>
+                    </div>
+                    <p class="text-xs text-brand-accent font-medium">${worker.profession}</p>
+                    <p class="text-[10px] text-slate-400 mt-0.5">${worker.experience} years exp • ${worker.jobs}+ jobs done</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="text-xs font-bold text-white">₹${worker.price}</span>
+                        <span class="text-[10px] text-slate-500">visiting charge</span>
+                    </div>
+                </div>
+                <div class="flex items-end gap-2">
+                    <button onclick="toggleSavedItem('worker', ${worker.id}); event.stopPropagation();" 
+                        class="save-button text-xs bg-white/10 p-1.5 rounded-full hover:bg-white/20 transition-colors active:scale-95">
+                        <svg class="w-4 h-4 ${heartColor}" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                    </button>
+                    <button class="text-xs bg-white text-black font-bold px-3 py-1.5 rounded-full hover:bg-brand-yellow transition-colors" onclick="openWorkerModal(${worker.id}); event.stopPropagation();">
+                        View
+                    </button>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+    }
+
+    function filterWorkersByCategory(type, name) {
+        const filtered = workers.filter(w => w.type.includes(type) || w.profession.toLowerCase().includes(name.toLowerCase().split(' ')[0]));
+        renderWorkers(filtered);
+        document.getElementById('worker-filter-label').innerText = `in ${name}`;
+        document.getElementById('workers-section').scrollIntoView({behavior: 'smooth'});
+    }
+
+    function filterCategory(cat) {
+        isShowingAllProducts = true; 
+        if(cat === 'all') {
+            renderProducts(products, true);
+        } else {
+            const filtered = products.filter(p => p.category === cat);
+            renderProducts(filtered, true);
+        }
+        scrollToGrid();
+    }
+    
+    function renderSavedPage() {
+        const grid = document.getElementById('saved-items-grid');
+        const emptyState = document.getElementById('saved-empty-state');
+        grid.innerHTML = "";
+
+        if (savedItems.length === 0) {
+            emptyState.classList.remove('hidden');
+            grid.classList.add('hidden');
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        grid.classList.remove('hidden');
+
+        savedItems.forEach(item => {
+            const isProduct = item.type === 'product';
+            const itemUrl = isProduct ? item.image : item.image;
+            const itemTitle = isProduct ? item.name : item.name + " (" + item.profession + ")";
+            const itemPrice = item.price;
+            const itemCategory = isProduct ? item.brand : item.profession;
+
+            const el = document.createElement('div');
+            el.className = "product-card bg-brand-card border border-brand-border rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden group";
+            
+            el.onclick = () => {
+                if (isProduct) openProductModal(item.id);
+                else openWorkerModal(item.id);
+            };
+
+            el.innerHTML = `
+                <button onclick="toggleSavedItem('${item.type}', ${item.id}); event.stopPropagation();" 
+                    class="absolute top-3 left-3 z-10 bg-black/40 backdrop-blur rounded-full p-2 transition-transform active:scale-125 hover:scale-110 animate-heart-pop">
+                    <svg class="w-4 h-4 text-red-500 fill-red-500" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                </button>
+                <div class="aspect-square w-full bg-slate-800 rounded-xl overflow-hidden relative">
+                    <img src="${itemUrl}" onerror="this.onerror=null; this.src='https://placehold.co/300x300/1E293B/94A3B8?text=${isProduct ? 'Item' : 'PRO'}'" class="w-full h-full object-cover">
+                </div>
+                <div class="flex-1 flex flex-col justify-between pt-1">
+                    <div>
+                        <h4 class="text-sm font-semibold text-white line-clamp-2 leading-tight">${itemTitle}</h4>
+                        <span class="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-1">${itemCategory}</span>
+                    </div>
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="text-base font-bold text-white">₹${itemPrice}</span>
+                        <button onclick="${isProduct ? `openProductModal(${item.id})` : `openWorkerModal(${item.id})`}; event.stopPropagation();" 
+                            class="bg-white text-black text-xs font-bold px-3 py-2 rounded-xl active:scale-95 transition-transform hover:bg-brand-yellow">
+                            View
+                        </button>
+                    </div>
+                </div>
+            `;
+            grid.appendChild(el);
+        });
+    }
+
+    function openWorkerModal(workerId) {
+        const worker = workers.find(w => w.id === workerId);
+        if(!worker) return;
+
+        const isSaved = isItemSaved('worker', worker.id);
+        const heartColor = isSaved ? 'text-red-500 fill-red-500' : 'text-white fill-none';
+
+        const content = document.getElementById('worker-modal-content');
+        content.innerHTML = `
+            <div class="w-24 h-24 rounded-full border-4 border-brand-yellow overflow-hidden mb-4 shadow-lg">
+                <img src="${worker.image}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/334155/F8FAFC?text=PRO'" class="w-full h-full object-cover">
+            </div>
+            <h2 class="text-2xl font-display font-bold text-white">${worker.name}</h2>
+            <p class="text-brand-accent font-medium text-sm mb-4">${worker.profession}</p>
+            
+            <div class="flex justify-center gap-6 w-full mb-6 border-y border-white/10 py-4">
+                <div class="text-center">
+                    <span class="block text-xl font-bold text-white">${worker.age}</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Age</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xl font-bold text-brand-yellow">${worker.rating}</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Rating</span>
+                </div>
+                <div class="text-center">
+                    <span class="block text-xl font-bold text-white">${worker.experience}yr</span>
+                    <span class="text-[10px] text-slate-400 uppercase tracking-wider">Exp</span>
+                </div>
+            </div>
+
+            <div class="w-full text-left bg-white/5 rounded-xl p-4 mb-6">
+                <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">About</h4>
+                <p class="text-sm text-slate-300 leading-relaxed">${worker.bio}</p>
+                <div class="mt-4 flex items-center gap-2 text-sm text-slate-300">
+                    <span class="text-brand-yellow">📞</span> ${worker.contact}
+                </div>
+            </div>
+
+            <div class="w-full flex items-center gap-3">
+                <button onclick="toggleSavedItem('worker', ${worker.id});" 
+                    class="save-button w-1/4 bg-white/10 text-white font-bold py-4 rounded-xl active:scale-95 transition-transform shadow-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 ${heartColor}" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                </button>
+                <button onclick="bookWorker(${worker.id})" class="w-3/4 bg-brand-yellow text-black font-bold py-4 rounded-xl active:scale-95 transition-transform text-lg shadow-[0_0_20px_rgba(255,193,7,0.3)]">
+                    Book for ₹${worker.price}
+                </button>
+            </div>
+        `;
+
+        const modal = document.getElementById('worker-modal');
+        modal.classList.remove('hidden');
+        gsap.from("#worker-modal > div:last-child", {y: 100, opacity: 0, duration: 0.3});
+    }
+
+    function closeWorkerModal() {
+        const modal = document.getElementById('worker-modal');
+        gsap.to(modal, {opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.style.opacity = 1; 
+        }});
+    }
+
+    function bookWorker(id) {
+        const worker = workers.find(w => w.id === id);
+        if(worker) {
+            closeWorkerModal();
+            addServiceToCart(worker.id, worker.name + " (" + worker.profession + ")", worker.price, worker.image);
+        }
+    }
+
+    function addToCart(id) {
+        const product = products.find(p => p.id === id);
+        const uniqueId = `P${id}`; 
+        const existing = cart.find(i => i.uniqueId === uniqueId);
+        if(existing) existing.qty++;
+        else cart.push({...product, uniqueId: uniqueId, qty: 1});
+        updateCartUI();
+        animateCartBadge();
+    }
+
+    function addServiceToCart(id, name, price, img) {
+        const uniqueId = `S${id}`;
+        const existing = cart.find(i => i.uniqueId === uniqueId);
+        if(existing) existing.qty++;
+        else cart.push({ uniqueId: uniqueId, id: id, name: name, price: price, image: img, qty: 1, isService: true });
+        updateCartUI();
+        animateCartBadge();
+        // Don't auto-toggle cart if adding from suggestion slider
+    }
+
+    function removeFromCart(uniqueId) {
+        const idx = cart.findIndex(i => i.uniqueId === uniqueId);
+        if(idx > -1) {
+            if(cart[idx].qty > 1) cart[idx].qty--;
+            else cart.splice(idx, 1);
+            updateCartUI();
+        }
+    }
+
+    // New Helper: Suggest services based on cart items (Urban Company Logic)
+    function getSuggestionsForCart() {
+        const categoriesInCart = [...new Set(cart.filter(i => !i.isService).map(i => i.category))];
+        let suggested = [];
+
+        // Logic Mapping
+        if(categoriesInCart.includes('plumbing')) suggested.push(services.find(s => s.type === 'plumbing'));
+        if(categoriesInCart.includes('electrical')) suggested.push(services.find(s => s.type === 'electrical'));
+        if(categoriesInCart.includes('paint')) suggested.push(services.find(s => s.type === 'painting'));
+        if(categoriesInCart.includes('construction')) suggested.push(services.find(s => s.type === 'construction'));
+
+        // Always suggest 2 random popular services if cart category doesn't match
+        if (suggested.length < 3) {
+            const popular = services.filter(s => ['appliance', 'cleaning'].includes(s.type));
+            suggested = [...suggested, ...popular.slice(0, 3 - suggested.length)];
+        }
+        
+        // Remove duplicates and services already in cart
+        const cartServiceIds = cart.filter(i => i.isService).map(i => i.id);
+        return suggested.filter(s => s && !cartServiceIds.includes(s.id)).slice(0, 4);
+    }
+
+    function updateCartUI() {
+        const badge = document.getElementById('cart-badge');
+        const cartList = document.getElementById('cart-items');
+        const cartSummary = document.getElementById('cart-summary');
+        const suggestionContainer = document.getElementById('cart-suggestions-container');
+        const suggestionList = document.getElementById('cart-suggestions-list');
+        
+        const totalQty = cart.reduce((acc, item) => acc + item.qty, 0);
+        if (badge) {
+            badge.innerText = totalQty;
+            badge.style.opacity = totalQty > 0 ? 1 : 0;
+        }
+        document.getElementById('cart-count-title').innerText = `(${totalQty})`;
+
+        if(cart.length === 0) {
+            cartList.innerHTML = `<div class="text-center text-slate-500 py-10 text-sm">Your cart is empty. Start building! 🏗️</div>`;
+            cartSummary.classList.add('hidden');
+            suggestionContainer.classList.add('hidden');
+        } else {
+            cartList.innerHTML = cart.map(item => {
+                const cartId = item.uniqueId;
+                const addFunction = item.isService 
+                    ? `addServiceToCart(${item.id},'${item.name.replace(/'/g, "\\'")}',${item.price},'${item.image}')` 
+                    : `addToCart(${item.id})`;
+
+                return `
+                    <div class="flex gap-4 items-center bg-white/5 p-3 rounded-xl">
+                        <img src="${item.image}" onerror="this.onerror=null; this.src='https://placehold.co/100x100/334155/F8FAFC?text=${item.isService ? 'PRO' : 'Item'}'" class="w-12 h-12 rounded-lg object-cover">
+                        <div class="flex-1">
+                            <div class="text-xs font-bold text-white line-clamp-1">${item.name}</div>
+                            <div class="text-xs text-brand-yellow font-bold mt-1">₹${item.price * item.qty}</div>
+                        </div>
+                        <div class="flex items-center bg-black rounded-lg border border-white/10">
+                            <button onclick="removeFromCart('${cartId}')" class="px-2 py-1 text-slate-400 hover:text-white">-</button>
+                            <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
+                            <button onclick="${addFunction}" class="px-2 py-1 text-slate-400 hover:text-white">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Suggestion Rendering (Urban Company Style)
+            const suggestedServices = getSuggestionsForCart();
+            if (suggestedServices.length > 0) {
+                suggestionContainer.classList.remove('hidden');
+                suggestionList.innerHTML = suggestedServices.map(s => `
+                    <div class="suggestion-item">
+                        <div class="text-2xl mb-1">${s.icon}</div>
+                        <div class="text-[10px] font-bold text-white leading-tight mb-2 h-6 overflow-hidden">${s.name}</div>
+                        <button onclick="addServiceToCart(${s.id}, '${s.name.replace(/'/g, "\\'")}', ${s.price}, 'https://placehold.co/100x100/334155/F8FAFC?text=PRO')" 
+                                class="w-full py-1.5 bg-brand-yellow text-black text-[10px] font-black rounded-lg active:scale-95 transition-transform">
+                            ADD ₹${s.price}
+                        </button>
+                    </div>
+                `).join('');
+            } else {
+                suggestionContainer.classList.add('hidden');
+            }
+
+            const total = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+            document.getElementById('bill-total').innerText = `₹${total}`;
+            document.getElementById('bill-final').innerText = `₹${total}`;
+            document.getElementById('btn-total').innerText = `₹${total}`;
+            cartSummary.classList.remove('hidden');
+        }
+    }
+
+    let currentPaymentTotal = 0;
+
+    function openPaymentModal() {
+        if (cart.length === 0) return;
+        currentPaymentTotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+        document.getElementById('payment-total-display').innerText = `₹${currentPaymentTotal}`;
+        document.getElementById('upi-suboptions').classList.add('hidden');
+        document.getElementById('netbanking-suboptions').classList.add('hidden');
+        document.getElementById('confirm-cod-button').classList.add('hidden');
+        document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('border-brand-yellow', 'border-2'));
+        const modal = document.getElementById('payment-modal');
+        modal.classList.remove('hidden');
+        gsap.from("#payment-modal-content-container", {y: 100, opacity: 0, duration: 0.3});
+    }
+
+    function closePaymentModal() {
+        const modal = document.getElementById('payment-modal');
+        gsap.to(modal, {opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.style.opacity = 1;
+        }});
+    }
+
+    function selectPayment(method, element) {
+        document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('border-brand-yellow', 'border-2'));
+        document.getElementById('upi-suboptions').classList.add('hidden');
+        document.getElementById('netbanking-suboptions').classList.add('hidden');
+        document.getElementById('confirm-cod-button').classList.add('hidden');
+
+        if(element) element.classList.add('border-brand-yellow', 'border-2');
+
+        switch (method) {
+            case 'cod': document.getElementById('confirm-cod-button').classList.remove('hidden'); break;
+            case 'upi': document.getElementById('upi-suboptions').classList.remove('hidden'); break;
+            case 'netbanking': document.getElementById('netbanking-suboptions').classList.remove('hidden'); break;
+        }
+    }
+    
+    function processPayment(methodDetails) {
+        closePaymentModal();
+        addNotification(`Processing payment via ${methodDetails}...`, 'info');
+        setTimeout(() => finalizeOrder(currentPaymentTotal, methodDetails), 1000); 
+    }
+
+    function finalizeOrder(total, methodDetails) {
+        const newOrderId = 'ORD-' + Date.now().toString().slice(-6);
+        const newOrder = {
+            id: newOrderId,
+            date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
+            time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+            status: 'Confirmed',
+            items: JSON.parse(JSON.stringify(cart)), 
+            totalAmount: total,
+            deliveryFee: 0,
+            address: currentLocation.text,
+            paymentMethod: methodDetails
+        };
+
+        orders.unshift(newOrder); 
+        localStorage.setItem('quickconstruct_orders', JSON.stringify(orders)); 
+        cart = [];
+        updateCartUI();
+        addNotification(`Order #${newOrderId} placed successfully!`, 'success');
+        renderOrdersPage(); 
+        switchNav('orders'); 
+    }
+    
+    function handleCheckout() { openPaymentModal(); }
+
+    function animateCartBadge() {
+        const badge = document.getElementById('cart-badge');
+        if (badge) {
+            badge.classList.add('animate-cart');
+            setTimeout(() => badge.classList.remove('animate-cart'), 300);
+        }
+    }
+
+    function toggleCart() {
+        const drawer = document.getElementById('cart-drawer');
+        const overlay = document.getElementById('cart-overlay');
+        if(drawer.classList.contains('translate-y-full')) {
+            drawer.classList.remove('translate-y-full');
+            overlay.classList.remove('hidden');
+            // Refresh Suggestions UI whenever cart opens
+            updateCartUI();
+        } else {
+            drawer.classList.add('translate-y-full');
+            setTimeout(() => overlay.classList.add('hidden'), 300);
+        }
+    }
+
+    function renderOrdersPage() {
+        const ordersList = document.getElementById('orders-list');
+        if (!ordersList) return;
+        if (orders.length === 0) {
+            ordersList.innerHTML = `<div class="text-center text-slate-500 py-10 text-sm">No orders placed yet.</div>`;
+            return;
+        }
+        ordersList.innerHTML = orders.map(order => {
+            const itemCount = order.items.reduce((acc, item) => acc + item.qty, 0);
+            const firstItemName = order.items[0].name;
+            const displayStatus = order.id.includes(Date.now().toString().slice(-6)) ? 'Confirmed' : 'Delivered';
+            const statusClass = displayStatus === 'Delivered' ? 'text-green-400' : 'text-brand-yellow';
+            return `
+                <div class="bg-brand-card border border-brand-border p-4 rounded-xl">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-xs text-slate-400 font-bold">#${order.id}</span>
+                        <span class="text-xs ${statusClass} font-bold">${displayStatus}</span>
+                    </div>
+                    <div class="flex gap-3 items-center">
+                        <div class="h-12 w-12 bg-white/5 rounded-lg flex items-center justify-center text-xl">📦</div>
+                        <div>
+                            <h4 class="font-bold text-sm line-clamp-1">${firstItemName} ${itemCount > 1 ? `+ ${itemCount - 1} others` : ''}</h4>
+                            <p class="text-xs text-slate-500">Placed on ${order.date} at ${order.time}</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-white/5 flex justify-between items-center">
+                        <span class="font-bold text-sm">₹${order.totalAmount}</span>
+                        <button onclick="openInvoiceModal('${order.id}')" class="text-xs bg-brand-yellow text-black font-bold px-3 py-1.5 rounded-full hover:bg-yellow-400">View Invoice</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function openInvoiceModal(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+        const modal = document.getElementById('invoice-modal');
+        const content = document.getElementById('invoice-modal-content');
+        const itemsRows = order.items.map((item, index) => `
+                <tr class="text-xs border-b border-white/10 ${index % 2 === 0 ? 'bg-white/5' : ''}">
+                    <td class="p-2 pl-3 text-slate-300">${item.name}</td>
+                    <td class="p-2 text-center text-slate-400">${item.qty}</td>
+                    <td class="p-2 text-right">₹${item.price}</td>
+                    <td class="p-2 pr-3 font-bold text-right text-brand-yellow">₹${item.price * item.qty}</td>
+                </tr>
+            `).join('');
+
+        content.innerHTML = `
+            <div class="p-6">
+                <div class="flex justify-between items-start mb-8">
+                    <div>
+                        <div class="h-10 w-10 bg-brand-yellow rounded-lg flex items-center justify-center mb-2">
+                            <span class="font-display font-bold text-black text-lg">Q</span>
+                        </div>
+                        <h2 class="text-xl font-display font-bold text-white">Invoice</h2>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">Order #${order.id}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-white font-bold">Quick Construct India</p>
+                        <p class="text-[10px] text-slate-500">GSTIN: 33AABCC1234D1Z5</p>
+                        <p class="text-[10px] text-slate-500">${order.date}</p>
+                    </div>
+                </div>
+
+                <div class="mb-6 p-3 bg-white/5 rounded-xl border border-white/5">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Billed To:</p>
+                    <p class="text-sm font-bold text-white">${userName}</p>
+                    <p class="text-xs text-slate-400">${order.address}</p>
+                </div>
+
+                <div class="overflow-hidden rounded-xl border border-white/10 mb-6">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] uppercase font-bold text-slate-500 bg-white/10">
+                                <th class="p-3">Item</th>
+                                <th class="p-3 text-center">Qty</th>
+                                <th class="p-3 text-right">Rate</th>
+                                <th class="p-3 text-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsRows}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="space-y-2 border-t border-white/10 pt-4">
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">Subtotal</span>
+                        <span class="text-white">₹${order.totalAmount}</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-400">GST (Included)</span>
+                        <span class="text-white">₹${(order.totalAmount * 0.18).toFixed(2)}</span>
+                    </div>
+                    <div class="flex justify-between text-lg font-bold pt-2 border-t border-dashed border-white/20">
+                        <span class="text-white">Amount Paid</span>
+                        <span class="text-brand-yellow">₹${order.totalAmount}</span>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex gap-3">
+                    <button onclick="window.print()" class="flex-1 bg-white/10 text-white font-bold py-3 rounded-xl text-xs active:scale-95 transition-transform">Download PDF</button>
+                    <button onclick="closeInvoiceModal()" class="flex-1 bg-brand-yellow text-black font-bold py-3 rounded-xl text-xs active:scale-95 transition-transform">Close</button>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+        gsap.from("#invoice-modal-content-container", { y: 100, opacity: 0, duration: 0.3 });
+    }
+
+    function closeInvoiceModal() {
+        const modal = document.getElementById('invoice-modal');
+        gsap.to(modal, { opacity: 0, duration: 0.2, onComplete: () => {
+            modal.classList.add('hidden');
+            modal.style.opacity = 1;
+        }});
+    }
+
+    // --- Account Page Sub-renderers ---
+
+    function renderEditProfilePage() {
+        const page = document.getElementById('page-edit-profile');
+        page.innerHTML = `
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="switchNav('account')" class="text-brand-yellow">← Back</button>
+                <h2 class="text-xl font-display font-bold">Edit Profile</h2>
+            </div>
+            <div class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Full Name</label>
+                    <input type="text" id="edit-name" value="${userName}" class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-500 uppercase">Mobile Number</label>
+                    <input type="tel" value="${userMobile}" disabled class="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-slate-500 cursor-not-allowed">
+                </div>
+                <button onclick="saveProfile()" class="w-full bg-brand-yellow text-black font-bold py-4 rounded-xl mt-6">Save Changes</button>
+            </div>
+        `;
+    }
+
+    function saveProfile() {
+        userName = document.getElementById('edit-name').value;
+        document.getElementById('account-user-name').innerText = userName;
+        addNotification("Profile updated successfully!", "success");
+        switchNav('account');
+    }
+
+    function renderManageAddressesPage() {
+        const page = document.getElementById('page-manage-addresses');
+        const addressHTML = userAddresses.map(addr => `
+            <div class="bg-brand-card border ${addr.isDefault ? 'border-brand-yellow' : 'border-brand-border'} p-4 rounded-xl relative">
+                ${addr.isDefault ? '<span class="absolute top-2 right-2 text-[8px] bg-brand-yellow text-black px-1.5 py-0.5 rounded font-bold uppercase">Default</span>' : ''}
+                <h4 class="font-bold text-sm mb-1">${addr.name}</h4>
+                <p class="text-xs text-slate-400">${addr.street}, ${addr.city}</p>
+                <div class="mt-3 flex gap-4">
+                    <button class="text-[10px] text-brand-yellow font-bold uppercase">Edit</button>
+                    <button class="text-[10px] text-red-400 font-bold uppercase">Remove</button>
+                </div>
+            </div>
+        `).join('');
+
+        page.innerHTML = `
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="switchNav('account')" class="text-brand-yellow">← Back</button>
+                <h2 class="text-xl font-display font-bold">My Addresses</h2>
+            </div>
+            <div class="space-y-4">
+                ${addressHTML}
+                <button class="w-full border-2 border-dashed border-white/10 text-slate-400 font-bold py-4 rounded-xl mt-4">+ Add New Address</button>
+            </div>
+        `;
+    }
+
+    function renderSupportPage() {
+        const page = document.getElementById('page-support');
+        page.innerHTML = `
+            <div class="flex items-center gap-4 mb-8">
+                <button onclick="switchNav('account')" class="text-brand-yellow">← Back</button>
+                <h2 class="text-xl font-display font-bold">Help & Support</h2>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-brand-card border border-brand-border p-5 rounded-xl text-center">
+                    <div class="text-3xl mb-2">🎧</div>
+                    <h4 class="font-bold text-white">24/7 Customer Care</h4>
+                    <p class="text-xs text-slate-400 mt-1 mb-4">Facing issues with an order or service?</p>
+                    <button onclick="addNotification('Connecting to agent...', 'info')" class="w-full bg-brand-yellow text-black font-bold py-3 rounded-xl">Chat With Us</button>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-brand-card border border-brand-border p-4 rounded-xl text-center">
+                        <span class="block text-xl mb-1">📞</span>
+                        <span class="text-xs font-bold">Call Us</span>
+                    </div>
+                    <div class="bg-brand-card border border-brand-border p-4 rounded-xl text-center">
+                        <span class="block text-xl mb-1">📧</span>
+                        <span class="text-xs font-bold">Email Us</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+  </script>
+</body>
+</html>

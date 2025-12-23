@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Construct | The Future of Building</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'qc-yellow': '#FFD500', 
+                        'qc-black': '#050505',  
+                        'qc-dark': '#111111',   
+                        'qc-gray': '#1a1a1a',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'marquee': 'marquee 25s linear infinite',
+                    },
+                    keyframes: {
+                        marquee: {
+                            '0%': { transform: 'translateX(0%)' },
+                            '100%': { transform: 'translateX(-100%)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- GSAP & ScrollTrigger -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <!-- Lenis for smooth scrolling -->
+    <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;700;900&display=swap');
+
+        :root {
+            --cursor-size: 8px;
+            --cursor-outline-size: 40px;
+        }
+
+        body {
+            background-color: #050505;
+            color: white;
+            overflow-x: hidden;
+            cursor: none; /* Custom cursor */
+            transition: background-color 0.5s ease;
+        }
+
+        /* 1. ARCHITECTURAL GRID BACKGROUND */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+            background-size: 50px 50px;
+            background-image: linear-gradient(to right, #333 1px, transparent 1px),
+                              linear-gradient(to bottom, #333 1px, transparent 1px);
+            /* Will be animated via JS */
+            transform: scale(1.1); 
+        }
+
+        /* Noise Overlay */
+        .noise-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9000;
+            opacity: 0.04;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #FFD500;
+        }
+
+        /* 2. INVERTED CURSOR */
+        .cursor-dot,
+        .cursor-outline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            pointer-events: none;
+            /* Premium Mix Blend Mode */
+            mix-blend-mode: difference; 
+        }
+        .cursor-dot {
+            width: var(--cursor-size);
+            height: var(--cursor-size);
+            background-color: #FFD500;
+        }
+        .cursor-outline {
+            width: var(--cursor-outline-size);
+            height: var(--cursor-outline-size);
+            border: 1px solid rgba(255, 213, 0, 0.8);
+            transition: width 0.2s, height 0.2s, background-color 0.2s;
+        }
+        
+        body:hover .cursor-outline.hovered {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 213, 0, 0.2);
+            border-color: #FFD500;
+            backdrop-filter: blur(2px);
+        }
+
+        /* Magnetic Buttons */
+        .magnetic-wrap {
+            display: inline-block;
+            position: relative;
+            z-index: 50;
+            pointer-events: auto; 
+        }
+        .magnetic-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #FFD500;
+            color: #000;
+            font-weight: 700;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            overflow: hidden;
+            cursor: pointer; 
+        }
+        /* Ripple Effect Helper */
+        .magnetic-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 9999px;
+            transform: scale(0);
+            transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .magnetic-btn:hover::before {
+            transform: scale(1.6);
+        }
+        
+        /* 3. IMAGE CURTAIN REVEAL */
+        .reveal-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+        .reveal-curtain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #FFD500;
+            z-index: 20;
+            transform: translateX(0); /* Start covering */
+        }
+
+        /* Typography Highlights */
+        .text-outline {
+            -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+            color: transparent;
+            transition: all 0.5s ease;
+        }
+        .group:hover .text-outline {
+            -webkit-text-stroke: 1px #FFD500;
+            color: transparent;
+        }
+
+        /* Horizontal Scroll Section */
+        .horizontal-container {
+            width: 400%; 
+            height: 100%;
+            display: flex;
+            flex-wrap: nowrap;
+        }
+        .panel {
+            width: 100vw;
+            height: 100vh;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            padding: 2rem;
+            border-right: 1px solid #1a1a1a;
+            overflow: hidden;
+        }
+
+        /* Film Strip Gallery */
+        .film-strip-section {
+            height: 100vh;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: #050505;
+            display: flex;
+            align-items: center;
+        }
+        .film-strip-container {
+            display: flex;
+            gap: 10vw;
+            padding-left: 10vw;
+            padding-right: 10vw;
+            width: fit-content;
+        }
+        .film-card {
+            width: 60vw;
+            height: 70vh;
+            position: relative;
+            overflow: hidden;
+            border-radius: 0.5rem; /* Sharper corners for architectural look */
+            flex-shrink: 0;
+            border: 1px solid #333;
+        }
+        .film-card img {
+            width: 120%; 
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            left: -10%;
+            transition: transform 0.8s cubic-bezier(0.2, 0, 0.2, 1);
+            filter: grayscale(100%);
+        }
+        .film-card:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0%);
+        }
+
+        /* Scattered Gallery */
+        .scatter-section {
+            position: relative;
+            height: 150vh;
+            overflow: hidden;
+            background: #0a0a0a;
+            z-index: 10;
+        }
+        .floating-img {
+            position: absolute;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(1.2);
+            transition: all 0.5s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .floating-img:hover {
+            filter: grayscale(0%) contrast(1);
+            z-index: 20 !important;
+            transform: scale(1.1);
+            box-shadow: 0 20px 50px rgba(255, 213, 0, 0.1);
+        }
+
+        /* Stacking Spotlight Cards */
+        .stack-area {
+            background: #050505;
+            padding-bottom: 20vh;
+        }
+        .stack-card {
+            position: sticky;
+            top: 15vh;
+            height: 70vh;
+            border-radius: 2rem;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transform-origin: center top;
+            border: 1px solid #222;
+            overflow: hidden;
+            background-color: #0e0e0e; 
+            transition: transform 0.3s ease;
+        }
+        
+        /* Footer Reveal Trick */
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1; /* Lowest */
+            display: flex;
+            align-items: flex-end;
+        }
+        .main-content {
+            position: relative;
+            z-index: 10;
+            background: #050505;
+            margin-bottom: 100vh; /* Allow footer reveal */
+            box-shadow: 0 50px 100px rgba(0,0,0,1); /* Shadow to blend footer reveal */
+        }
+
+        /* Loader */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #FFD500;
+            font-weight: 900;
+            font-size: 2rem;
+        }
+        .loader-bar {
+            width: 0%;
+            height: 2px;
+            background: #FFD500;
+            position: absolute;
+            bottom: 48%;
+        }
+
+        /* Video Modal */
+        #video-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 9990; 
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            backdrop-filter: blur(10px);
+        }
+        #video-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        #video-modal .modal-content {
+            transform: scale(0.8);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        #video-modal.active .modal-content {
+            transform: scale(1);
+        }
+        .close-modal {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 20;
+        }
+
+        /* Stats Section */
+        .stat-item {
+            border-left: 1px solid #333;
+            padding-left: 2rem;
+            opacity: 0; 
+            transform: translateY(20px);
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-qc-yellow selection:text-black">
+
+    <!-- 1. Architectural Grid Background -->
+    <div class="bg-grid"></div>
+
+    <!-- Noise Texture Overlay -->
+    <div class="noise-overlay"></div>
+
+    <!-- Custom Cursor Elements -->
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+
+    <!-- Video Modal -->
+    <div id="video-modal">
+        <div class="close-modal hover-trigger" data-cursor="hover" onclick="toggleModal(false)">×</div>
+        <div class="modal-content w-[90vw] md:w-[70vw] aspect-video bg-black border border-gray-800 rounded-lg overflow-hidden shadow-2xl relative">
+            <div class="absolute inset-0 flex items-center justify-center">
+                <p class="text-gray-500 uppercase tracking-widest text-sm">Showreel Placeholder Video</p>
+                <div class="absolute inset-0 bg-gradient-to-tr from-qc-yellow/10 to-transparent pointer-events-none"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preloader -->
+    <div class="loader">
+        <div class="text-4xl tracking-tighter text-qc-yellow font-black">QUICK CONSTRUCT</div>
+        <div class="loader-bar"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full p-6 flex justify-between items-center z-50 text-white transition-all duration-300 backdrop-blur-sm bg-black/10 border-b border-white/5" id="navbar">
+        <!-- REVERTED: Old QC Logo (Removed Scramble Effect) -->
+        <a href="#" class="text-2xl font-black tracking-tighter hover-trigger z-50 relative" data-cursor="hover" onclick="lenis.scrollTo(0)">
+            QC<span class="text-qc-yellow">.</span>
+        </a>
+        <div class="hidden md:flex gap-8 text-sm font-medium text-gray-300 pointer-events-auto">
+            <!-- Magnetic Wraps for Links -->
+            <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                <a href="client.html" class="magnetic-btn bg-transparent text-gray-300 hover:text-qc-yellow transition-colors px-2">Catalog</a>
+            </div>
+            <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                <a onclick="scrollToSection('#stack-area')" class="magnetic-btn bg-transparent text-gray-300 hover:text-qc-yellow transition-colors px-2">Services</a>
+            </div>
+            <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                <a onclick="scrollToSection('#gallery-pin-trigger')" class="magnetic-btn bg-transparent text-gray-300 hover:text-qc-yellow transition-colors px-2">Showcase</a>
+            </div>
+            <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                <a onclick="scrollToSection('#stats-section')" class="magnetic-btn bg-transparent text-gray-300 hover:text-qc-yellow transition-colors px-2">About Us</a>
+            </div>
+        </div>
+        <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+            <!-- REMOVED: Scramble effect from button as well -->
+            <button onclick="window.location.href='client.html'" class="magnetic-btn px-6 py-3 text-sm border-none">Start Shopping</button>
+        </div>
+    </nav>
+
+    <!-- WRAPPER FOR CONTENT SITTING ABOVE FOOTER -->
+    <div class="main-content">
+        
+        <!-- Hero Section -->
+        <section class="h-screen w-full relative flex items-center justify-center overflow-hidden">
+            <div class="absolute inset-0 z-0">
+                <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=2000&auto=format&fit=crop" 
+                     class="w-full h-full object-cover opacity-40 scale-110" id="hero-bg" alt="Architecture">
+                <div class="absolute inset-0 bg-gradient-to-t from-qc-black via-transparent to-black/80"></div>
+            </div>
+            
+            <div class="relative z-10 text-center max-w-6xl px-4 pointer-events-none">
+                <div class="overflow-hidden mb-4">
+                    <h1 class="hero-text text-6xl md:text-9xl font-black uppercase leading-none tracking-tighter translate-y-full">
+                        Build Beyond
+                    </h1>
+                </div>
+                <div class="overflow-hidden mb-8">
+                    <h1 class="hero-text text-6xl md:text-9xl font-black uppercase leading-none tracking-tighter text-outline translate-y-full">
+                        Boundaries
+                    </h1>
+                </div>
+                <p class="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto opacity-0 hero-fade">
+                    The ecosystem where premium hardware meets expert labor. 
+                    <span class="text-qc-yellow font-bold">One platform. Infinite possibilities.</span>
+                </p>
+                
+                <div class="mt-8 flex justify-center opacity-0 hero-fade pointer-events-auto">
+                    <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                        <button onclick="toggleModal(true)" class="magnetic-btn px-8 py-4 bg-transparent border border-gray-600 text-white hover:border-qc-yellow hover:text-qc-black hover:bg-qc-yellow transition-all">
+                            View Showreel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-0 hero-fade pointer-events-none">
+                <span class="text-xs uppercase tracking-widest text-gray-500 animate-pulse">Scroll to explore</span>
+                <div class="w-[1px] h-12 bg-gradient-to-b from-qc-yellow to-transparent"></div>
+            </div>
+        </section>
+
+        <!-- Horizontal Scroll Section (Platform Info) -->
+        <div id="scroll-start" class="scroll-container overflow-hidden bg-qc-black">
+            <div class="horizontal-container flex">
+                
+                <!-- Panel 1: Intro -->
+                <section class="panel bg-qc-black relative">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-7xl w-full items-center px-6">
+                        <div class="panel-text opacity-50 translate-y-10">
+                            <span class="text-qc-yellow font-bold tracking-widest uppercase mb-4 block text-xs md:text-sm">01 — The Platform</span>
+                            <h2 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Everything to <br><span class="text-gray-500">break ground.</span></h2>
+                            <p class="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed max-w-md">
+                                Quick Construct isn't just a store. It's a logistics engine. We connect you directly to manufacturers for hardware and verify professionals for the job.
+                            </p>
+                            <button class="text-white border-b border-qc-yellow pb-1 hover:text-qc-yellow transition-colors hover-trigger pointer-events-auto" data-cursor="hover">Read Manifest -></button>
+                        </div>
+                        <div class="relative h-[50vh] md:h-[60vh] overflow-hidden rounded-lg group panel-img reveal-wrapper">
+                            <div class="reveal-curtain"></div>
+                            <img src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-110" alt="Industrial tools">
+                            <div class="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 2: Delivery -->
+                <section class="panel bg-[#0a0a0a] relative">
+                    <div class="absolute top-1/2 left-0 -translate-y-1/2 w-full text-[20vw] font-black text-[#111] pointer-events-none whitespace-nowrap select-none z-0 text-center">
+                        LOGISTICS
+                    </div>
+                    <div class="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 max-w-7xl w-full items-center px-6">
+                        <div class="order-2 md:order-1 relative h-[50vh] md:h-[60vh] w-full overflow-hidden rounded-lg group panel-img-2 reveal-wrapper">
+                            <div class="reveal-curtain"></div>
+                            <img src="https://images.unsplash.com/photo-1616432043562-3671ea0e5e84?q=80&w=1000&auto=format&fit=crop" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700 transform group-hover:scale-110" alt="Delivery Truck">
+                        </div>
+                        <div class="order-1 md:order-2 panel-text-2 opacity-50 translate-y-10">
+                            <span class="text-qc-yellow font-bold tracking-widest uppercase mb-4 block text-xs md:text-sm">02 — Logistics</span>
+                            <h2 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">From Hub <br>to <span class="text-qc-yellow">Home.</span></h2>
+                            <p class="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed max-w-md">
+                                Our fleet is always moving. Whether it's a bike for small tools or a heavy loader for cement, we deliver to your site in record time.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Panel 3: Hiring -->
+                <section class="panel bg-qc-black relative">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 max-w-7xl w-full items-center px-6">
+                        <div class="col-span-1 md:col-span-5 panel-text-3 opacity-50 translate-y-10">
+                            <span class="text-qc-yellow font-bold tracking-widest uppercase mb-4 block text-xs md:text-sm">03 — Talent</span>
+                            <h2 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">Hire the <br> <span class="text-outline text-white">Hands.</span></h2>
+                            <p class="text-lg md:text-xl text-gray-400 mb-8 leading-relaxed">
+                                Materials don't build themselves. Browse profiles of rated supervisors, masons, and electricians. Hire them per project directly through the app.
+                            </p>
+                            <div class="magnetic-wrap hover-trigger" data-cursor="hover">
+                                <button onclick="window.location.href='client.html?tab=services'" class="magnetic-btn px-8 py-4 bg-qc-yellow text-black hover:bg-white transition-colors">
+    Find Workers
+</button>
+                            </div>
+                        </div>
+                        <div class="col-span-1 md:col-span-7 grid grid-cols-2 gap-4 h-[50vh] md:h-[60vh] reveal-wrapper">
+                            <div class="reveal-curtain"></div>
+                            <img src="https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover rounded-lg grayscale hover:grayscale-0 transition-all duration-500 translate-y-8 panel-worker-1" alt="Worker 1">
+                            <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?q=80&w=800&auto=format&fit=crop" class="w-full h-full object-cover rounded-lg grayscale hover:grayscale-0 transition-all duration-500 -translate-y-8 panel-worker-2" alt="Worker 2">
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="panel bg-qc-black w-[50vw]"></section>
+            </div>
+        </div>
+
+        <!-- STATS SECTION -->
+        <section id="stats-section" class="py-32 bg-[#080808] border-t border-b border-gray-900 relative z-20">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="mb-20">
+                    <span class="text-qc-yellow font-bold tracking-widest uppercase text-sm">Our Legacy</span>
+                    <h2 class="text-5xl md:text-8xl font-black mt-4 leading-none">TRUSTED BY <br>THE BEST.</h2>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+                    <div class="stat-item hover-trigger" data-cursor="hover">
+                        <div class="text-6xl md:text-8xl font-black text-qc-yellow mb-2 flex">
+                            <span class="counter" data-target="500">0</span>+
+                        </div>
+                        <div class="text-xl text-white font-bold mb-2">Projects Completed</div>
+                        <p class="text-gray-500 text-sm">From residential towers to industrial complexes, our network delivers.</p>
+                    </div>
+                    <div class="stat-item hover-trigger" data-cursor="hover">
+                         <div class="text-6xl md:text-8xl font-black text-white text-outline mb-2 flex">
+                             <span class="counter" data-target="98">0</span>%
+                         </div>
+                        <div class="text-xl text-white font-bold mb-2">On-Time Delivery</div>
+                        <p class="text-gray-500 text-sm">Our AI logistics engine predicts traffic and supply chain bottlenecks before they happen.</p>
+                    </div>
+                    <div class="stat-item hover-trigger" data-cursor="hover">
+                        <div class="text-6xl md:text-8xl font-black text-qc-yellow mb-2">Zero</div>
+                        <div class="text-xl text-white font-bold mb-2">Safety Incidents</div>
+                        <p class="text-gray-500 text-sm">Verified laborers mean trained professionals who know site safety protocols.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stacking Cards Section -->
+        <section id="stack-area" class="stack-area relative px-4 md:px-10">
+            <div class="max-w-7xl mx-auto py-20 text-center">
+                <h2 class="text-4xl md:text-6xl font-black mb-4">THE QC STANDARD</h2>
+                <p class="text-gray-400">Why leading contractors choose us.</p>
+            </div>
+
+            <div class="max-w-6xl mx-auto relative" id="cards-container">
+                <!-- Card 1 -->
+                <div class="stack-card text-white p-10 hover-trigger group" data-cursor="hover">
+                    <div class="flex justify-between items-start relative z-10">
+                        <h3 class="text-4xl md:text-6xl font-bold text-gray-800 group-hover:text-white transition-colors">01</h3>
+                        <svg class="w-12 h-12 text-qc-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div class="mt-auto relative z-10">
+                        <h4 class="text-3xl md:text-5xl font-bold mb-4 text-qc-yellow">Verified Quality</h4>
+                        <p class="text-xl text-gray-400 max-w-2xl group-hover:text-white transition-colors">Every bag of cement and every steel rod is sourced from Tier-1 manufacturers. No counterfeits, no compromise.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="stack-card text-white p-10 top-[20vh] hover-trigger group" data-cursor="hover">
+                    <div class="flex justify-between items-start relative z-10">
+                        <h3 class="text-4xl md:text-6xl font-bold text-gray-800 group-hover:text-white transition-colors">02</h3>
+                        <svg class="w-12 h-12 text-qc-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <div class="mt-auto relative z-10">
+                        <h4 class="text-3xl md:text-5xl font-bold mb-4 text-qc-yellow">Lightning Logistics</h4>
+                        <p class="text-xl text-gray-400 max-w-2xl group-hover:text-white transition-colors">AI-driven routing ensures your materials arrive exactly when your labor is ready. Eliminate downtime.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="stack-card text-white p-10 top-[25vh] hover-trigger group" data-cursor="hover">
+                    <div class="flex justify-between items-start relative z-10">
+                        <h3 class="text-4xl md:text-6xl font-bold text-gray-800 group-hover:text-white transition-colors">03</h3>
+                        <svg class="w-12 h-12 text-qc-yellow" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                    </div>
+                    <div class="mt-auto relative z-10">
+                        <h4 class="text-3xl md:text-5xl font-bold mb-4 text-qc-yellow">Secure Payments</h4>
+                        <p class="text-xl text-gray-400 max-w-2xl group-hover:text-white transition-colors">Escrow-style payments for labor hiring. Funds are released only when milestones are met and verified.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILM STRIP GALLERY -->
+        <section id="gallery-pin-trigger" class="relative bg-qc-black">
+             <div class="absolute top-10 left-10 z-20 mix-blend-difference pointer-events-none">
+                <h2 class="text-6xl font-black text-white">THE GALLERY</h2>
+                <p class="text-sm tracking-widest text-qc-yellow uppercase mt-2">Selected Works</p>
+            </div>
+            
+            <div class="film-strip-section">
+                <div class="film-strip-container">
+                    <!-- Gallery Item 1 -->
+                    <div class="film-card group hover-trigger" data-cursor="hover">
+                        <img src="https://images.unsplash.com/photo-1487958449943-2429e8be8625?q=80&w=1000&auto=format&fit=crop" alt="Building 1">
+                        <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <h3 class="text-2xl font-bold">Azure Skyline</h3>
+                            <p class="text-gray-400 text-sm">Commercial Complex</p>
+                        </div>
+                    </div>
+                    <!-- Gallery Item 2 -->
+                    <div class="film-card group hover-trigger" data-cursor="hover">
+                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" alt="Building 2">
+                        <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <h3 class="text-2xl font-bold">Vanguard HQ</h3>
+                            <p class="text-gray-400 text-sm">Corporate Interior</p>
+                        </div>
+                    </div>
+                    <!-- Gallery Item 3 -->
+                    <div class="film-card group hover-trigger" data-cursor="hover">
+                        <img src="https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=1000&auto=format&fit=crop" alt="Building 3">
+                         <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <h3 class="text-2xl font-bold">The Spire</h3>
+                            <p class="text-gray-400 text-sm">Residential Tower</p>
+                        </div>
+                    </div>
+                    <!-- Gallery Item 4 -->
+                    <div class="film-card group hover-trigger" data-cursor="hover">
+                        <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?q=80&w=1000&auto=format&fit=crop" alt="Building 4">
+                         <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <h3 class="text-2xl font-bold">Echo Park</h3>
+                            <p class="text-gray-400 text-sm">Urban Renewal</p>
+                        </div>
+                    </div>
+                    <!-- Gallery Item 5 -->
+                     <div class="film-card group hover-trigger" data-cursor="hover">
+                        <img src="https://images.unsplash.com/photo-1542621329-646943f91f9b?q=80&w=1000&auto=format&fit=crop" alt="Building 5">
+                         <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                            <h3 class="text-2xl font-bold">Nexus Hub</h3>
+                            <p class="text-gray-400 text-sm">Logistics Center</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scattered Gallery -->
+        <section id="scatter-section" class="scatter-section flex items-center justify-center relative py-20">
+            <div class="text-center relative z-10 pointer-events-none mix-blend-difference text-white">
+                <h2 class="text-6xl md:text-9xl font-black mb-4 uppercase">Showcase</h2>
+                <p class="text-gray-300 uppercase tracking-[0.5em] text-sm">Scroll to explore real sites</p>
+            </div>
+
+            <!-- Scattered Images -->
+            <img src="https://images.unsplash.com/photo-1590486803833-1c5dc8ddd4c8?q=80&w=600&auto=format&fit=crop" 
+                 class="floating-img w-64 h-80 top-[10%] left-[10%] z-0 hover-trigger" data-cursor="hover" data-speed="0.5" alt="Project 1">
+            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=600&auto=format&fit=crop" 
+                 class="floating-img w-80 h-64 top-[20%] right-[15%] z-0 hover-trigger" data-cursor="hover" data-speed="1.2" alt="Project 2">
+            <img src="https://images.unsplash.com/photo-1531834685032-c34bf0d84c7c?q=80&w=600&auto=format&fit=crop" 
+                 class="floating-img w-56 h-56 bottom-[20%] left-[20%] z-0 hover-trigger" data-cursor="hover" data-speed="0.8" alt="Project 3">
+            <img src="https://images.unsplash.com/photo-1503387762-592deb58ef4e?q=80&w=600&auto=format&fit=crop" 
+                 class="floating-img w-72 h-96 bottom-[10%] right-[25%] z-0 hover-trigger" data-cursor="hover" data-speed="1.5" alt="Project 4">
+            <img src="https://images.unsplash.com/photo-1516937941348-c09645f31e88?q=80&w=600&auto=format&fit=crop" 
+                 class="floating-img w-48 h-48 top-[40%] left-[40%] z-0 blur-[2px] hover-trigger" data-cursor="hover" data-speed="0.2" alt="Project 5">
+        </section>
+
+    </div> <!-- End Main Content Wrapper -->
+
+    <!-- Footer -->
+    <footer class="fixed-footer bg-qc-yellow text-black overflow-hidden" id="footer">
+        
+        <!-- Marquee -->
+        <div class="absolute top-4 left-0 w-full overflow-hidden whitespace-nowrap z-0 opacity-10 pointer-events-none marquee-container">
+            <div class="animate-marquee inline-block font-black text-6xl md:text-9xl tracking-tighter">
+                CONSTRUCT YOUR LEGACY — BUILD WITH SPEED — HIRE THE BEST — CONSTRUCT YOUR LEGACY — BUILD WITH SPEED — HIRE THE BEST —
+            </div>
+            <div class="animate-marquee inline-block font-black text-6xl md:text-9xl tracking-tighter" aria-hidden="true">
+                CONSTRUCT YOUR LEGACY — BUILD WITH SPEED — HIRE THE BEST — CONSTRUCT YOUR LEGACY — BUILD WITH SPEED — HIRE THE BEST —
+            </div>
+        </div>
+
+        <div class="w-full h-full relative flex flex-col justify-between p-6 md:p-20 pt-16 z-10">
+            <!-- Content Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mt-auto mb-20">
+                <div>
+                    <h2 class="text-6xl md:text-8xl font-black mb-6 leading-none tracking-tighter">LETS<br>BUILD.</h2>
+                    <p class="text-xl font-medium mb-10 opacity-80 max-w-md">
+                        Download the Quick Construct app today. Order hardware, hire talent, and track progress.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <!-- App Store Button -->
+                        <a href="https://www.apple.com/app-store/" target="_blank" class="bg-black text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 hover:bg-gray-900 transition-colors hover-trigger z-50 relative flex-1 justify-center min-w-[200px]" data-cursor="hover">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 384 512">
+                                <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 52.3-11.4 69.5-34.3z"/>
+                            </svg>
+                            <span>App Store</span>
+                        </a>
+                        <!-- Google Play Button -->
+                        <a href="https://play.google.com/store" target="_blank" class="bg-black text-white px-8 py-4 rounded-lg font-bold flex items-center gap-3 hover:bg-gray-900 transition-colors hover-trigger z-50 relative flex-1 justify-center min-w-[200px]" data-cursor="hover">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 512 512">
+                                <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8zM104.6 499l280.8-161.2-60.1-60.1L104.6 499z"/>
+                            </svg>
+                            <span>Google Play</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="flex justify-center md:justify-end items-end">
+                    <div class="text-right">
+                        <a href="#" class="block text-2xl font-bold mb-2 hover:underline hover-trigger" data-cursor="hover">Instagram</a>
+                        <a href="#" class="block text-2xl font-bold mb-2 hover:underline hover-trigger" data-cursor="hover">Twitter</a>
+                        <a href="#" class="block text-2xl font-bold mb-2 hover:underline hover-trigger" data-cursor="hover">LinkedIn</a>
+                        <p class="mt-8 text-sm opacity-60">© 2025 Quick Construct Inc.</p>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </footer>
+
+    <script>
+        // --- 0. Smooth Scroll ---
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            touchMultiplier: 2,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        function scrollToSection(id) {
+            lenis.scrollTo(id);
+        }
+
+        // --- 1. Enhanced Custom Cursor ---
+        const cursorDot = document.querySelector('.cursor-dot');
+        const cursorOutline = document.querySelector('.cursor-outline');
+        
+        // --- 2. Grid Parallax Logic ---
+        const grid = document.querySelector('.bg-grid');
+
+        window.addEventListener('mousemove', function(e) {
+            const posX = e.clientX;
+            const posY = e.clientY;
+            
+            // Cursor
+            cursorDot.style.left = `${posX}px`;
+            cursorDot.style.top = `${posY}px`;
+            gsap.to(cursorOutline, {
+                x: posX,
+                y: posY,
+                duration: 0.15,
+                ease: "power2.out"
+            });
+
+            // Grid Background Subtle Movement (Opposite to mouse)
+            const moveX = (window.innerWidth / 2 - posX) * 0.02;
+            const moveY = (window.innerHeight / 2 - posY) * 0.02;
+            gsap.to(grid, {
+                x: moveX,
+                y: moveY,
+                duration: 1,
+                ease: "power2.out"
+            });
+        });
+
+        // Hover Effect
+        function attachCursorEvents() {
+            document.querySelectorAll('.hover-trigger').forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursorOutline.classList.add('hovered');
+                });
+                el.addEventListener('mouseleave', () => {
+                    cursorOutline.classList.remove('hovered');
+                });
+            });
+        }
+        attachCursorEvents();
+
+        // Footer Cursor
+        const footer = document.querySelector('.fixed-footer');
+        footer.addEventListener('mouseenter', () => { document.body.classList.add('on-yellow'); });
+        footer.addEventListener('mouseleave', () => { document.body.classList.remove('on-yellow'); });
+
+        // --- 3. Animation Initialization ---
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Preloader Sequence
+        const tlLoader = gsap.timeline();
+        tlLoader.to(".loader-bar", {
+            width: "100%",
+            duration: 1.5,
+            ease: "power2.inOut"
+        })
+        .to(".loader", {
+            yPercent: -100,
+            duration: 0.8,
+            ease: "power4.inOut",
+            onComplete: () => initAnimations()
+        });
+
+        function initAnimations() {
+            // Hero Text Reveal
+            gsap.to(".hero-text", {
+                y: 0,
+                duration: 1.8,
+                stagger: 0.2,
+                ease: "power4.out"
+            });
+            gsap.to(".hero-fade", {
+                opacity: 1,
+                duration: 1,
+                delay: 0.8,
+                ease: "power2.out"
+            });
+            
+            // Hero Parallax
+            gsap.to("#hero-bg", {
+                yPercent: 30,
+                scale: 1.2, // Subtle scale up on scroll
+                ease: "none",
+                scrollTrigger: {
+                    trigger: "body",
+                    start: "top top",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+
+            // Horizontal Scroll
+            let sections = gsap.utils.toArray(".panel");
+            let scrollContainer = document.querySelector(".horizontal-container");
+            
+            let scrollTween = gsap.to(sections, {
+                xPercent: -100 * (sections.length - 1) + 20, 
+                ease: "none",
+                scrollTrigger: {
+                    trigger: ".scroll-container",
+                    pin: true,
+                    scrub: 1,
+                    snap: 1 / (sections.length - 1),
+                    end: () => "+=" + scrollContainer.offsetWidth
+                }
+            });
+
+            // Text Fade Ins for Panels
+            gsap.utils.toArray([".panel-text", ".panel-text-2", ".panel-text-3"]).forEach(text => {
+                gsap.to(text, {
+                    opacity: 1, y: 0, duration: 1,
+                    scrollTrigger: {
+                        trigger: text,
+                        containerAnimation: scrollTween,
+                        start: "left center",
+                        toggleActions: "play none none reverse"
+                    }
+                });
+            });
+
+            // Image Curtain Reveals inside Horizontal Scroll
+            gsap.utils.toArray(".reveal-wrapper").forEach(wrapper => {
+                let curtain = wrapper.querySelector(".reveal-curtain");
+                gsap.to(curtain, {
+                    xPercent: 100,
+                    duration: 1,
+                    ease: "power3.inOut",
+                    scrollTrigger: {
+                        trigger: wrapper,
+                        containerAnimation: scrollTween,
+                        start: "left 80%",
+                        toggleActions: "play none none reverse"
+                    }
+                });
+            });
+
+            // Film Strip
+            let filmSection = document.querySelector(".film-strip-section");
+            let filmContainer = document.querySelector(".film-strip-container");
+            let distance = filmContainer.scrollWidth - window.innerWidth;
+            
+            gsap.to(filmContainer, {
+                x: -distance,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: ".film-strip-section",
+                    pin: true,
+                    scrub: 1,
+                    end: () => "+=" + (distance + window.innerWidth), 
+                    invalidateOnRefresh: true
+                }
+            });
+            
+            gsap.utils.toArray(".film-card img").forEach((img) => {
+               gsap.to(img, {
+                   xPercent: 15,
+                   ease: "none",
+                   scrollTrigger: {
+                       trigger: img.closest(".film-strip-section"),
+                       start: "top top",
+                       end: "bottom top",
+                       scrub: true
+                   }
+               });
+            });
+
+            // Stacking Cards
+            let cards = gsap.utils.toArray(".stack-card");
+            cards.forEach((card, i) => {
+                gsap.to(card, {
+                    scale: 0.95, 
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 15%", 
+                        end: "bottom 15%",
+                        scrub: true,
+                        markers: false
+                    }
+                });
+            });
+            
+            // Stats
+            gsap.utils.toArray(".stat-item").forEach(item => {
+                gsap.to(item, {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 85%",
+                    }
+                });
+
+                let counter = item.querySelector('.counter');
+                if(counter) {
+                    let target = { val: 0 };
+                    let endVal = parseInt(counter.dataset.target);
+                    
+                    gsap.to(target, {
+                        val: endVal,
+                        duration: 2,
+                        ease: "power2.out",
+                        scrollTrigger: {
+                            trigger: item,
+                            start: "top 85%",
+                        },
+                        onUpdate: function() {
+                            counter.innerText = Math.ceil(target.val);
+                        }
+                    });
+                }
+            });
+            
+            // Marquee Velocity
+            let proxy = { skew: 0 },
+                skewSetter = gsap.quickSetter(".marquee-container", "skewX", "deg"),
+                clamp = gsap.utils.clamp(-20, 20);
+
+            ScrollTrigger.create({
+              onUpdate: (self) => {
+                let skew = clamp(self.getVelocity() / -300);
+                if (Math.abs(skew) > Math.abs(proxy.skew)) {
+                  proxy.skew = skew;
+                  gsap.to(proxy, {skew: 0, duration: 0.8, ease: "power3", overwrite: true, onUpdate: () => skewSetter(proxy.skew)});
+                }
+              }
+            });
+
+            // Scattered Parallax
+            gsap.utils.toArray(".floating-img").forEach((img, i) => {
+                const speed = img.dataset.speed || 1;
+                gsap.fromTo(img, 
+                    { y: 150 * speed },
+                    {
+                        y: -150 * speed,
+                        ease: "none",
+                        scrollTrigger: {
+                            trigger: ".scatter-section",
+                            start: "top bottom",
+                            end: "bottom top",
+                            scrub: true
+                        }
+                    }
+                );
+            });
+        }
+
+        // --- 4. Magnetic Button Logic ---
+        document.querySelectorAll('.magnetic-wrap').forEach(wrap => {
+            const btn = wrap.querySelector('.magnetic-btn');
+            
+            wrap.addEventListener('mousemove', (e) => {
+                const rect = wrap.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(btn, {
+                    x: x * 0.4,
+                    y: y * 0.4,
+                    duration: 0.3
+                });
+            });
+            
+            wrap.addEventListener('mouseleave', () => {
+                gsap.to(btn, { x: 0, y: 0, duration: 0.8, ease: "elastic.out(1, 0.3)" });
+            });
+        });
+
+        // Modal Logic
+        const modal = document.getElementById('video-modal');
+        function toggleModal(show) {
+            if (show) {
+                modal.classList.add('active');
+                lenis.stop();
+            } else {
+                modal.classList.remove('active');
+                lenis.start();
+            }
+        }
+    </script>
+</body>
+</html>
