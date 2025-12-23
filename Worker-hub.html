@@ -1,0 +1,3443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Worker Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    :root {
+      /* --- UPDATED TO DARK GREY TONES --- */
+      --bg-dark: #1A1A1A; /* Dark Grey for secondary/modal background */
+      --bg-darker: #000000;
+      --card-bg: rgba(26, 26, 26, 0.9); /* Dark Grey card base with opacity for glass */
+      --card-border: rgba(148, 163, 184, 0.15);
+      --accent: #facc15;
+      --logo-accent: #facc15;
+      --accent-glow: rgba(250, 204, 21, 0.3);
+      --accent-hover: #eab308;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --success: #4ade80;
+      --danger: #ef4444;
+      --warning: #f97316;
+      --pie-color-1: #3b82f6;
+      --pie-color-2: #ef4444;
+      --pie-color-3: #f97316;
+      --pie-color-4: #a855f7;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 32px;
+      --shadow-glow: 0 0 20px var(--accent-glow);
+    }
+    
+    .light-theme {
+        --bg-dark: #ffffff;
+        --bg-darker: #f1f5f9;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --card-border: rgba(148, 163, 184, 0.5);
+        --accent: #3b82f6;
+        --accent-glow: rgba(59, 130, 246, 0.3);
+        --accent-hover: #2563eb;
+        --text-main: #0f172a;
+        /* Changed light grey/muted text to a dark charcoal/black for readability */
+        --text-muted: #1e293b; 
+        background-image: 
+            radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+            radial-gradient(circle at 90% 80%, rgba(250, 204, 21, 0.08) 0%, transparent 40%);
+        color: var(--text-main);
+    }
+
+    /* Target specific balance and muted labels in light theme to ensure they are black */
+    .light-theme #ov-balance,
+    .light-theme .stat-label,
+    .light-theme .auth-subtitle,
+    .light-theme .welcome-text p,
+    .light-theme .card-header + div[style*="color: var(--text-muted)"],
+    .light-theme .job-details,
+    .light-theme .profile-label {
+        color: #000000 !important;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-darker);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(250, 204, 21, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      font-size: 16px;
+      overflow-x: hidden;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { transform: translateY(0); opacity: 1; } }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0.4); }
+      70% { box-shadow: 0 0 0 6px rgba(250, 204, 21, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(250, 204, 21, 0); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+      20%, 40%, 60%, 80% { transform: translateX(4px); }
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
+    }
+    @keyframes popIn {
+        from { transform: scale(0.8) translateY(-20px); opacity: 0; }
+        to { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .hidden { display: none !important; }
+
+    /* Splash Screen */
+    #splash-screen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-color: var(--bg-darker);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        z-index: 10000; opacity: 1; transition: opacity 0.5s ease-out; color: var(--text-main);
+    }
+    #splash-screen.fade-out { opacity: 0; }
+    
+    /* Quick Construct Styling */
+    .logo-animation-container {
+        font-size: 64px; font-weight: 800; line-height: 1.2;
+        display: flex; align-items: center; justify-content: center;
+        position: relative; margin-bottom: 20px;
+    }
+    .logo-char { 
+        display: inline-block; 
+        position: relative; 
+        opacity: 0;
+    }
+    .logo-accent-char {
+        color: var(--logo-accent);
+    }
+    #splash-text { 
+        font-size: 18px; 
+        font-weight: 500; 
+        color: var(--text-muted); 
+        opacity: 0;
+        margin-top: 10px;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+    }
+
+    /* Utility & Components */
+    .glass {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .light-theme .glass { box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); border: 1px solid var(--card-border); }
+    .btn-bounce:active { transform: scale(0.95); } 
+
+    /* Auth Screen */
+    #auth-screen {
+      width: 100%; max-width: 1200px; margin: auto; min-height: 100vh;
+      display: none; align-items: center; justify-content: center; padding: 20px; gap: 40px;
+    }
+    .auth-lang-switch {
+        position: absolute; top: 20px; right: 20px; z-index: 10;
+        animation: fadeIn 1s ease;
+    }
+    .auth-lang-select {
+        background: rgba(26, 26, 26, 0.8); border: 1px solid var(--card-border);
+        color: var(--text-muted); padding: 8px 12px; border-radius: 99px;
+        backdrop-filter: blur(4px); cursor: pointer; outline: none; font-size: 13px;
+        transition: all 0.3s ease;
+    }
+    .light-theme .auth-lang-select { background: rgba(255, 255, 255, 0.8); border-color: rgba(148, 163, 184, 0.5); }
+    .auth-lang-select:hover { border-color: var(--logo-accent); color: var(--logo-accent); }
+    
+    .auth-card {
+      width: 100%; max-width: 420px; padding: 40px;
+      border-radius: var(--radius-xl); box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      animation: slideUp 0.6s ease-out;
+    }
+    .brand-header { text-align: center; margin-bottom: 32px; }
+    .brand-icon { font-size: 48px; color: var(--logo-accent); margin-bottom: 12px; display: inline-block; animation: float 3s ease-in-out infinite; }
+    .auth-title {
+      font-size: 28px; font-weight: 700; margin-bottom: 8px;
+      background: linear-gradient(to right, var(--text-main), var(--text-muted));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; transition: color 0.3s;
+    }
+    .auth-subtitle { color: var(--text-muted); font-size: 15px; }
+    .auth-tabs { 
+        display: flex; background: rgba(26, 26, 26, 0.6); padding: 4px; border-radius: 99px; margin-bottom: 24px; transition: background-color 0.3s; 
+    }
+    .light-theme .auth-tabs { background: rgba(203, 213, 225, 0.8); }
+    .auth-tab {
+      flex: 1; padding: 10px; border-radius: 99px; border: none; background: transparent;
+      color: var(--text-muted); cursor: pointer; font-weight: 500; transition: all 0.3s ease;
+    }
+    .light-theme .auth-tab { color: #64748b; }
+    .auth-tab.active { 
+        background: var(--logo-accent); 
+        color: var(--bg-darker); 
+        box-shadow: 0 4px 12px rgba(250, 204, 21, 0.3); 
+    }
+    .light-theme .auth-tab.active { 
+        color: var(--bg-darker);
+        background: var(--logo-accent);
+    }
+    
+    .field { margin-bottom: 20px; }
+    .field input, .field select, .modern-select {
+      width: 100%; background: rgba(0, 0, 0, 0.5); border: 1px solid var(--card-border);
+      padding: 14px 16px; border-radius: 12px; color: var(--text-main); outline: none; transition: all 0.2s ease;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2394a3b8'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.5em;
+    }
+    .light-theme .field input, .light-theme .field select, .light-theme .modern-select {
+        background: rgba(241, 245, 249, 0.8); border-color: #cbd5e1; color: #0f172a;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.23 8.27a.75.75 0 01.02-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    }
+    .field input:focus, .field select:focus, .modern-select:focus {
+        border-color: var(--logo-accent); 
+        box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.3); 
+    }
+
+    .modern-select { padding: 10px 16px; font-size: 14px; width: 150px; margin: 0; }
+
+    .btn-primary {
+      width: 100%; padding: 14px; border-radius: 12px; border: none;
+      background: linear-gradient(135deg, var(--logo-accent), var(--accent-hover));
+      color: var(--bg-darker); font-weight: 700; font-size: 16px; cursor: pointer;
+      box-shadow: 0 8px 20px rgba(250, 204, 21, 0.3); 
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; transition: all 0.2s ease;
+    }
+    .light-theme .btn-primary { color: white; }
+    .btn-primary:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 12px 24px rgba(250, 204, 21, 0.4); 
+    }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); color: var(--text-main); transition: background-color 0.3s, color 0.3s; }
+    .light-theme .btn-secondary { background: rgba(148, 163, 184, 0.2); }
+
+    /* App Layout */
+    #app-screen {
+      width: 100%; max-width: 1600px; padding: 24px; display: grid; grid-template-columns: 280px 1fr;
+      gap: 24px; height: 100vh; overflow: hidden;
+    }
+    .sidebar {
+      display: flex; flex-direction: column; padding: 24px; border-radius: var(--radius-xl); height: 100%; animation: fadeIn 0.8s ease;
+    }
+    .sidebar-logo { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+    .logo-box {
+      width: 40px; height: 40px; border-radius: 12px; 
+      background: var(--logo-accent); color: var(--bg-darker);
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      box-shadow: 0 0 15px rgba(250, 204, 21, 0.3); transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+    }
+    .light-theme .logo-box { color: var(--bg-darker); }
+    
+    .logo-title {
+        font-weight: 700; 
+        color: var(--text-main);
+        transition: color 0.3s;
+    }
+    
+    .nav-list { display: flex; flex-direction: column; gap: 8px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px;
+      color: var(--text-main); 
+      cursor: pointer; background: transparent;
+      border: none; text-align: left; font-size: 15px;
+      transition: all 0.2s ease;
+    }
+    .light-theme .nav-item { color: var(--text-main); }
+    .light-theme .nav-item:hover { background: rgba(148, 163, 184, 0.1); color: var(--text-muted); } 
+    .nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text-muted); } 
+    .nav-item.active {
+      background: linear-gradient(90deg, rgba(250, 204, 21, 0.15), transparent);
+      color: var(--logo-accent); border-left: 3px solid var(--logo-accent);
+    }
+    .light-theme .nav-item.active {
+        background: linear-gradient(90deg, rgba(250, 204, 21, 0.15), transparent);
+        color: var(--logo-accent);
+    }
+    .nav-item.disabled { opacity: 0.5; cursor: not-allowed; }
+    .nav-item i {
+        display: inline-block;
+        transition: color 0.3s;
+    }
+
+
+    .main-content {
+      display: flex; flex-direction: column; height: 100%; overflow: hidden;
+      border-radius: var(--radius-xl); padding: 32px; position: relative;
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; animation: slideUp 0.6s ease 0.1s backwards; }
+    .welcome-text h2 { font-size: 24px; font-weight: 600; }
+    .welcome-text h2 #user-name { color: var(--logo-accent); }
+    .welcome-text p { color: var(--text-muted); font-size: 14px; }
+
+    /* Toggle Switch - General Styling */
+    .toggle-wrapper { display: flex; align-items: center; gap: 12px; }
+    .toggle-label { font-size: 14px; font-weight: 500; color: var(--text-main); }
+    .toggle-switch {
+        position: relative; width: 52px; height: 28px; background: rgba(239, 68, 68, 0.2);
+        border: 1px solid var(--danger); border-radius: 99px; cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; padding: 2px;
+    }
+    .toggle-switch::after {
+        content: ''; position: absolute; left: 3px; width: 20px; height: 20px; background: var(--danger);
+        border-radius: 50%; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .toggle-switch.active { background: rgba(74, 222, 128, 0.2); border-color: var(--success); }
+    .toggle-switch.active::after { left: calc(100% - 23px); background: var(--success); box-shadow: 0 0 10px rgba(74, 222, 128, 0.6); }
+    .light-theme .toggle-switch.active::after { box-shadow: 0 0 5px rgba(74, 222, 128, 0.6); }
+    .toggle-switch.disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.8); }
+    .toggle-switch.job-locked { pointer-events: none; background: rgba(249, 115, 22, 0.2); border-color: var(--warning); }
+    
+    /* Theme Toggle Specific Styles */
+    .theme-toggle {
+        width: 60px; height: 30px; background: rgba(26, 26, 26, 0.4);
+        border: 1px solid var(--card-border); display: flex; justify-content: space-between;
+        align-items: center; padding: 3px; position: relative; cursor: pointer;
+        border-radius: 99px; transition: background 0.3s, border-color 0.3s;
+    }
+    
+    .toggle-slider {
+        position: absolute; width: 24px; height: 24px; border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3); 
+        backdrop-filter: blur(2px);
+        box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.2);
+        left: 3px;
+    }
+
+    .theme-toggle i {
+        font-size: 18px;
+        z-index: 10;
+        pointer-events: none;
+        position: relative;
+    }
+    .theme-toggle .icon-moon { color: var(--logo-accent); }
+    .theme-toggle .icon-sun { color: var(--text-muted); }
+    .light-theme .theme-toggle .icon-moon { color: var(--text-muted); }
+    .light-theme .theme-toggle .icon-sun { color: var(--logo-accent); }
+
+    /* Language Toggle Specific Styles */
+    .lang-toggle-group {
+        display: flex; gap: 0px; background: rgba(26, 26, 26, 0.8); 
+        border: 1px solid var(--card-border); overflow: hidden; border-radius: 99px;
+    }
+    .light-theme .lang-toggle-group { background: rgba(148, 163, 184, 0.1); }
+    .lang-toggle-btn {
+        padding: 6px 10px; border: none; background: transparent;
+        color: var(--text-muted); font-size: 12px; font-weight: 500;
+        cursor: pointer; transition: all 0.2s ease;
+    }
+    .lang-toggle-btn.active {
+        background: var(--logo-accent);
+        color: var(--bg-darker);
+        font-weight: 600;
+        box-shadow: 0 0 5px rgba(250, 204, 21, 0.3);
+    }
+
+
+    .scroll-container { flex: 1; overflow-y: auto; padding-right: 8px; }
+    .scroll-container::-webkit-scrollbar { width: 6px; }
+    .scroll-container::-webkit-scrollbar-thumb { background-color: rgba(255,255,255,0.1); border-radius: 10px; }
+    .light-theme .scroll-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); }
+    .section { display: none; }
+    .section.visible { display: block; }
+
+    /* Dashboard Grid & Cards */
+    .dashboard-grid { 
+        display: grid; 
+        grid-template-columns: 1.5fr 1fr 1fr; 
+        gap: 24px; 
+    }
+    .analytics-grid {
+        display: grid; 
+        grid-template-columns: 1fr; 
+        gap: 24px; 
+    }
+    .card { 
+        border-radius: var(--radius-lg); 
+        padding: 24px; 
+        transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        position: relative;
+    }
+    .section.visible .card { animation: slideUp 0.5s ease backwards; }
+    .section.visible .card:nth-child(1) { animation-delay: 0.05s; }
+    .section.visible .card:nth-child(2) { animation-delay: 0.1s; }
+    .section.visible .card:nth-child(3) { animation-delay: 0.15s; }
+    .card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); border-color: rgba(250, 204, 21, 0.2); }
+    .light-theme .card:hover { box-shadow: 0 10px 30px rgba(0,0,0,0.15); border-color: rgba(59, 130, 246, 0.3); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .card-title { font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+    .card-title i { color: var(--logo-accent); background: rgba(250, 204, 21, 0.1); padding: 6px; border-radius: 8px; transition: background-color 0.3s; }
+    .light-theme .card-title i { background: rgba(250, 204, 21, 0.1); color: var(--logo-accent); }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .stat-box { background: rgba(255, 255, 255, 0.03); padding: 16px; border-radius: var(--radius-md); text-align: center; border: 1px solid transparent; transition: all 0.2s; }
+    .light-theme .stat-box { background: rgba(148, 163, 184, 0.1); }
+    .stat-box:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255,255,255,0.1); }
+    .stat-val { font-size: 24px; font-weight: 700; margin: 8px 0 4px 0; color: var(--text-main); }
+    .stat-label { font-size: 13px; color: var(--text-muted); }
+    
+    /* Worker Level Card Specific Styles */
+    .level-card {
+        background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(17, 24, 39, 0.7));
+        border-color: rgba(59, 130, 246, 0.3);
+        text-align: center;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 24px; 
+    }
+    .level-card .card-title { 
+        margin-bottom: 0; 
+        font-size: 20px; 
+    }
+    .level-stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        width: 100%;
+        margin-top: 20px;
+    }
+    .level-stat {
+        padding: 15px 10px;
+        border-radius: var(--radius-md);
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .level-badge {
+        font-size: 14px;
+        font-weight: 700;
+        padding: 4px 12px;
+        border-radius: 99px;
+        margin-bottom: 5px;
+        display: inline-block;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .level-bronze { background: #b87333; color: #fff; }
+    .level-silver { background: #c0c0c0; color: #333; }
+    .level-gold { background: #ffd700; color: #333; }
+    .level-platinum { background: #e5e4e2; color: #333; }
+
+    .rating-stars {
+        font-size: 20px; 
+        color: var(--logo-accent); 
+        margin-top: 5px; 
+        display: flex;
+        gap: 2px;
+        justify-content: center;
+    }
+    .rating-stars i {
+        filter: drop-shadow(0 0 2px rgba(250, 204, 21, 0.5));
+    }
+    .rating-value {
+        font-size: 24px; 
+        font-weight: 800;
+        color: var(--logo-accent);
+    }
+    .rating-count {
+        font-size: 12px; 
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+    
+    /* Flex Container for Overview Cards in Column 2 & 3 */
+    .overview-column-stack {
+        display: flex; 
+        flex-direction: column; 
+        gap: 24px; 
+    }
+    
+    /* === NEW OVERVIEW ACCENT CARD STYLES === */
+    .ov-card-wallet {
+        background: linear-gradient(180deg, rgba(250, 204, 21, 0.1), rgba(17, 24, 39, 0.6)) !important; 
+        border-color: rgba(250, 204, 21, 0.3) !important; 
+    }
+    .ov-card-incoming {
+        background: linear-gradient(180deg, rgba(74, 222, 128, 0.1), rgba(17, 24, 39, 0.6)) !important; 
+        border-color: rgba(74, 222, 128, 0.3) !important;
+    }
+    .ov-card-profile {
+        border-color: rgba(59, 130, 246, 0.3) !important;
+    }
+    
+    /* Fix for Light Theme: Use standard light background, retain accent border */
+    .light-theme .ov-card-wallet,
+    .light-theme .ov-card-incoming,
+    .light-theme .ov-card-profile {
+        background: var(--card-bg) !important; 
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .light-theme .ov-card-wallet {
+        border-color: rgba(250, 204, 21, 0.5) !important; 
+    }
+    .light-theme .ov-card-incoming {
+        border-color: rgba(74, 222, 128, 0.5) !important; 
+    }
+    .light-theme .ov-card-profile {
+        border-color: rgba(59, 130, 246, 0.5) !important;
+    }
+
+    /* Job Cards & Tables */
+    .job-card { 
+        background: linear-gradient(145deg, rgba(26, 26, 26, 0.8), rgba(0, 0, 0, 0.9)); 
+        border: 1px solid var(--card-border); position: relative; overflow: hidden; transition: background 0.3s, border-color 0.3s; 
+    }
+    .light-theme .job-card { background: linear-gradient(145deg, rgba(241, 245, 249, 0.8), rgba(255, 255, 255, 0.9)); }
+    .job-card.incoming { border-color: var(--logo-accent); box-shadow: 0 0 20px rgba(250,204,21, 0.05); }
+    .job-card.incoming::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--logo-accent); }
+    
+    /* TABLE STYLING REFINEMENT */
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 12px 16px; font-size: 13px; color: var(--text-muted); border-bottom: 1px solid var(--card-border); }
+    td { padding: 16px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .light-theme td { border-bottom: 1px solid rgba(0,0,0,0.05); }
+    tr:last-child td { border-bottom: none; }
+    .amount-col { text-align: right; font-weight: 700; }
+    
+    .job-details { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; font-size: 14px; color: var(--text-muted); }
+    .detail-item i { color: var(--logo-accent); }
+
+    .job-header-right {
+        display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+        margin-top: -12px;
+    }
+    .job-amount-display {
+        font-size: 28px; font-weight: 800; color: var(--success); line-height: 1;
+    }
+
+    .btn-group { display: flex; gap: 12px; margin-top: 16px; }
+    .btn { padding: 10px 20px; border-radius: 99px; border: none; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 14px; transition: all 0.2s; }
+    .btn-small { padding: 8px 16px; font-size: 12px; border-radius: 8px; }
+    .btn-success { background: var(--success); color: #064e3b; box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3); }
+    .btn-success:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4); }
+    .btn-warning { background: var(--warning); color: #fff; box-shadow: 0 4px 15px rgba(249, 115, 22, 0.3); }
+    .btn-warning:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(249, 115, 22, 0.4); }
+    .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: var(--text-muted); }
+    .light-theme .btn-outline { border-color: rgba(0,0,0,0.2); color: var(--text-muted); }
+    .btn-outline:hover { border-color: var(--text-main); color: var(--text-main); background: rgba(255,255,255,0.05); }
+    .light-theme .btn-outline:hover { border-color: var(--logo-accent); color: var(--logo-accent); background: rgba(250, 204, 21, 0.1); }
+    .btn-navigate { background: #3b82f6; color: white; }
+    .tag { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+    .tag.live { background: rgba(74, 222, 128, 0.2); color: #86efac; animation: pulseGlow 2s infinite; }
+    .job-card.incoming .tag { 
+        background: var(--logo-accent); color: var(--bg-darker) !important; 
+    }
+
+    /* Analytics */
+    .analytics-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+    .analytics-chip {
+        padding: 4px 12px; border-radius: 99px; font-size: 12px; cursor: pointer;
+        background: rgba(26, 26, 26, 0.5); 
+        border: 1px solid transparent; color: var(--text-muted); transition: all 0.2s;
+    }
+    .light-theme .analytics-chip { background: rgba(148, 163, 184, 0.1); }
+    .analytics-chip:hover { background: rgba(255,255,255,0.1); }
+    .analytics-chip.active { background: var(--logo-accent); color: var(--bg-darker); font-weight: 600; }
+    
+    /* Chart Flip Styles */
+    .analytics-card {
+        height: 350px;
+        display: flex;
+        flex-direction: column;
+    }
+    .flip-chart-container {
+        flex-grow: 1; position: relative; padding: 0; 
+        perspective: 1000px; cursor: pointer; min-height: 200px;
+    }
+    .flip-card-inner {
+        position: absolute; width: 100%; height: 100%; text-align: center;
+        transform-style: preserve-3d;
+    }
+    .flip-card-front, .flip-card-back {
+        position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+        -webkit-backface-visibility: hidden; border-radius: var(--radius-lg);
+        overflow: hidden; top: 0; left: 0;
+    }
+    .inner-chart-wrapper {
+        padding: 0 24px 24px 24px; height: 100%; width: 100%; display: flex;
+        flex-direction: column;
+    }
+    .flip-card-front {
+        background: var(--card-bg); border: 1px solid var(--card-border);
+    }
+    .light-theme .flip-card-front {
+         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); border: 1px solid var(--card-border);
+    }
+    .flip-card-back {
+        background: var(--card-bg); border: 1px solid var(--card-border);
+        transform: rotateY(180deg);
+    }
+     .light-theme .flip-card-back {
+         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1); border: 1px solid var(--card-border);
+    }
+
+    /* Bar Chart Styles */
+    .chart-container { flex-grow: 1; display: flex; align-items: flex-end; justify-content: space-around; padding-top: 30px; gap: 8px; position: relative; }
+    .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; height: 100%; justify-content: flex-end; position: relative; }
+    .bar {
+        width: 100%; max-width: 30px; 
+        background: linear-gradient(to top, var(--logo-accent), #fcd34d);
+        border-radius: 6px 6px 2px 2px; transition: height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); position: relative;
+    }
+    .light-theme .bar { 
+        background: linear-gradient(to top, var(--logo-accent), #fcd34d);
+    }
+    .bar-label-val { position: absolute; top: -15px; font-size: 10px; font-weight: 600; color: var(--text-main); opacity: 0.8; }
+    .bar:hover { filter: brightness(1.2); }
+    .bar-lbl { font-size: 10px; color: var(--text-muted); }
+
+    /* Line Chart Styles */
+    .line-chart-container { 
+        flex-grow: 1; padding: 20px 10px 10px 10px; 
+        position: relative; min-height: 200px;
+    }
+    .line-chart-svg {
+        width: 100%; height: 100%; overflow: visible;
+    }
+    .line-chart-svg .line-path {
+        stroke: var(--success); stroke-width: 3; fill: none;
+        transition: stroke-dashoffset 1s ease-out;
+    }
+    .line-chart-svg .line-area { fill: var(--success); opacity: 0.15; }
+    .line-chart-svg .line-point { fill: var(--success); stroke: var(--card-bg); stroke-width: 2; }
+    .chart-grid-line { stroke: var(--card-border); stroke-width: 1; }
+    .chart-label-x { font-size: 10px; fill: var(--text-muted); }
+    .chart-label-y { font-size: 10px; fill: var(--text-muted); }
+
+    /* Pie Chart Styles */
+    .pie-chart-container {
+        flex-grow: 1; display: flex; flex-direction: column; align-items: center;
+        justify-content: center; padding: 10px 0; min-height: 200px;
+    }
+    .pie-chart-svg {
+        width: 100%; max-width: 200px; height: 100%; max-height: 200px;
+        transform-origin: center;
+    }
+    .pie-segment { cursor: pointer; transition: opacity 0.3s, transform 0.3s; }
+    .pie-segment:hover { opacity: 0.8; transform: scale(1.05); }
+    .pie-legend {
+        list-style: none; padding: 0; margin-top: 20px; display: flex;
+        flex-wrap: wrap; gap: 12px 20px; font-size: 13px;
+    }
+    .legend-item { display: flex; align-items: center; color: var(--text-main); }
+    .legend-color { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 8px; }
+    .legend-percentage { color: var(--text-muted); margin-left: 5px; font-weight: 600; }
+
+    /* Profile */
+    .profile-input-group { margin-bottom: 24px; }
+    .profile-label { display: block; color: var(--text-muted); font-size: 13px; margin-bottom: 6px; }
+    .category-tabs { 
+        display: flex; background: rgba(26, 26, 26, 0.8); 
+        padding: 3px; border-radius: 99px; margin-bottom: 15px; border: 1px solid var(--card-border); transition: background-color 0.3s, border-color 0.3s; 
+    }
+    .light-theme .category-tabs { background: rgba(241, 245, 249, 0.8); border-color: #cbd5e1; }
+    .category-tab {
+        flex: 1; padding: 8px 10px; border-radius: 99px; border: none; background: transparent;
+        color: var(--text-muted); cursor: pointer; font-weight: 500; font-size: 13px; transition: all 0.3s ease; text-align: center;
+    }
+    .category-tab.active { 
+        background: var(--logo-accent); 
+        color: var(--bg-darker); 
+        box-shadow: 0 2px 8px rgba(250, 204, 21, 0.3); 
+    }
+    .light-theme .category-tab.active { color: var(--bg-darker); background: var(--logo-accent); } 
+    .category-tab:not(.active):hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+    .light-theme .category-tab:not(.active):hover { color: var(--text-main); background: rgba(148, 163, 184, 0.1); }
+    .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; min-height: 100px; }
+    .role-check {
+        display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px;
+        background: rgba(26, 26, 26, 0.4); 
+        border: 1px solid var(--card-border); cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .light-theme .role-check { background: rgba(148, 163, 184, 0.1); border-color: #cbd5e1; }
+    .role-check.checked { border-color: var(--success); background: rgba(74, 222, 128, 0.1); box-shadow: 0 0 10px rgba(74, 222, 128, 0.2); }
+    .role-check.disabled { opacity: 0.5; cursor: not-allowed; }
+    .role-check input { position: absolute; width: 100%; height: 100%; top: 0; left: 0; margin: 0; opacity: 0; cursor: pointer; }
+    .role-check span { pointer-events: none; }
+    .skill-count { color: var(--danger); font-size: 12px; margin-top: 5px; }
+    
+    /* Bank Details Card Specific Styles */
+    .bank-details-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+    }
+    .bank-details-grid .field { margin-bottom: 0; }
+    .bank-status {
+        padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600;
+        margin-top: 10px;
+    }
+    .bank-status.pending { background: rgba(249, 115, 22, 0.15); color: var(--warning); border: 1px solid var(--warning); }
+    .bank-status.verified { background: rgba(74, 222, 128, 0.15); color: var(--success); border: 1px solid var(--success); }
+    .bank-status.missing { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+    
+
+    /* Other Components */
+    .file-upload-wrapper { position: relative; display: block; }
+    .file-upload-input { opacity: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; cursor: pointer; z-index: 10; }
+    .referral-box {
+        display: flex; align-items: center; justify-content: space-between; 
+        background: rgba(250, 204, 21, 0.1);
+        border: 1px solid var(--logo-accent); padding: 12px; border-radius: 12px; margin-top: 10px; margin-bottom: 20px; transition: background-color 0.3s, border-color 0.3s;
+    }
+    .light-theme .referral-box { 
+        background: rgba(250, 204, 21, 0.1); border-color: var(--logo-accent);
+    }
+    .referral-code { font-size: 20px; font-weight: 700; letter-spacing: 2px; color: var(--logo-accent); }
+    
+    .toast {
+      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+      background: rgba(0, 0, 0, 0.95); 
+      border: 1px solid var(--card-border); color: white;
+      padding: 12px 24px; border-radius: 99px; backdrop-filter: blur(8px); box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+      display: flex; align-items: center; gap: 10px; opacity: 0; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .toast.error { border-color: var(--danger); }
+    .toast.error i { color: var(--danger); }
+    .toast i { color: var(--success); font-size: 20px; }
+    .coin { 
+        position: fixed; top: -50px; font-size: 24px; animation: fall linear forwards; z-index: 2000; 
+        filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5)); 
+    }
+    @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+    .setting-group { 
+        margin-bottom: 30px; padding: 15px; border-radius: 12px; background: rgba(26, 26, 26, 0.8); 
+        transition: background-color 0.3s; 
+    }
+    .light-theme .setting-group { background: rgba(148, 163, 184, 0.1); }
+    .setting-group h4 { font-size: 16px; font-weight: 600; color: var(--text-main); margin-bottom: 15px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px; }
+    .setting-item { 
+        display: flex; justify-content: space-between; align-items: center; padding: 10px 0; 
+        border-bottom: 1px solid rgba(255,255,255,0.05); 
+    }
+    .light-theme .setting-item { border-bottom: 1px solid rgba(0,0,0,0.1); }
+    .setting-item:last-child { border-bottom: none; }
+    .btn-logout {
+        width: auto; background: none; border: none; color: var(--danger);
+        font-weight: 600; cursor: pointer; padding: 5px 0; transition: color 0.2s;
+    }
+    .btn-logout:hover { color: #ff7f7f; }
+
+    .freeze-alert {
+        padding: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid var(--danger);
+        border-radius: 12px; color: #fca5a5; font-size: 13px; margin-bottom: 20px; display: none; align-items: center; gap: 10px; 
+    }
+    .freeze-alert.visible { display: flex; animation: shake 0.5s ease; }
+    
+    .suspension-alert {
+        background: rgba(249, 115, 22, 0.15); 
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+    
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px); z-index: 999; display: none; align-items: center; justify-content: center;
+    }
+    .modal-content {
+        background: var(--bg-dark); 
+        padding: 30px; border-radius: var(--radius-xl); max-width: 600px; width: 90%;
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.8); animation: popIn 0.4s ease-out; 
+        border: 1px solid var(--logo-accent); max-height: 90vh; overflow-y: auto;
+    }
+    .modal-content h3 { margin-bottom: 10px; color: var(--logo-accent); }
+    .modal-content p { color: var(--text-muted); margin-bottom: 20px; font-size: 14px; }
+    .file-upload-box { border: 2px dashed var(--card-border); padding: 20px; text-align: center; border-radius: 12px; color: var(--text-muted); cursor: pointer; transition: border-color 0.2s; position: relative; }
+    .file-upload-box:hover { border-color: var(--logo-accent); }
+
+    /* Wallet Card Specific Styles - START */
+    .wallet-summary-card {
+        display: flex;
+        flex-direction: column;
+    }
+    .wallet-net-display {
+        text-align: center;
+        padding: 10px 0 20px 0;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .light-theme .wallet-net-display {
+        border-bottom: 1px solid rgba(0,0,0,0.1);
+    }
+    .wallet-net-label {
+        font-size: 14px; 
+        color: var(--text-muted); 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 5px;
+    }
+    .wallet-net-val {
+        font-size: 40px;
+        font-weight: 800;
+        color: var(--success);
+        line-height: 1.1;
+        filter: drop-shadow(0 0 5px rgba(74, 222, 128, 0.3));
+    }
+    .wallet-details-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        #app-screen { grid-template-columns: 1fr; grid-template-rows: auto 1fr; padding: 16px; gap: 16px; }
+        .sidebar { flex-direction: row; height: auto; align-items: center; padding: 12px 20px; overflow-x: auto; justify-content: space-between; }
+        .sidebar-logo { margin-bottom: 0; }
+        .logo-text { display: none; }
+        .nav-list { flex-direction: row; gap: 4px; }
+        .nav-item { flex-direction: column; gap: 4px; padding: 8px 12px; font-size: 11px; border-radius: 8px; border-left: none; }
+        .nav-item.active { border-bottom: 2px solid var(--logo-accent); border-left: none; background: rgba(255,255,255,0.05); }
+        .nav-item i { font-size: 22px; margin-bottom: 2px; }
+        .nav-item span { display: block; }
+        .main-content { padding: 20px; }
+        .dashboard-grid, .analytics-grid { grid-template-columns: 1fr; } 
+        .overview-column-stack { gap: 16px; } 
+        .bank-details-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+        .stats-row { grid-template-columns: 1fr; }
+        .job-details { grid-template-columns: 1fr; }
+        .header { flex-direction: column; align-items: flex-start; gap: 16px; }
+        .toggle-wrapper { width: 100%; justify-content: space-between; }
+        .nav-item span { display: none; }
+        .chart-container { height: 150px; }
+        .auth-card { padding: 30px 20px; }
+        .role-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body class="dark-theme">
+
+  <audio id="registerSound">
+      <source src="cash-register-purchase-87313.mp3" type="audio/mpeg">
+      Your browser does not support the audio element.
+  </audio>
+
+  <div id="splash-screen">
+      <div class="logo-animation-container">
+          <span class="logo-char" id="sc-w">W</span>
+          <span class="logo-char" id="sc-o">o</span>
+          <span class="logo-char" id="sc-r">r</span>
+          <span class="logo-char" id="sc-k">k</span>
+          <span class="logo-char" id="sc-e">e</span>
+          <span class="logo-char" id="sc-r2">r</span>
+          <span class="logo-char logo-accent-char" id="sc-h">H</span>
+          <span class="logo-char logo-accent-char" id="sc-u">u</span>
+          <span class="logo-char logo-accent-char" id="sc-b">b</span>
+      </div>
+      <div id="splash-text">Constructing...</div>
+  </div>
+
+  <div id="auth-screen">
+    <div class="auth-lang-switch">
+        <select id="auth-language-select" class="auth-lang-select" onchange="updateLanguage(this.value)">
+            <option value="en">English (EN)</option>
+            <option value="hi">Hindi (HI)</option>
+            <option value="ta">Tamil (TA)</option>
+        </select>
+    </div>
+
+    <div class="glass auth-card">
+      <div class="brand-header">
+        <i class="ph ph-wrench brand-icon"></i>
+        <div class="auth-title">Worker Hub</div>
+        <div class="auth-subtitle" data-i18n="auth_subtitle">Professional dashboard for pros</div>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" data-i18n="tab_login">Login</button>
+        <button class="auth-tab" id="tab-signup" data-i18n="tab_signup">Sign Up</button>
+      </div>
+
+      <div id="login-form">
+        <div class="field">
+          <input type="tel" id="login-phone" placeholder="Mobile Number" data-i18n-placeholder="placeholder_mobile" inputmode="numeric" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+        </div>
+        <div class="field">
+          <input type="password" id="login-password" placeholder="Password" data-i18n-placeholder="placeholder_password" />
+        </div>
+      </div>
+
+      <div id="signup-form" class="hidden">
+        <div class="field">
+          <input type="text" id="signup-name" placeholder="Full Name" data-i18n-placeholder="placeholder_name" />
+        </div>
+        <div class="field">
+          <input type="tel" id="signup-phone" placeholder="Mobile Number" data-i18n-placeholder="placeholder_mobile" inputmode="numeric" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '');" />
+        </div>
+        <div class="field">
+          <input type="password" id="signup-password" placeholder="Set Password" data-i18n-placeholder="placeholder_set_password" />
+        </div>
+        
+        <div class="field">
+            <select id="signup-state" class="field select"></select>
+        </div>
+        <div class="field">
+            <select id="signup-city" class="field select" disabled></select>
+        </div>
+        <div class="field">
+            <select id="signup-area" class="field select" disabled></select>
+        </div>
+        <div class="field" style="margin-top: -10px;">
+            <button class="btn btn-secondary btn-small btn-bounce" id="btn-use-current-location-signup" style="width: 100%; justify-content: center;"><i class="ph-bold ph-map-pin"></i> <span data-i18n="use_curr_loc">Use Current Location</span></button>
+        </div>
+        
+        <div class="field">
+            <input type="text" id="signup-referral" placeholder="Referral Code (Optional)" data-i18n-placeholder="placeholder_referral_code" />
+        </div>
+      </div>
+
+      <button class="btn-primary btn-bounce" id="auth-btn">
+        <span id="auth-btn-text" data-i18n="auth_btn_login">Enter Dashboard</span>
+        <i class="ph-bold ph-arrow-right"></i>
+      </button>
+      
+      <div style="text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-muted);">
+        <i class="ph-fill ph-shield-check" style="vertical-align: middle;"></i> <span data-i18n="secure_msg">Secure & Verified Platform</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-screen" class="hidden">
+    <aside class="glass sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-box" id="app-logo">
+            <i class="ph-bold ph-wrench"></i>
+        </div>
+        <div class="logo-text">
+            <h3 class="logo-title" id="sidebar-logo-title">Worker Hub</h3>
+            <span style="font-size: 12px; color: var(--text-muted);">Partner App</span>
+        </div>
+      </div>
+
+      <nav class="nav-list">
+        <button class="nav-item active btn-bounce" data-target="overview">
+            <i class="ph ph-squares-four"></i>
+            <span data-i18n="nav_overview">Overview</span>
+        </button>
+        <button class="nav-item btn-bounce" data-target="jobs" id="jobs-nav-item">
+            <i class="ph ph-briefcase"></i>
+            <span data-i18n="nav_jobs">Jobs</span>
+        </button>
+        <button class="nav-item btn-bounce" data-target="wallet">
+            <i class="ph ph-wallet"></i>
+            <span data-i18n="nav_wallet">Wallet</span>
+        </button>
+        <button class="nav-item btn-bounce" data-target="analytics">
+            <i class="ph ph-chart-bar"></i>
+            <span data-i18n="nav_analytics">Analytics</span>
+        </button>
+        <button class="nav-item btn-bounce" data-target="profile">
+            <i class="ph ph-user"></i>
+            <span data-i18n="nav_profile">Profile</span>
+        </button>
+        <button class="nav-item btn-bounce" data-target="settings">
+            <i class="ph ph-gear"></i>
+            <span data-i18n="nav_settings">Settings</span>
+        </button>
+      </nav>
+      
+      <div style="margin-top: auto; padding-top: 20px;" class="logo-text">
+          <div style="padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+              <div style="font-size: 12px; color: var(--text-muted);" data-i18n="monthly_goal">Monthly Goal</div>
+              <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 4px; margin-top: 6px;">
+                  <div id="goal-progress" style="width: 75%; background: var(--success); height: 100%; border-radius: 4px;"></div>
+              </div>
+          </div>
+      </div>
+    </aside>
+
+    <main class="glass main-content">
+      <header class="header">
+        <div class="welcome-text">
+          <h2><span data-i18n="welcome">Hello, </span><span id="user-name" style="color: var(--logo-accent);">Pro</span> 👋</h2>
+          <p><span data-i18n="location">Location: </span><span id="user-location">Unknown</span></p>
+        </div>
+        
+        <div style="display: flex; gap: 20px; align-items: center;">
+            <div class="theme-toggle btn-bounce" id="header-theme-toggle">
+                <div class="toggle-slider"></div>
+                <i class="ph-fill ph-moon icon-moon"></i>
+                <i class="ph-fill ph-sun icon-sun"></i>
+            </div>
+        
+            <div class="toggle-wrapper" id="status-wrapper">
+                <span id="status-text" class="toggle-label" data-i18n="status_online">You are Online</span>
+                <div class="toggle-switch active" id="status-toggle"></div>
+            </div>
+        </div>
+      </header>
+      
+      <div id="freeze-msg" class="freeze-alert">
+          <i class="ph-fill ph-lock-key"></i>
+          <span><b>Account Freezed:</b> Platform fees exceeded limit. Pay dues to go Online.</span>
+      </div>
+      
+      <div id="suspension-msg" class="freeze-alert suspension-alert">
+          <i class="ph-fill ph-clock"></i>
+          <span id="suspension-msg-text"><b>Account Suspended:</b> Too many declines. Cannot go online.</span>
+      </div>
+
+      <div class="scroll-container">
+        
+        <section id="overview" class="section visible">
+            <div class="dashboard-grid">
+                <div class="overview-column-stack">
+                    <div class="glass card">
+                        <div class="card-header">
+                            <div class="card-title"><i class="ph-fill ph-lightning"></i> <span data-i18n="todays_performance">Today's Performance</span></div>
+                            <span class="tag live">LIVE</span>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <div class="stat-label" data-i18n="earnings">Earnings</div>
+                                <div class="stat-val" id="ov-earnings">₹0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label" data-i18n="jobs_done">Jobs Done</div>
+                                <div class="stat-val" id="ov-jobs">0</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-label" data-i18n="login_time">Login Time</div>
+                                <div class="stat-val" id="ov-login-time" style="font-size: 18px; margin-top: 10px;">0h 0m</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass card" style="flex: 1;">
+                        <div class="card-header">
+                            <div class="card-title"><i class="ph-fill ph-bell-ringing"></i> <span data-i18n="recent_activity">Recent Activity</span></div>
+                        </div>
+                        <div style="color: var(--text-muted); font-size: 14px; text-align: center; padding: 20px;" data-i18n="check_jobs_msg">
+                            Check the Jobs tab for new requests.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="overview-column-stack">
+                    <div class="glass card ov-card-wallet" style="flex: 1;">
+                        <div class="card-header">
+                            <div class="card-title" style="font-size: 16px;" data-i18n="wallet_balance">Wallet Balance</div>
+                            <i class="ph-fill ph-wallet" style="font-size: 24px; color: var(--logo-accent);"></i>
+                        </div>
+                        <div style="font-size: 32px; font-weight: 800; color: white; margin-bottom: 8px;">
+                            <span id="ov-balance">₹0</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted);" data-i18n="available_payout">Available for payout</div>
+                        <button class="btn btn-outline" id="btn-withdraw-now-overview" style="width: 100%; margin-top: 16px; justify-content: center; font-size: 12px;" data-i18n="withdraw_now">
+                            Withdraw Now
+                        </button>
+                    </div>
+
+                    <div class="glass card ov-card-incoming" style="flex: 1;">
+                        <div class="card-header">
+                            <div class="card-title" style="font-size: 16px;"><i class="ph-fill ph-briefcase-simple" style="color: var(--success); background: rgba(74, 222, 128, 0.1);"></i> <span data-i18n="incoming_jobs_title">Incoming Jobs</span></div>
+                            <i class="ph-fill ph-siren" style="font-size: 24px; color: var(--warning);"></i>
+                        </div>
+                        <div style="font-size: 32px; font-weight: 800; color: var(--warning); margin-bottom: 8px;">
+                            <span id="ov-incoming-count">2</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-muted);" data-i18n="potential_earnings">Potential Earnings (Next 1hr)</div>
+                        <div style="font-size: 20px; font-weight: 700; color: var(--success); margin-top: 8px;">
+                            <span id="ov-potential-earnings">~₹900</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overview-column-stack">
+                    <div class="glass card level-card ov-card-profile" style="flex: 1;">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <i class="ph-fill ph-user-circle-gear" style="color: var(--pie-color-1); background: rgba(59, 130, 246, 0.1);"></i> 
+                                <span data-i18n="worker_profile_title">Worker Profile</span>
+                            </div>
+                        </div>
+                        <div style="flex-grow: 1; display: flex; flex-direction: column; justify-content: space-evenly; width: 100%;">
+                            <div class="level-stat" style="background: rgba(250, 204, 21, 0.05); border: 1px solid rgba(250, 204, 21, 0.3);">
+                                <p style="font-size: 12px; color: var(--text-muted);" data-i18n="client_rating_title">Client Rating</p>
+                                <div id="worker-rating-stars" class="rating-stars"></div>
+                                <div style="display: flex; justify-content: center; align-items: baseline; gap: 8px; margin-top: 5px;">
+                                    <span id="worker-rating-value" class="rating-value">0.0</span>
+                                    <p class="rating-count" id="worker-rating-count">(0 Reviews)</p>
+                                </div>
+                            </div>
+                            
+                            <div class="level-stat" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.3);">
+                                <p style="font-size: 12px; color: var(--text-muted);" data-i18n="worker_level_title">Worker Level</p>
+                                <div id="worker-level-badge" class="level-badge level-bronze" style="margin-top: 10px;">Bronze</div>
+                                <div style="margin-top: 10px;">
+                                    <p style="font-size: 12px; color: var(--text-muted);" data-i18n="jobs_completed_label">Jobs Completed:</p>
+                                    <h3 id="worker-jobs-completed" style="font-size: 20px; font-weight: 800; color: var(--text-main); margin-top: 2px;">0</h3>
+                                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 5px;" id="worker-next-level-tip" data-i18n="next_level_tip">Next level at 10 jobs!</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="jobs" class="section">
+            <div id="job-approval-message" class="card glass" style="text-align: center; padding: 40px;">
+                <i class="ph-fill ph-lock-key-open" style="font-size: 40px; color: var(--logo-accent); margin-bottom: 15px;"></i>
+                <h3 style="margin-bottom: 10px;" data-i18n="waiting_approval">Waiting for Admin Approval</h3>
+                <p style="color: var(--text-muted);"><span data-i18n="profile_review_msg">Your profile details (ID proof and skills) are under review. Once approved, jobs will start appearing here based on your location:</span> <span id="job-area-display" style="color: var(--text-main); font-weight: 600;"></span>.</p>
+            </div>
+            
+            <div id="job-offline-message" class="card glass" style="text-align: center; padding: 40px; display: none;">
+                <i class="ph-fill ph-toggle-left" style="font-size: 40px; color: var(--text-muted); margin-bottom: 15px;"></i>
+                <h3 style="margin-bottom: 10px;" data-i18n="go_online_prompt">Go Online to Receive Jobs</h3>
+                <p style="color: var(--text-muted);" data-i18n="offline_instruction">Your account is currently set to Offline. Switch the toggle in the header to start accepting new job requests in your area.</p>
+            </div>
+
+
+            <div id="incoming-job" class="card job-card incoming hidden">
+                <div class="card-header" style="align-items: flex-start;">
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="card-title">
+                            <i class="ph-fill ph-siren" style="background: rgba(250,204,21,0.2); color: var(--logo-accent);"></i>
+                            <span data-i18n="new_request">New Request</span>
+                        </div>
+                        <h3 style="font-size: 20px; margin-top: 4px;">Leaking Tap Repair</h3>
+                    </div>
+                    
+                    <div class="job-header-right">
+                        <span class="tag" style="background: var(--logo-accent); color: var(--bg-darker);" data-i18n="incoming_tag">Incoming</span>
+                        <div class="job-amount-display">
+                            ₹450
+                        </div>
+                    </div>
+                </div>
+
+                <div class="job-details">
+                    <div class="detail-item"><i class="ph-fill ph-map-pin"></i> BTM Layout, Bengaluru</div>
+                    <div class="detail-item"><i class="ph-fill ph-clock"></i> ASAP (within 30m)</div>
+                    <div class="detail-item"><i class="ph-fill ph-user"></i> Rahul Sharma</div>
+                </div>
+                <div class="btn-group" style="gap: 8px;">
+                    <button class="btn btn-success btn-bounce" id="btn-accept" style="flex: 1.5; justify-content: center;" data-i18n="accept_job">
+                        Accept Job
+                    </button>
+                    <button class="btn btn-secondary btn-bounce btn-small" onclick="mockCall()" style="flex: 1; justify-content: center;">
+                        <i class="ph-bold ph-phone"></i> <span data-i18n="call_btn">Call</span>
+                    </button>
+                    <button class="btn btn-secondary btn-bounce btn-small" onclick="mockChat()" style="flex: 1; justify-content: center;">
+                        <i class="ph-bold ph-chats"></i> <span data-i18n="chat_btn">Chat</span>
+                    </button>
+                    <button class="btn btn-outline btn-bounce" id="btn-reject" style="flex: 1.5; justify-content: center; border-color: var(--danger); color: var(--danger);" data-i18n="decline_job">
+                        Decline
+                    </button>
+                </div>
+            </div>
+
+            <div id="active-job-area" class="hidden">
+                 <div class="card job-card" style="border-color: var(--warning);">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="ph-fill ph-play-circle" style="color: var(--warning); background: rgba(249, 115, 22, 0.1);"></i>
+                            <span data-i18n="job_active">Job in Progress</span>
+                        </div>
+                        <span class="tag" style="background: var(--warning); color: var(--bg-darker);" data-i18n="active_tag">ACTIVE</span>
+                    </div>
+                    <div style="text-align: center; padding: 20px;">
+                        <h2 style="color: var(--accent); font-size: 32px; margin-bottom: 10px;">00:45</h2>
+                        <p style="color: var(--text-muted);" data-i18n="time_elapsed">Time Elapsed</p>
+                    </div>
+                    <div class="btn-group">
+                        <a href="https://maps.google.com/maps?q=BTM+Layout+Bengaluru" target="_blank" class="btn btn-navigate btn-bounce" style="flex: 1; justify-content: center;">
+                            <i class="ph-bold ph-compass"></i> <span data-i18n="navigate_site">Navigate to Site</span>
+                        </a>
+                        <button class="btn btn-success btn-bounce" id="btn-complete" style="flex: 1; justify-content: center;">
+                            <i class="ph-bold ph-check"></i> <span data-i18n="mark_completed">Mark Completed</span>
+                        </button>
+                    </div>
+                 </div>
+            </div>
+
+            <div class="card glass">
+                <div class="card-header">
+                    <div class="card-title" style="font-size: 16px;" data-i18n="past_jobs">Past Jobs</div>
+                </div>
+                <table id="past-jobs-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 25%;" data-i18n="th_job_id">Job ID</th>
+                            <th style="width: 35%;" data-i18n="th_service">Service</th>
+                            <th style="width: 25%;" data-i18n="th_date">Date</th>
+                            <th style="width: 15%;" class="amount-col" data-i18n="th_amount">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="past-jobs-list">
+                        <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;" data-i18n="no_past_jobs">No past jobs this session.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="wallet" class="section">
+            <div class="dashboard-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="glass card wallet-summary-card ov-card-wallet">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ph-fill ph-wallet"></i> <span data-i18n="summary">Summary</span></div>
+                    </div>
+                    
+                    <div class="wallet-net-display">
+                        <p class="wallet-net-label" data-i18n="net_profit">Net Profit <i class="ph-fill ph-arrow-up-right" style="font-size: 18px; color: var(--success);"></i></p>
+                        <div id="wallet-net" class="wallet-net-val">₹0</div>
+                    </div>
+                    
+                    <div class="wallet-details-row">
+                        <div>
+                            <div style="font-size: 12px; color: var(--text-muted);" data-i18n="total_earned">Total Earned</div>
+                            <div style="font-size: 18px; font-weight: 600; color: var(--text-main);" id="wallet-total">₹0</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 12px; color: var(--text-muted);" data-i18n="platform_fees">Platform Fees (10%)</div>
+                            <div style="font-size: 18px; font-weight: 600; color: var(--danger);" id="wallet-fees">₹0</div>
+                        </div>
+                    </div>
+                    
+                    <div id="pay-dues-box" class="hidden" style="margin-top: 12px; padding: 10px; background: rgba(239,68,68,0.1); border-radius: 8px; border: 1px solid var(--danger);">
+                        <div style="font-size: 12px; color: #fca5a5; margin-bottom: 8px;" data-i18n="limit_reached_msg">Limit Reached! Pay now to unfreeze.</div>
+                        <button id="btn-pay-dues" class="btn btn-warning btn-bounce" style="width: 100%; justify-content: center; font-size: 12px; padding: 8px;">
+                            <i class="ph-bold ph-lightning"></i> <span data-i18n="pay_fees">Pay Fees & Unlock</span>
+                        </button>
+                    </div>
+
+                    <button class="btn-primary btn-bounce" id="btn-withdraw-now-wallet" style="width: 100%; margin-top: 20px; justify-content: center;" data-i18n="withdraw_now">
+                        Withdraw Now
+                    </button>
+                    
+                </div>
+                
+                <div class="glass card">
+                     <div class="card-header">
+                        <div class="card-title"><i class="ph-fill ph-clock-counter-clockwise"></i> <span data-i18n="history">History</span></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th data-i18n="th_service">Service</th>
+                                <th data-i18n="th_date">Date</th>
+                                <th class="amount-col" data-i18n="th_amount">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tx-table-body">
+                            <tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 20px;" data-i18n="no_transactions">No transactions yet.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="card glass" style="margin-top: 24px;">
+                <div class="card-header">
+                    <div class="card-title"><i class="ph-fill ph-bank"></i> Withdrawal History</div>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Reference ID</th>
+                            <th>Amount</th>
+                            <th class="amount-col">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="withdrawal-history-body">
+                        <tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">No withdrawals yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="analytics" class="section">
+             <div class="analytics-grid">
+                <div class="card analytics-card">
+                    <div class="card-header">
+                        <div class="card-title"><i class="ph-fill ph-circles-three-fill" style="color: var(--pie-color-1); background: rgba(59, 130, 246, 0.1);"></i> <span data-i18n="job_breakdown">Today's Earnings Breakdown</span></div>
+                    </div>
+                    <div class="inner-chart-wrapper">
+                        <div class="pie-chart-container">
+                            <div id="pie-chart-area"></div>
+                            <ul class="pie-legend" id="pie-legend-list"></ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card analytics-card"> 
+                    <div class="card-header">
+                        <div class="card-title"><i id="chart-icon" class="ph-fill ph-trend-up"></i> <span id="chart-title" data-i18n="earnings_growth">Earnings Growth (Bar)</span></div>
+                        <div class="analytics-controls">
+                            <div class="analytics-chip active" data-range="weekly" data-i18n="range_weekly">Weekly</div>
+                            <div class="analytics-chip" data-range="1m" data-i18n="range_1m">1 Month</div>
+                            <div class="analytics-chip" data-range="6m" data-i18n="range_6m">6M</div>
+                            <div class="analytics-chip" data-range="1y" data-i18n="range_1y">1Y</div>
+                            <div class="analytics-chip" data-range="2y" data-i18n="range_2y">2Y</div>
+                            <div class="analytics-chip" data-range="5y" data-i18n="range_5y">5Y</div>
+                        </div>
+                    </div>
+
+                    <div class="flip-chart-container" id="earnings-flip-container">
+                        <div class="flip-card-inner" id="earnings-flip-inner">
+                            <div class="flip-card-front">
+                                <div class="inner-chart-wrapper">
+                                    <div class="chart-container" id="bar-chart-area"></div>
+                                </div>
+                            </div>
+                            <div class="flip-card-back">
+                                <div class="inner-chart-wrapper">
+                                    <div class="line-chart-container" id="line-chart-area"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="profile" class="section">
+            <div class="glass card" style="max-width: 700px; margin: 0 auto;">
+                <div class="card-header">
+                    <div class="card-title"><i class="ph-fill ph-user-gear"></i> <span data-i18n="my_profile">My Profile</span></div>
+                    <button class="btn btn-outline btn-small btn-bounce" id="btn-edit-profile" data-i18n="edit_profile">
+                        <i class="ph ph-pencil-simple"></i> Edit
+                    </button>
+                </div>
+                <div style="display: flex; gap: 20px; margin-bottom: 30px; align-items: center;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--logo-accent); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--bg-darker);">
+                        P
+                    </div>
+                    <div>
+                        <h3 id="profile-name-display">Pro Worker</h3>
+                        <p style="color: var(--text-muted); font-size: 14px;"><span data-i18n="status_label">Status:</span> <span id="profile-status-text">Pending Approval</span></p>
+                    </div>
+                </div>
+                
+                <div class="profile-input-group">
+                    <label class="profile-label" data-i18n="working_area">Working Area</label>
+                    <div style="font-weight: 600;" id="profile-location-display"></div>
+                </div>
+                
+                <div class="profile-input-group">
+                    <label class="profile-label" data-i18n="skills_label">Skills (Max 3)</label>
+                    <div id="profile-skills-input-area">
+                        <div class="category-tabs" id="profile-category-tabs"></div>
+                        <div class="role-grid" id="skill-selection-grid"></div>
+                        <div class="skill-count" id="skill-count-message">0 of 3 selected</div>
+                    </div>
+                    <div id="profile-skills-display" class="hidden">
+                        <p id="profile-skills-list" style="font-weight: 600; color: var(--success);"></p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 5px;" data-i18n="skills_lock_msg">Skills can only be modified via admin request.</p>
+                    </div>
+                </div>
+
+                <div class="profile-input-group">
+                    <label class="profile-label" style="font-size: 16px; color: var(--logo-accent);">
+                        <i class="ph-fill ph-bank" style="vertical-align: sub;"></i> <span data-i18n="bank_details_title">Bank Account Details</span>
+                    </label>
+                    <p id="profile-bank-status" class="bank-status missing" data-i18n="bank_status_missing">Missing Details</p>
+
+                    <div id="profile-bank-details-display" class="hidden">
+                        <div style="font-size: 14px; color: var(--text-muted); margin-top: 15px;">
+                            <p style="margin-bottom: 5px;">Bank: <span id="bank-name-display" style="color: var(--text-main); font-weight: 600;">HDFC Bank</span></p>
+                            <p style="margin-bottom: 5px;">A/C No: <span id="bank-account-display" style="color: var(--text-main); font-weight: 600;">*** *** *54321</span></p>
+                            <p style="margin-bottom: 5px;">IFSC: <span id="bank-ifsc-display" style="color: var(--text-main); font-weight: 600;">HDFC0001234</span></p>
+                        </div>
+                        <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;" data-i18n="bank_lock_msg">Contact support to modify bank details.</p>
+                    </div>
+
+                    <button class="btn btn-primary btn-bounce btn-small" id="btn-add-bank-details" style="width: auto; margin-top: 15px;">
+                        <i class="ph-fill ph-pencil-simple"></i> <span data-i18n="add_bank_details">Add Bank Details</span>
+                    </button>
+                </div>
+                
+                <div class="profile-input-group">
+                    <label class="profile-label" style="font-size: 16px; color: var(--logo-accent);">
+                        <i class="ph-fill ph-gift" style="vertical-align: sub;"></i> <span data-i18n="refer_earn">Refer & Earn (₹50/Referral)</span>
+                    </label>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;" data-i18n="refer_desc">Share your unique code with friends. You both get ₹50 when they complete their first job!</p>
+                    <div class="referral-box">
+                        <span class="referral-code" id="referral-code-display">WORKER-XYZ123</span>
+                        <button class="btn btn-outline btn-small btn-bounce" onclick="copyReferralCode()"><i class="ph ph-copy"></i> <span data-i18n="copy_btn">Copy</span></button>
+                    </div>
+                    <button class="btn btn-success btn-bounce" id="btn-share-referral" style="width: 100%; justify-content: center;">
+                        <i class="ph-bold ph-whatsapp-logo"></i> <span data-i18n="send_referral">Send Referral Link</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <section id="settings" class="section">
+            <div class="glass card" style="max-width: 600px; margin: 0 auto;">
+                <div class="card-header">
+                    <div class="card-title"><i class="ph-fill ph-gear"></i> <span data-i18n="app_settings">Application Settings</span></div>
+                </div>
+                <div class="setting-group">
+                    <h4 data-i18n="theme_appearance">Theme & Appearance</h4>
+                    
+                    <div class="setting-item">
+                        <span style="font-weight: 500;" data-i18n="app_theme">App Theme</span>
+                        <div class="theme-toggle btn-bounce" id="theme-toggle">
+                            <div class="toggle-slider"></div>
+                            <i class="ph-fill ph-moon icon-moon"></i>
+                            <i class="ph-fill ph-sun icon-sun"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <span style="font-weight: 500;" data-i18n="display_language">Display Language</span>
+                        <div class="lang-toggle-group" id="language-toggle-group">
+                            <button class="lang-toggle-btn btn-bounce active" data-lang="en">EN</button>
+                            <button class="lang-toggle-btn btn-bounce" data-lang="hi">HI</button>
+                            <button class="lang-toggle-btn btn-bounce" data-lang="ta">TA</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h4 data-i18n="notifications">Notifications</h4>
+                    <div class="setting-item">
+                        <span style="font-weight: 500;" data-i18n="job_alerts">New Job Alerts</span>
+                        <div class="toggle-switch active" id="job-alerts-toggle" style="margin: 0;"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span style="font-weight: 500;" data-i18n="referral_rewards">Referral Rewards</span>
+                        <div class="toggle-switch active" id="referral-toggle" style="margin: 0;"></div>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <h4 data-i18n="account">Account</h4>
+                    <div class="setting-item">
+                        <span style="font-weight: 500;" data-i18n="logout">Logout</span>
+                        <button class="btn-logout btn-bounce" id="btn-logout" onclick="handleLogout()">
+                            <i class="ph-bold ph-sign-out"></i> Logout
+                        </button>
+                    </div>
+                    <button class="btn btn-warning btn-small btn-bounce" onclick="showToast('Mock action: Resetting all data...');">
+                        Reset App Data
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+      </div>
+    </main>
+  </div>
+
+  <div id="withdrawal-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 style="color: var(--logo-accent);"><i class="ph-fill ph-hand-coins"></i> Withdraw Funds</h3>
+        <p>Available balance: <b id="modal-current-bal">₹0</b></p>
+        <div class="field">
+            <input type="number" id="withdraw-amount-input" placeholder="Enter Amount (₹)" />
+        </div>
+        <button class="btn-primary btn-bounce" id="btn-confirm-withdrawal">Confirm Withdrawal</button>
+        <button class="btn-secondary btn-bounce" id="btn-close-withdrawal" style="width: 100%; margin-top: 10px;">Cancel</button>
+    </div>
+  </div>
+  
+  <div id="profile-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="color: var(--logo-accent);"><i class="ph-fill ph-warning"></i> Action Required</h3>
+        <p>To start receiving jobs, please complete your profile with your location, skills, ID proof, and bank details for verification.</p>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="working_area">Working Area (State, City, Area)</label>
+            <div class="field">
+                <select id="modal-state" class="field select"></select>
+            </div>
+            <div class="field">
+                <select id="modal-city" class="field select" disabled></select>
+            </div>
+            <div class="field">
+                <select id="modal-area" class="field select" disabled></select>
+            </div>
+            <div class="field" style="margin-top: -10px;">
+                <button class="btn btn-secondary btn-small btn-bounce" id="btn-use-current-location-modal" style="width: 100%; justify-content: center;"><i class="ph-bold ph-map-pin"></i> Use Current Location</button>
+            </div>
+        </div>
+
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="skills_label">Select Skills (Max 3)</label>
+            <div class="category-tabs" id="modal-category-tabs"></div>
+             <div class="role-grid" id="modal-skill-selection-grid"></div>
+            <div class="skill-count" id="modal-skill-count-message">0 of 3 selected</div>
+        </div>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="id_proof_type">ID Proof Type</label>
+            <select id="modal-id-type" class="field select">
+                <option value="Aadhaar">Aadhaar Card</option>
+                <option value="PAN">PAN Card</option>
+                <option value="Passport">Passport</option>
+            </select>
+        </div>
+
+        <div class="profile-input-group file-upload-wrapper">
+            <label class="profile-label" data-i18n="upload_id_proof">Upload ID Proof</label>
+            <div class="file-upload-box" id="modal-id-proof-box">
+                <i class="ph ph-cloud-arrow-up" style="font-size: 24px;"></i>
+                <p id="modal-id-proof-status" style="font-size: 12px; margin-top: 5px;">Click to Upload Image (max 2MB)</p>
+            </div>
+            <input type="file" id="modal-id-file-input" class="file-upload-input" data-file-type="id" accept="image/*" />
+        </div>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="bank_details_title">Bank Account Details (For Payout)</label>
+            <div class="bank-details-grid">
+                <div class="field">
+                    <select id="modal-bank-name" class="field select"></select>
+                </div>
+                <div class="field">
+                    <select id="modal-bank-branch" class="field select" disabled></select>
+                </div>
+                <div class="field">
+                    <input type="text" id="modal-bank-account" placeholder="Account Number" data-i18n-placeholder="placeholder_bank_account" />
+                </div>
+                <div class="field">
+                    <input type="text" id="modal-bank-ifsc" placeholder="IFSC Code (Auto-filled)" data-i18n-placeholder="placeholder_bank_ifsc" readonly />
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-input-group file-upload-wrapper">
+            <label class="profile-label" data-i18n="upload_passbook">Upload Passbook Photo (or Cheque)</label>
+            <div class="file-upload-box" id="modal-passbook-box">
+                <i class="ph ph-credit-card" style="font-size: 24px;"></i>
+                <p id="modal-passbook-status" style="font-size: 12px; margin-top: 5px;">Click to Upload Image (max 2MB)</p>
+            </div>
+            <input type="file" id="modal-passbook-file-input" class="file-upload-input" data-file-type="passbook" accept="image/*" />
+        </div>
+
+        <button class="btn btn-primary btn-bounce" id="modal-submit-profile" style="width: 100%;">
+            Submit Profile
+        </button>
+      </div>
+  </div>
+
+  <div id="bank-edit-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="color: var(--logo-accent);"><i class="ph-fill ph-bank"></i> <span data-i18n="edit_bank_details">Edit Bank Details</span></h3>
+        <p data-i18n="bank_edit_warning">You can only submit bank details once for verification. Please ensure accuracy.</p>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="bank_details_title">Bank Account Details</label>
+            <div class="bank-details-grid">
+                <div class="field">
+                    <select id="edit-bank-name" class="field select"></select>
+                </div>
+                <div class="field">
+                    <select id="edit-bank-branch" class="field select" disabled></select>
+                </div>
+                <div class="field">
+                    <input type="text" id="edit-bank-account" placeholder="Account Number" data-i18n-placeholder="placeholder_bank_account" />
+                </div>
+                <div class="field">
+                    <input type="text" id="edit-bank-ifsc" placeholder="IFSC Code (Auto-filled)" data-i18n-placeholder="placeholder_bank_ifsc" readonly />
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-input-group file-upload-wrapper">
+            <label class="profile-label" data-i18n="upload_passbook">Upload Passbook Photo (or Cheque)</label>
+            <div class="file-upload-box" id="edit-passbook-box">
+                <i class="ph ph-credit-card" style="font-size: 24px;"></i>
+                <p id="edit-passbook-status" style="font-size: 12px; margin-top: 5px;">Click to Upload Image (max 2MB)</p>
+            </div>
+            <input type="file" id="edit-passbook-file-input" class="file-upload-input" data-file-type="passbook-edit" accept="image/*" />
+        </div>
+        
+        <button class="btn btn-primary btn-bounce" id="btn-submit-bank-details" style="width: 100%;">
+            <span data-i18n="submit_bank_details">Submit Bank Details</span>
+        </button>
+        <button class="btn btn-secondary btn-bounce" id="btn-cancel-bank-details" style="width: 100%; margin-top: 10px;">
+            <span data-i18n="cancel">Cancel</span>
+        </button>
+      </div>
+  </div>
+  
+  <div id="profile-edit-modal" class="modal-overlay">
+      <div class="modal-content">
+        <h3 style="color: var(--logo-accent);"><i class="ph-fill ph-user-gear"></i> <span data-i18n="edit_profile">Edit Profile</span></h3>
+        <p data-i18n="profile_edit_warning">Update your Name and Working Area. Area changes may require re-approval.</p>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="placeholder_name">Full Name</label>
+            <div class="field">
+                <input type="text" id="edit-profile-name" placeholder="Full Name" />
+            </div>
+        </div>
+        
+        <div class="profile-input-group">
+            <label class="profile-label" data-i18n="working_area">Working Area</label>
+            <div class="field">
+                <select id="edit-state" class="field select"></select>
+            </div>
+            <div class="field">
+                <select id="edit-city" class="field select" disabled></select>
+            </div>
+            <div class="field">
+                <select id="edit-area" class="field select" disabled></select>
+            </div>
+            <div class="field" style="margin-top: -10px;">
+                <button class="btn btn-secondary btn-small btn-bounce" id="btn-use-current-location-edit" style="width: 100%; justify-content: center;"><i class="ph-bold ph-map-pin"></i> <span data-i18n="use_curr_loc">Use Current Location</span></button>
+            </div>
+        </div>
+
+        <button class="btn btn-primary btn-bounce" id="btn-submit-profile-edit" style="width: 100%;">
+            <span data-i18n="save_changes">Save Changes</span>
+        </button>
+        <button class="btn btn-secondary btn-bounce" id="btn-cancel-profile-edit" style="width: 100%; margin-top: 10px;">
+            <span data-i18n="cancel">Cancel</span>
+        </button>
+      </div>
+  </div>
+  
+  <div id="toast" class="toast">
+    <i class="ph-fill ph-check-circle"></i>
+    <span id="toast-msg">Action Completed</span>
+  </div>
+
+  <script>
+    // Audio Player Function
+    function playCashRegister() {
+        const audio = document.getElementById('registerSound');
+        audio.currentTime = 0; 
+        audio.play();
+    }
+
+    const LOCATION_DATA = {
+        'Tamil Nadu': { 'Chennai': ['Adyar', 'Kodambakkam', 'T. Nagar', 'Tambaram'], 'Coimbatore': ['Gandhipuram', 'Peelamedu', 'R.S. Puram'] },
+        'Karnataka': { 'Bengaluru': ['Whitefield', 'Koramangala', 'Indiranagar', 'Jayanagar'], 'Mysuru': ['Kuvempunagar', 'VV Mohalla'] },
+        'Maharashtra': { 'Mumbai': ['Andheri', 'Bandra', 'Colaba'] },
+        'Delhi': { 'New Delhi': ['Dwarka', 'Karol Bagh', 'Laxmi Nagar'] }
+    };
+    
+    const SKILL_CATEGORIES = {
+        'Skilled': ['Electricians', 'Plumbers', 'Carpenters', 'Welders', 'Machine Operators', 'Technicians'],
+        'Semi-Skilled': ['Packing Staff', 'Housekeeping Staff', 'Painters']
+    };
+
+    const JOB_CATEGORY_BREAKDOWN = {
+        'Morning (9a-12p)': 1200,
+        'Noon (12p-4p)': 1800,
+        'Evening (4p-8p)': 900,
+        'Night (8p-12a)': 400
+    };
+    const PIE_COLORS = {
+        'Morning (9a-12p)': 'var(--pie-color-1)',
+        'Noon (12p-4p)': 'var(--pie-color-2)',
+        'Evening (4p-8p)': 'var(--pie-color-3)',
+        'Night (8p-12a)': 'var(--pie-color-4)'
+    };
+    
+    const LEVEL_THRESHOLDS = {
+        Bronze: 0,
+        Silver: 10,
+        Gold: 50,
+        Platinum: 150
+    };
+
+    const STAR_RATING_MOCK = {
+        rating: 4.8,
+        reviews: 245
+    };
+    
+    const BANK_DATA = {
+        'HDFC Bank': {
+            'Koramangala, Bengaluru': 'HDFC0000001',
+            'T. Nagar, Chennai': 'HDFC0000002',
+            'Andheri, Mumbai': 'HDFC0000003'
+        },
+        'ICICI Bank': {
+            'Whitefield, Bengaluru': 'ICIC0000010',
+            'Adyar, Chennai': 'ICIC0000011',
+            'Colaba, Mumbai': 'ICIC0000012'
+        },
+        'State Bank of India': {
+            'Jayanagar, Bengaluru': 'SBI0000020',
+            'Gandhipuram, Coimbatore': 'SBI0000021'
+        }
+    };
+
+
+    const TRANSLATIONS = {
+        'en': {
+            'nav_overview': 'Overview', 'nav_jobs': 'Jobs', 'nav_wallet': 'Wallet', 'nav_analytics': 'Analytics',
+            'nav_profile': 'Profile', 'nav_settings': 'Settings', 'welcome': 'Hello, ', 'location': 'Location: ',
+            'status_online': 'You are Online', 'status_offline': 'You are Offline', 'todays_performance': "Today's Performance",
+            'earnings': 'Earnings', 'jobs_done': 'Jobs Done', 'login_time': 'Login Time', 'recent_activity': 'Recent Activity',
+            'wallet_balance': 'Wallet Balance', 'withdraw_now': 'Withdraw Now', 'earnings_growth': 'Earnings Growth (Bar)',
+            'earnings_trend': 'Earnings Trend (Line)', 'job_breakdown': 'Today\'s Earnings Breakdown', 
+            'my_profile': 'My Profile',
+            'app_settings': 'Application Settings', 'theme_appearance': 'Theme & Appearance', 'app_theme': 'App Theme',
+            'display_language': 'Display Language', 'notifications': 'Notifications', 'job_alerts': 'New Job Alerts',
+            'referral_rewards': 'Referral Rewards', 'account': 'Account', 'monthly_goal': 'Monthly Goal',
+            'available_payout': 'Available for payout', 'check_jobs_msg': 'Check the Jobs tab for new requests.',
+            'incoming_jobs_title': 'Incoming Jobs', 'potential_earnings': 'Potential Earnings (Next 1hr)',
+            'waiting_approval': 'Waiting for Admin Approval',
+            'profile_review_msg': 'Your profile details (ID proof and skills) are under review. Once approved, jobs will start appearing here based on your location:',
+            'new_request': 'New Request', 'incoming_tag': 'Incoming', 'est_earnings': '₹450 Est. Earnings',
+            'accept_job': 'Accept Job', 'decline_job': 'Decline', 'job_active': 'Job in Progress',
+            'active_tag': 'ACTIVE', 'time_elapsed': 'Time Elapsed', 'navigate_site': 'Navigate to Site',
+            'mark_completed': 'Mark Completed', 'past_jobs': 'Past Jobs', 'no_past_jobs': 'No past jobs this session.',
+            'summary': 'Summary', 'total_earned': 'Total Earned', 'platform_fees': 'Platform Fees (10%)',
+            'max_limit': 'Max Limit: ₹300', 'limit_reached_msg': 'Limit Reached! Pay now to unfreeze.',
+            'pay_fees': 'Pay Fees & Unlock', 'net_profit': 'Net Profit', 'history': 'History',
+            'th_service': 'Service', 'th_date': 'Date', 'th_amount': 'Amount', 'no_transactions': 'No transactions yet.',
+            'range_today': 'Today', 
+            'range_weekly': 'Weekly', 'range_6m': '6M', 'range_1y': '1Y',
+            'range_2y': '2Y', 'range_5y': '5Y', 'range_1m': '1 Month', 
+            'status_label': 'Status:', 'working_area': 'Working Area',
+            'skills_label': 'Skills (Max 3)', 'skills_lock_msg': 'Skills can only be modified via admin request.',
+            'refer_earn': 'Refer & Earn (₹50/Referral)',
+            'refer_desc': 'Share your unique code with friends. You both get ₹50 when they complete their first job!',
+            'copy_btn': 'Copy', 'send_referral': 'Send Referral Link', 'bank_details_title': 'Bank Account Details',
+            'add_bank_details': 'Add Bank Details', 'edit_bank_details': 'Edit Bank Details',
+            'call_btn': 'Call',
+            'chat_btn': 'Chat',
+            'bank_edit_warning': 'You can only submit bank details once for verification. Please ensure accuracy.',
+            'submit_bank_details': 'Submit Bank Details', 'cancel': 'Cancel',
+            'bank_lock_msg': 'Contact support to modify bank details.', 'bank_status_missing': 'Missing Details',
+            'bank_status_pending': 'Pending Verification', 'bank_status_verified': 'Verified',
+            'id_proof_type': 'ID Proof Type', 'upload_id_proof': 'Upload ID Proof',
+            'upload_passbook': 'Upload Passbook Photo (or Cheque)', 'auth_subtitle': 'Professional dashboard for pros',
+            'tab_login': 'Login', 'tab_signup': 'Sign Up', 'auth_btn_login': 'Enter Dashboard',
+            'auth_btn_signup': 'Create Account', 'secure_msg': 'Secure & Verified Platform',
+            'use_curr_loc': 'Use Current Location', 'placeholder_mobile': 'Mobile Number',
+            'placeholder_password': 'Password', 'placeholder_name': 'Full Name',
+            'placeholder_set_password': 'Set Password', 'placeholder_referral_code': 'Referral Code (Optional)',
+            'placeholder_bank_account': 'Account Number', 
+            'placeholder_bank_ifsc': 'இணைப்புக் குறியீடு (தானாக நிரப்பப்பட்டது)', 
+            'logout': 'Logout',
+            'worker_level_title': 'Worker Level', 
+            'jobs_completed_label': 'Jobs Completed:', 
+            'next_level_tip': 'Next level at {nextJobCount} jobs!', 
+            'client_rating_title': 'Client Rating', 
+            'worker_profile_title': 'Worker Profile', 
+            'edit_profile': 'Edit', 
+            'profile_edit_warning': 'Update your Name and Working Area. Area changes may require re-approval.', 
+            'save_changes': 'Save Changes', 
+            'go_online_prompt': 'Go Online to Receive Jobs', 
+            'offline_instruction': 'Your account is currently set to Offline. Switch the toggle in the header to start accepting new job requests in your area.', 
+            'th_job_id': 'Job ID' 
+        },
+        'hi': {
+            'nav_overview': 'अवलोकन', 'nav_jobs': 'नौकरियां', 'nav_wallet': 'बटुआ', 'nav_analytics': 'विश्लेषण',
+            'nav_profile': 'प्रोफ़ाइल', 'nav_settings': 'सेटिंग्स', 'welcome': 'नमस्ते, ', 'location': 'स्थान: ',
+            'status_online': 'आप ऑनलाइन हैं', 'status_offline': 'आप ऑफ़लाइन हैं', 'todays_performance': 'आज का प्रदर्शन',
+            'earnings': 'कमाई', 'jobs_done': 'पूर्ण कार्य', 'login_time': 'लॉगिन समय', 'recent_activity': 'हाल की गतिविधि',
+            'wallet_balance': 'बटुआ शेष', 'withdraw_now': 'अभी निकालें', 'earnings_growth': 'कमाई वृद्धि (बार)',
+            'earnings_trend': 'कमाई रुझान (लाइन)', 'job_breakdown': 'आज की कमाई का ब्रेकडाउन', 
+            'my_profile': 'मेरी प्रोफ़ाइल',
+            'app_settings': 'एप्लिकेशन सेटिंग्ज़', 'theme_appearance': 'थीम और दिखावट', 'app_theme': 'ऐप थीम',
+            'display_language': 'प्रदर्शन भाषा', 'notifications': 'सूचनाएं', 'job_alerts': 'नई नौकरी अलर्ट',
+            'referral_rewards': 'रेफरल इनाम', 'account': 'खाता', 'monthly_goal': 'मासिक लक्ष्य',
+            'available_payout': 'भुगतान के लिए उपलब्ध', 'check_jobs_msg': 'नए अनुरोधों के लिए नौकरियां टैब देखें।',
+            'incoming_jobs_title': 'आने वाली नौकरियां', 'potential_earnings': 'संभावित कमाई (अगले 1 घंटा)',
+            'waiting_approval': 'एडमिन की मंजूरी का इंतजार',
+            'profile_review_msg': 'आपके विवरण (आईडी और कौशल) की समीक्षा की जा रही है। एक बार मंजूरी मिलने के बाद, आपके स्थान के आधार पर नौकरियां यहां दिखाई देंगी:',
+            'new_request': 'नई विनती', 'incoming_tag': 'आने वाली', 'est_earnings': '₹450 अनुमानित कमाई',
+            'accept_job': 'स्वीकार करें', 'decline_job': 'अस्वीकार', 'job_active': 'कार्य प्रगति पर',
+            'active_tag': 'सक्रिय', 'time_elapsed': 'समय बीत गया', 'navigate_site': 'साइट पर जाएं',
+            'mark_completed': 'पूर्ण चिह्नित करें', 'past_jobs': 'पिछले कार्य', 'no_past_jobs': 'इस सत्र में कोई पिछला कार्य नहीं।',
+            'summary': 'सारांश', 'total_earned': 'कुल कमाई', 'platform_fees': 'प्लेटफ़ॉर्म शुल्क (10%)',
+            'max_limit': 'अधिकतम सीमा: ₹300', 'limit_reached_msg': 'सीमा पूरी हो गई! अनलॉक करने के लिए अभी भुगतान करें।',
+            'pay_fees': 'शुल्क भरें और अनलॉक करें', 'net_profit': 'शुद्ध लाभ', 'history': 'इतिहास',
+            'th_service': 'सेवा', 'th_date': 'दिनांक', 'th_amount': 'राशि', 'no_transactions': 'कोई लेनदेन नहीं।',
+            'range_today': 'आज', 'range_weekly': 'साप्ताहिक', 'range_6महीने': '6महीने', 'range_1y': '1वर्ष',
+            'range_2y': '2वर्ष', 'range_5y': '5वर्ष', 'range_1m': '1 महीना', 
+            'status_label': 'स्थिति:', 'working_area': 'कार्य क्षेत्र',
+            'skills_label': 'कौशल (अधिकतम 3)', 'skills_lock_msg': 'कौशल केवल एडमिन अनुरोध द्वारा बदला जा सकता है।',
+            'refer_earn': 'रेफर करें और कमाएं (₹50/रेफरल)',
+            'refer_desc': 'दोस्तों के साथ कोड साझा करें। जब वे अपना पहला काम पूरा करेंगे तो आप दोनों को ₹50 मिलेंगे!',
+            'copy_btn': 'कॉपी', 'send_referral': 'रेफरल लिंक भेजें', 'bank_details_title': 'बैंक खाता विवरण',
+            'add_bank_details': 'बैंक विवरण जोड़ें', 'edit_bank_details': 'बैंक विवरण संपादित करें',
+            'call_btn': 'कॉल',
+            'chat_btn': 'चैट',
+            'bank_edit_warning': 'सत्यापन के लिए आप केवल एक बार बैंक विवरण जमा कर सकते हैं। सटीकता सुनिश्चित करें।',
+            'submit_bank_details': 'बैंक विवरण जमा करें', 'cancel': 'रद्द करें',
+            'bank_lock_msg': 'बैंक विवरण संशोधित करने के लिए समर्थन से संपर्क करें।', 'bank_status_missing': 'विवरण अनुपलब्ध',
+            'bank_status_pending': 'सत्यापन लंबित है', 'bank_status_verified': 'सत्यापित',
+            'id_proof_type': 'आईडी प्रूफ प्रकार', 'upload_id_proof': 'आईडी प्रूफ अपलोड करें',
+            'upload_passbook': 'पासबुक फोटो (या चेक) अपलोड करें', 'auth_subtitle': 'पेशेवरों के लिए प्रोफेशनल डैशबोर्ड',
+            'tab_login': 'लॉग इन', 'tab_signup': 'साइन अप', 'auth_btn_login': 'डैशबोर्ड में प्रवेश करें',
+            'auth_btn_signup': 'खाता बनाएं', 'secure_msg': 'सुरक्षित और सत्यापित प्लेटफ़ॉर्म',
+            'use_curr_loc': 'वर्तमान स्थान का उपयोग करें', 'placeholder_mobile': 'मोबाइल नंबर',
+            'placeholder_password': 'पासवर्ड', 'placeholder_name': 'पूरा नाम',
+            'placeholder_set_password': 'पासवर्ड सेट करें', 'placeholder_referral_code': 'रेफरल कोड (वैकल्पिक)',
+            'placeholder_bank_account': 'खाता संख्या', 
+            'placeholder_bank_ifsc': 'आईएफएससी कोड (स्वतः भरा गया)', 
+            'logout': 'लॉग आउट',
+            'worker_level_title': 'कार्यकर्ता स्तर', 
+            'jobs_completed_label': 'पूर्ण कार्य:', 
+            'next_level_tip': '{nextJobCount} कार्य पर अगला स्तर!', 
+            'client_rating_title': 'ग्राहक रेटिंग', 
+            'worker_profile_title': 'कार्यकर्ता प्रोफ़ाइल', 
+            'edit_profile': 'संपादित करें', 
+            'profile_edit_warning': 'अपना नाम और कार्य क्षेत्र अपडेट करें। क्षेत्र परिवर्तन के लिए पुनः अनुमोदन की आवश्यकता हो सकती है।', 
+            'save_changes': 'बदलाव सहेजें', 
+            'go_online_prompt': 'नौकरी प्राप्त करने के लिए ऑनलाइन जाएं', 
+            'offline_instruction': 'आपका खाता वर्तमान में ऑफ़लाइन पर सेट है। नए नौकरी अनुरोध स्वीकार करना शुरू करने के लिए हेडर में टॉगल स्विच करें।', 
+            'th_job_id': 'कार्य ID' 
+        },
+        'ta': {
+            'nav_overview': 'கண்ணோட்டம்', 'nav_jobs': 'வேலைகள்', 'nav_wallet': 'பணப்பை', 'nav_analytics': 'பகுப்பாய்வு',
+            'nav_profile': 'சுயவிவரம்', 'nav_settings': 'அமைப்புகள்', 'welcome': 'வணக்கம், ', 'location': 'இடம்: ',
+            'status_online': 'நீங்கள் ஆன்லைனில் உள்ளீர்கள்', 'status_offline': 'நீங்கள் ஆஃப்லைனையும் உள்ளீர்கள்', 'todays_performance': 'இன்றைய செயல்பாடு',
+            'earnings': 'வருவாய்', 'jobs_done': 'முடித்த வேலைகள்', 'login_time': 'உள்நுழைவு நேரம்', 'recent_activity': 'சமீபத்திய செயல்பாடு',
+            'wallet_balance': 'வங்கி இருப்பு', 'withdraw_now': 'இப்போது திரும்பப் பெறவும்', 'earnings_growth': 'வருவாய் வளர்ச்சி (பார்)',
+            'earnings_trend': 'வருவாய் போக்கு (லைன்)', 'job_breakdown': 'இன்றைய வருவாய் முறிவு', 
+            'my_profile': 'என் சுயவிவரம்',
+            'app_settings': 'பயன்பாட்டு அமைப்புகள்', 'theme_appearance': 'தீம் & தோற்றம்', 'app_theme': 'பயன்பாட்டு தீம்',
+            'display_language': 'காட்சி மொழி', 'notifications': 'அறிவிப்புகள்', 'job_alerts': 'புதிய வேலை விழிப்பூட்டல்கள்',
+            'referral_rewards': 'பரிந்துரை வெகுமதிகள்', 'account': 'கணக்கு', 'monthly_goal': 'மாதாந்திர இலக்கு',
+            'available_payout': 'பணம் பெற உள்ளது', 'check_jobs_msg': 'புதிய வேலைகளுக்கு \'வேலைகள்\' பகுதியை பார்க்கவும்.',
+            'incoming_jobs_title': 'வரும் வேலைகள்', 'potential_earnings': 'சம்பாதிக்க வாய்ப்புள்ள வருவாய் (அடுத்த 1 மணிநேரம்)',
+            'waiting_approval': 'நிர்வாக ஒப்புதலுக்காக காத்திருக்கிறது',
+            'profile_review_msg': 'உங்கள் சுயவிவர விவரங்கள் (அடையாள அட்டை மற்றும் திறன்கள்) மதிப்பாய்வில் உள்ளன. ஒப்புதல் கிடைத்ததும், உங்கள் இருப்பிடத்தின் அடிப்படையில் வேலைகள் இங்கே தோன்றும்:',
+            'new_request': 'புதிய கோரிக்கை', 'incoming_tag': 'வருகிறது', 'est_earnings': '₹450 மதிப்பிடப்பட்ட வருவாய்',
+            'accept_job': 'ஏற்கவும்', 'decline_job': 'நிராகரி', 'job_active': 'வேலை செயலில் உள்ளது',
+            'active_tag': 'செயலில்', 'time_elapsed': 'நேரம் முடிந்தது', 'navigate_site': 'இடத்திற்குச் செல்',
+            'mark_completed': 'முடிந்தது என குறிக்கவும்', 'past_jobs': 'முந்தைய வேலைகள்', 'no_past_jobs': 'இந்த அமர்வில் முந்தைய வேலைகள் இல்லை.',
+            'summary': 'சுருக்கம்', 'total_earned': 'மொத்த வருவாய்', 'platform_fees': 'தள கட்டணம் (10%)',
+            'max_limit': 'அதிகபட்ச வரம்பு: ₹300', 'limit_reached_msg': 'வரம்பு அடைந்தது! திறக்க இப்போது செலுத்தவும்।',
+            'pay_fees': 'கட்டணம் செலுத்தி திறக்கவும்', 'net_profit': 'நிகர லாபம்', 'history': 'வரலாறு',
+            'th_service': 'சேவை', 'th_date': 'தேதி', 'th_amount': 'தொகை', 'no_transactions': 'பரிவர்த்தனைகள் இல்லை।',
+            'range_today': 'இன்று', 'range_weekly': 'வாரம்', 'range_6மாதம்': '6மாதம்', 'range_1y': '1வருடம்',
+            'range_2y': '2வருடம்', 'range_5y': '5வருடம்', 'range_1m': '1 மாதம்', 
+            'status_label': 'நிலை:', 'working_area': 'வேலை பகுதி',
+            'skills_label': 'திறன்கள் (அதிகபட்சம் 3)', 'skills_lock_msg': 'திறன்கள் நிர்வாகி மூலம் மட்டுமே மாற்ற முடியும்।',
+            'refer_earn': 'பரிந்துரைத்து சம்பாதிக்கவும் (₹50)',
+            'refer_desc': 'உங்கள் தனிப்பட்ட குறியீட்டை நண்பர்களுடன் பகிரவும். அவர்கள் முதல் வேலையை முடிக்கும்போது உங்கள் இருவருக்கும் ₹50 கிடைக்கும்!',
+            'copy_btn': 'நகலெடு', 'send_referral': 'இணைப்பை அனுப்பவும்', 'bank_details_title': 'வங்கி கணக்கு விவரங்கள்',
+            'add_bank_details': 'வங்கி விவரங்களைச் சேர்க்கவும்', 'edit_bank_details': 'வங்கி விவரங்களைத் திருத்தவும்',
+            'call_btn': 'அழைப்பு',
+            'chat_btn': 'அரட்டை',
+            'bank_edit_warning': 'சரிபார்ப்புக்கு நீங்கள் ஒரு முறை மட்டுமே வங்கி விவரங்களைச் சமர்ப்பிக்க முடியும். துல்லியத்தை உறுதிப்படுத்தவும்.',
+            'submit_bank_details': 'வங்கி விவரங்களைச் சமர்ப்பி', 'cancel': 'ரத்துசெய்',
+            'bank_lock_msg': 'வங்கி விவரங்களை மாற்ற ஆதரவைத் தொடர்பு கொள்ளவும்।', 'bank_status_missing': 'விவரங்கள் இல்லை',
+            'bank_status_pending': 'சரிபார்ப்பு நிலுவையில் உள்ளது', 'bank_status_verified': 'சரிபார்க்கப்பட்டது',
+            'id_proof_type': 'அடையாள அட்டை வகை', 'upload_id_proof': 'அடையாள அட்டையை பதிவேற்றவும்',
+            'upload_passbook': 'பாஸ்புக் புகைப்படம் (அ) காசோலையை பதிவேற்றவும்', 'auth_subtitle': 'நிபுணர்களுக்கான தொழில்முறை குழு',
+            'tab_login': 'உள்நுழைய', 'tab_signup': 'பதிவு செய்', 'auth_btn_login': 'டாஷ்போர்டில் நுழையவும்',
+            'auth_btn_signup': 'கணக்கை உருவாக்கவும்', 'secure_msg': 'பாதுகாப்பான மற்றும் சரிபார்க்கப்பட்ட தளம்',
+            'use_curr_loc': 'தற்போதைய இருப்பிடத்தைப் பயன்படுத்தவும்', 'placeholder_mobile': 'கைபேசி எண்',
+            'placeholder_password': 'கடவுச்சொல்', 'placeholder_name': 'முழு பெயர்',
+            'placeholder_set_password': 'கடவுச்சொல்லை அமைக்கவும்', 'placeholder_referral_code': 'பரிந்துரை குறியீடு (விருப்பமானது)',
+            'placeholder_bank_account': 'கணக்கு எண்', 
+            'placeholder_bank_ifsc': 'இணைப்புக் குறியீடு (தானாக நிரப்பப்பட்டது)', 
+            'logout': 'வெளியேறு',
+            'worker_level_title': 'ஊழியர் நிலை', 
+            'jobs_completed_label': 'முடித்த வேலைகள்:', 
+            'next_level_tip': '{nextJobCount} வேலைகளில் அடுத்த நிலை!', 
+            'client_rating_title': 'வாடிக்கையாளர் மதிப்பீடு', 
+            'worker_profile_title': 'ஊழியர் சுயவிவரம்', 
+            'edit_profile': 'திருத்தவும்', 
+            'profile_edit_warning': 'உங்கள் பெயர் மற்றும் வேலை செய்யும் பகுதியை புதுப்பிக்கவும். பகுதி மாற்றங்களுக்கு மீண்டும் ஒப்புதல் தேவைப்படலாம்।', 
+            'save_changes': 'மாற்றங்களை சேமிக்கவும்', 
+            'go_online_prompt': 'ஆன்லைனில் சென்று வேலைகளைப் பெறவும்', 
+            'offline_instruction': 'உங்கள் கணக்கு தற்போது ஆஃப்லைனில் அமைக்கப்பட்டுள்ளது. புதிய வேலை கோரிக்கைகளை ஏற்க தலைப்பில் உள்ள டாக்கிளை அழுத்தவும்।', 
+            'th_job_id': 'வேலை ஐடி' 
+        }
+    };
+
+    let state = {
+        isLoggedIn: false, isActive: true, language: 'en',
+        user: { 
+            name: 'Worker', phone: '', password: '', 
+            location: { state: 'Tamil Nadu', city: 'Chennai', area: 'Kodambakkam' }, 
+            isProfileComplete: false, isApproved: false, 
+            selectedSkills: ['Electricians', 'Plumbers'], selectedCategory: 'Skilled', 
+            idProofFile: null, idProofType: 'Aadhaar',
+            referralCode: 'PRO-' + Math.random().toString(36).substring(2, 8).toUpperCase(),
+            signupReferralCode: null,
+            bankDetails: {
+                name: '', branch: '', account: '', ifsc: '', 
+                passbookFile: null, status: 'missing'
+            },
+            hasBankDetails: false
+        },
+        wallet: { gross: 0, fees: 0, net: 0 }, 
+        jobsDone: 0, 
+        rating: STAR_RATING_MOCK.rating, 
+        reviews: STAR_RATING_MOCK.reviews, 
+        transactions: [],
+        withdrawals: [], // Track previous withdrawals
+        hasActiveJob: false, isFrozen: false, theme: 'dark', 
+        isFlipped: false,
+        declinedCount: 0, 
+        isSuspended: false,
+        suspensionEndTime: 0,
+        loginStartTime: 0 // Track real login time
+    };
+
+    const COMMISSION = 0.10, JOB_VALUE = 450, COMMISSION_LIMIT = 300, MAX_SKILLS = 3, FILE_SIZE_LIMIT = 2097152;
+
+    const screens = { splash: document.getElementById('splash-screen'), auth: document.getElementById('auth-screen'), app: document.getElementById('app-screen') };
+    const navBtns = document.querySelectorAll('.nav-item'), sections = document.querySelectorAll('.section');
+    const authBtn = document.getElementById('auth-btn'), tabLogin = document.getElementById('tab-login'), tabSignup = document.getElementById('tab-signup');
+    const loginForm = document.getElementById('login-form'), signupForm = document.getElementById('signup-form');
+    
+    const statusToggle = document.getElementById('status-toggle'), statusText = document.getElementById('status-text');
+    const freezeMsg = document.getElementById('freeze-msg'), jobsNavItem = document.getElementById('jobs-nav-item');
+    const suspensionMsg = document.getElementById('suspension-msg'); 
+    const suspensionMsgText = document.getElementById('suspension-msg-text'); 
+    const incomingJobCard = document.getElementById('incoming-job'), activeJobArea = document.getElementById('active-job-area'), jobApprovalMsg = document.getElementById('job-approval-message');
+    const jobOfflineMessage = document.getElementById('job-offline-message'); 
+
+    const signupStateSelect = document.getElementById('signup-state'), signupCitySelect = document.getElementById('signup-city'), signupAreaSelect = document.getElementById('signup-area');
+    const modalStateSelect = document.getElementById('modal-state'), modalCitySelect = document.getElementById('modal-city'), modalAreaSelect = document.getElementById('modal-area');
+    const btnUseCurrentLocationSignup = document.getElementById('btn-use-current-location-signup'), btnUseCurrentLocationModal = document.getElementById('btn-use-current-location-modal');
+    
+    const profileEditModal = document.getElementById('profile-edit-modal');
+    const btnEditProfile = document.getElementById('btn-edit-profile');
+    const btnCancelProfileEdit = document.getElementById('btn-cancel-profile-edit');
+    const btnSubmitProfileEdit = document.getElementById('btn-submit-profile-edit');
+    const editProfileNameInput = document.getElementById('edit-profile-name');
+    const editStateSelect = document.getElementById('edit-state'), editCitySelect = document.getElementById('edit-city'), editAreaSelect = document.getElementById('edit-area');
+    const btnUseCurrentLocationEdit = document.getElementById('btn-use-current-location-edit');
+    
+    const modalBankNameSelect = document.getElementById('modal-bank-name'), modalBankBranchSelect = document.getElementById('modal-bank-branch');
+    const modalBankAccountInput = document.getElementById('modal-bank-account'), modalBankIfscInput = document.getElementById('modal-bank-ifsc');
+    const editBankNameSelect = document.getElementById('edit-bank-name'), editBankBranchSelect = document.getElementById('edit-bank-branch');
+    const editBankAccountInput = document.getElementById('edit-bank-account'), editBankIfscInput = document.getElementById('edit-bank-ifsc');
+    const modalPassbookStatus = document.getElementById('modal-passbook-status'), modalPassbookFileInput = document.getElementById('modal-passbook-file-input');
+    const editPassbookStatus = document.getElementById('edit-passbook-status'), editPassbookFileInput = document.getElementById('edit-passbook-file-input');
+    
+    const profileModal = document.getElementById('profile-modal'), modalSkillGrid = document.getElementById('modal-skill-selection-grid');
+    const modalCategoryTabs = document.getElementById('modal-category-tabs'), modalSubmitBtn = document.getElementById('modal-submit-profile');
+    const modalIdProofStatus = document.getElementById('modal-id-proof-status'), modalIdTypeSelect = document.getElementById('modal-id-type'), modalIdFileInput = document.getElementById('modal-id-file-input');
+    
+    const bankEditModal = document.getElementById('bank-edit-modal');
+    const btnAddBankDetails = document.getElementById('btn-add-bank-details');
+    const btnSubmitBankDetails = document.getElementById('btn-submit-bank-details');
+    const btnCancelBankDetails = document.getElementById('btn-cancel-bank-details');
+    
+    const profileBankStatus = document.getElementById('profile-bank-status');
+    const profileBankDisplay = document.getElementById('profile-bank-details-display');
+
+    const profileSkillGrid = document.getElementById('skill-selection-grid'), profileCategoryTabs = document.getElementById('profile-category-tabs');
+    const profileLocationDisplay = document.getElementById('profile-location-display');
+    const referralCodeDisplay = document.getElementById('referral-code-display'), btnShareReferral = document.getElementById('btn-share-referral');
+    
+    const body = document.body;
+    const settingsThemeToggle = document.getElementById('theme-toggle');
+    const headerThemeToggle = document.getElementById('header-theme-toggle');
+    const languageToggleGroup = document.getElementById('language-toggle-group'); 
+    const signupReferralInput = document.getElementById('signup-referral');
+    
+    const ovIncomingCount = document.getElementById('ov-incoming-count');
+    const ovPotentialEarnings = document.getElementById('ov-potential-earnings');
+    
+    const earningsFlipInner = document.getElementById('earnings-flip-inner');
+    const earningsFlipContainer = document.getElementById('earnings-flip-container');
+    const chartTitle = document.getElementById('chart-title');
+    const chartIcon = document.getElementById('chart-icon');
+    
+    const pieChartArea = document.getElementById('pie-chart-area');
+    const pieLegendList = document.getElementById('pie-legend-list');
+    
+    const workerLevelBadge = document.getElementById('worker-level-badge');
+    const workerJobsCompleted = document.getElementById('worker-jobs-completed');
+    const workerRatingStars = document.getElementById('worker-rating-stars');
+    const workerRatingValue = document.getElementById('worker-rating-value');
+    const workerRatingCount = document.getElementById('worker-rating-count');
+
+    // --- GOLD COIN SYNTHESIZER LOGIC ---
+    let audioCtx = null;
+    function playPrizeSound() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+
+        const now = audioCtx.currentTime;
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.5, now);
+        masterGain.connect(audioCtx.destination);
+
+        const playTone = (freq, startOffset, duration) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + startOffset);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.02, now + startOffset + duration);
+            gain.gain.setValueAtTime(0, now + startOffset);
+            gain.gain.linearRampToValueAtTime(0.5, now + startOffset + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + startOffset + duration);
+            osc.connect(gain);
+            gain.connect(masterGain);
+            osc.start(now + startOffset);
+            osc.stop(now + startOffset + duration);
+        };
+
+        playTone(1046.50, 0, 0.4);      // C6
+        playTone(1318.51, 0.05, 0.4);   // E6
+        playTone(1567.98, 0.1, 0.6);    // G6
+
+        const bufferSize = audioCtx.sampleRate * 0.02;
+        const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const output = noiseBuffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = noiseBuffer;
+        const noiseFilter = audioCtx.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 5000;
+        const noiseGain = audioCtx.createGain();
+        noiseGain.gain.setValueAtTime(0.2, now);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.02);
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(masterGain);
+        noise.start(now);
+    }
+    
+    function updateWorkerLevelAndRating() {
+        const jobs = state.jobsDone;
+        let level = 'Bronze';
+        let nextJobCount = LEVEL_THRESHOLDS.Silver;
+
+        if (jobs >= LEVEL_THRESHOLDS.Platinum) {
+            level = 'Platinum';
+            nextJobCount = 'N/A';
+        } else if (jobs >= LEVEL_THRESHOLDS.Gold) {
+            level = 'Gold';
+            nextJobCount = LEVEL_THRESHOLDS.Platinum;
+        } else if (jobs >= LEVEL_THRESHOLDS.Silver) {
+            level = 'Silver';
+            nextJobCount = LEVEL_THRESHOLDS.Gold;
+        } else {
+            level = 'Bronze';
+            nextJobCount = LEVEL_THRESHOLDS.Silver;
+        }
+
+        workerLevelBadge.innerText = level;
+        workerLevelBadge.className = `level-badge level-${level.toLowerCase()}`;
+        workerJobsCompleted.innerText = jobs;
+
+        const nextLevelTipElement = document.getElementById('worker-next-level-tip'); 
+        if (nextLevelTipElement) {
+            if (level === 'Platinum') {
+                nextLevelTipElement.innerText = "Congratulations! You've reached max level.";
+            } else {
+                let tipText = TRANSLATIONS[state.language]['next_level_tip'] || 'Next level at {nextJobCount} jobs!';
+                nextLevelTipElement.innerText = tipText.replace('{nextJobCount}', nextJobCount);
+            }
+        }
+        
+        const rating = state.rating.toFixed(1);
+        const reviews = state.reviews;
+        workerRatingValue.innerText = rating;
+        workerRatingCount.innerText = `(${reviews} Reviews)`;
+        
+        workerRatingStars.innerHTML = '';
+        const fullStars = Math.floor(rating);
+        const hasHalfStar = rating % 1 >= 0.25 && rating % 1 <= 0.75; 
+        const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+        
+        for (let i = 0; i < fullStars; i++) {
+            workerRatingStars.innerHTML += '<i class="ph-fill ph-star"></i>';
+        }
+        if (hasHalfStar) {
+            workerRatingStars.innerHTML += '<i class="ph-fill ph-star-half"></i>';
+        }
+        for (let i = 0; i < emptyStars; i++) {
+            workerRatingStars.innerHTML += '<i class="ph ph-star"></i>';
+        }
+    }
+
+
+    function updateLocationDisplay() {
+        const { state: s, city: c, area: a } = state.user.location;
+        const locString = a && c ? `${a}, ${c}` : c || s || 'Unknown Location';
+        document.getElementById('user-location').innerText = locString;
+        document.getElementById('job-area-display').innerText = locString;
+        profileLocationDisplay.innerText = `${s} > ${c} > ${a}`;
+    }
+
+    function createOption(text, value = text, isDisabled = false) {
+        const option = document.createElement('option');
+        option.textContent = text; option.value = value;
+        option.disabled = isDisabled; option.selected = isDisabled;
+        return option;
+    }
+
+    function populateLocations(targetSelect, sourceData, placeholder, nextSelect = null, nextPlaceholder = null, nextNextSelect = null) {
+        targetSelect.innerHTML = '';
+        targetSelect.appendChild(createOption(placeholder, '', true));
+        Object.keys(sourceData).forEach(key => targetSelect.appendChild(createOption(key)));
+        targetSelect.disabled = Object.keys(sourceData).length === 0;
+        
+        if (nextSelect) {
+            nextSelect.innerHTML = '';
+            nextSelect.appendChild(createOption(nextPlaceholder, '', true));
+            nextSelect.disabled = true;
+        }
+        if (nextNextSelect) {
+            nextNextSelect.innerHTML = '';
+            nextNextSelect.appendChild(createOption('Select Area', '', true));
+            nextNextSelect.disabled = true;
+        }
+    }
+    
+    function initLocationSelectors() {
+        populateLocations(signupStateSelect, LOCATION_DATA, 'Select State', signupCitySelect, 'Select City', signupAreaSelect);
+        populateLocations(modalStateSelect, LOCATION_DATA, 'Select State', modalCitySelect, 'Select City', modalAreaSelect);
+        populateLocations(editStateSelect, LOCATION_DATA, 'Select State', editCitySelect, 'Select City', editAreaSelect);
+
+        [
+            { s: signupStateSelect, c: signupCitySelect, a: signupAreaSelect }, 
+            { s: modalStateSelect, c: modalCitySelect, a: modalAreaSelect },
+            { s: editStateSelect, c: editCitySelect, a: editAreaSelect }
+        ].forEach(({s: sSelect, c: cSelect, a: aSelect}) => {
+            sSelect.addEventListener('change', () => {
+                const cities = LOCATION_DATA[sSelect.value] || {};
+                populateLocations(cSelect, cities, 'Select City', aSelect);
+            });
+            cSelect.addEventListener('change', () => {
+                const areas = LOCATION_DATA[sSelect.value][cSelect.value] || [];
+                populateLocations(aSelect, areas.reduce((acc, area) => ({ ...acc, [area]: area }), {}), 'Select Area');
+            });
+        });
+    }
+
+    function populateBankSelectors(bankSelect, branchSelect, ifscInput, currentBank, currentBranch) {
+        bankSelect.innerHTML = '';
+        bankSelect.appendChild(createOption('Select Bank Name', '', true));
+        Object.keys(BANK_DATA).forEach(bankName => {
+            bankSelect.appendChild(createOption(bankName));
+        });
+        bankSelect.value = currentBank || '';
+        bankSelect.disabled = false;
+
+        if (branchSelect) {
+            branchSelect.innerHTML = '';
+            branchSelect.appendChild(createOption('Select Branch', '', true));
+            branchSelect.disabled = true;
+        }
+        if (ifscInput) {
+            ifscInput.value = '';
+        }
+        
+        if (currentBank && BANK_DATA[currentBank]) {
+            populateBranches(currentBank, branchSelect, ifscInput, currentBranch);
+        }
+    }
+
+    function populateBranches(bankName, branchSelect, ifscInput, currentBranch) {
+        const branches = BANK_DATA[bankName] || {};
+        
+        branchSelect.innerHTML = '';
+        branchSelect.appendChild(createOption('Select Branch', '', true));
+        
+        Object.keys(branches).forEach(branch => {
+            branchSelect.appendChild(createOption(branch));
+        });
+        
+        branchSelect.disabled = Object.keys(branches).length === 0;
+        branchSelect.value = currentBranch || '';
+
+        if (currentBranch && branches[currentBranch]) {
+            ifscInput.value = branches[currentBranch];
+        } else {
+            ifscInput.value = '';
+        }
+    }
+
+    function setupBankListeners(bankSelect, branchSelect, ifscInput) {
+        bankSelect.addEventListener('change', () => {
+            const selectedBank = bankSelect.value;
+            populateBranches(selectedBank, branchSelect, ifscInput);
+        });
+
+        branchSelect.addEventListener('change', () => {
+            const selectedBank = bankSelect.value;
+            const selectedBranch = branchSelect.value;
+            if (selectedBank && selectedBranch && BANK_DATA[selectedBank][selectedBranch]) {
+                ifscInput.value = BANK_DATA[selectedBank][selectedBranch];
+            } else {
+                ifscInput.value = '';
+            }
+        });
+    }
+    
+    function setSelectedLocation(stateVal, cityVal, areaVal, isModal, sSelectOverride = null, cSelectOverride = null, aSelectOverride = null) {
+        const sSelect = sSelectOverride || (isModal ? modalStateSelect : signupStateSelect);
+        const cSelect = cSelectOverride || (isModal ? modalCitySelect : signupCitySelect);
+        const aSelect = aSelectOverride || (isModal ? modalAreaSelect : signupAreaSelect);
+        
+        if (stateVal) {
+            sSelect.value = stateVal;
+            sSelect.dispatchEvent(new Event('change'));
+            if (cityVal) {
+                setTimeout(() => {
+                    cSelect.value = cityVal;
+                    cSelect.dispatchEvent(new Event('change'));
+                    if (areaVal) setTimeout(() => { aSelect.value = areaVal; }, 0);
+                }, 0);
+            }
+        }
+        if (state.isLoggedIn || !isModal) {
+            state.user.location = { state: stateVal, city: cityVal, area: areaVal };
+            updateLocationDisplay();
+        }
+    }
+
+    function getCurrentLocation(isModal) {
+        if (!navigator.geolocation) { showToast('Geolocation is not supported.', 'error'); return; }
+        showToast('Fetching your current location...', 'warning');
+        navigator.geolocation.getCurrentPosition(
+            () => {
+                const mockState = 'Karnataka', mockCity = 'Bengaluru', mockArea = 'Whitefield';
+                showToast(`Location found: ${mockArea}, ${mockCity}`, 'success');
+                
+                const sSelect = isModal ? modalStateSelect : signupStateSelect;
+                const cSelect = isModal ? modalCitySelect : signupCitySelect;
+                const aSelect = isModal ? modalAreaSelect : signupAreaSelect;
+                
+                const isEditModalOpen = profileEditModal.style.display === 'flex';
+                if (isEditModalOpen) {
+                    setSelectedLocation(mockState, mockCity, mockArea, true, editStateSelect, editCitySelect, editAreaSelect);
+                } else {
+                    setSelectedLocation(mockState, mockCity, mockArea, isModal, sSelect, cSelect, aSelect);
+                }
+            },
+            () => showToast('Location Error: Unable to fetch location.', 'error')
+        );
+    }
+    
+    btnUseCurrentLocationSignup.addEventListener('click', () => getCurrentLocation(false));
+    btnUseCurrentLocationModal.addEventListener('click', () => getCurrentLocation(true));
+    btnUseCurrentLocationEdit.addEventListener('click', () => getCurrentLocation(true)); 
+
+    function copyReferralCode() {
+        const tempInput = document.createElement('textarea');
+        tempInput.value = state.user.referralCode;
+        document.body.appendChild(tempInput);
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+        showToast('Referral Code copied!', 'success');
+    }
+
+    btnShareReferral.addEventListener('click', () => {
+        showToast('Share link simulated (check console)', 'success');
+    });
+
+    function updateSkillCount(msgElement) {
+        msgElement.innerText = `${state.user.selectedSkills.length} of ${MAX_SKILLS} selected`;
+    }
+
+    function handleSkillSelection(skill) {
+        const isSelecting = !state.user.selectedSkills.includes(skill);
+        if (isSelecting) {
+            if (state.user.selectedSkills.length >= MAX_SKILLS) { showToast(`Maximum ${MAX_SKILLS} skills allowed.`, 'error'); return false; }
+            state.user.selectedSkills.push(skill);
+        } else {
+            state.user.selectedSkills = state.user.selectedSkills.filter(s => s !== skill);
+        }
+        document.querySelectorAll(`.role-check input[value="${skill}"]`).forEach(input => {
+            input.checked = state.user.selectedSkills.includes(skill);
+            const label = input.closest('.role-check');
+            if(label) label.classList.toggle('checked', input.checked);
+        });
+        updateSkillUiStatus();
+        return true;
+    }
+
+    function updateSkillUiStatus() {
+        updateSkillCount(document.getElementById('skill-count-message'));
+        updateSkillCount(document.getElementById('modal-skill-count-message'));
+        const count = state.user.selectedSkills.length;
+        [profileSkillGrid, modalSkillGrid].forEach(grid => {
+            grid.querySelectorAll('.role-check').forEach(label => {
+                const input = label.querySelector('input');
+                if (count >= MAX_SKILLS && !input.checked) { input.disabled = true; label.classList.add('disabled'); } 
+                else { input.disabled = false; label.classList.remove('disabled'); }
+                label.classList.toggle('checked', input.checked);
+            });
+        });
+    }
+
+    function renderSkillCheckboxes(categoryKey, container) {
+        container.innerHTML = '';
+        SKILL_CATEGORIES[categoryKey].forEach(skill => {
+            const label = document.createElement('label');
+            label.className = 'role-check';
+            label.innerHTML = `<span>${skill}</span>`;
+            const input = document.createElement('input');
+            input.type = 'checkbox'; input.value = skill;
+            input.checked = state.user.selectedSkills.includes(skill);
+            input.addEventListener('click', (e) => { e.preventDefault(); handleSkillSelection(skill); });
+            label.appendChild(input);
+            container.appendChild(label);
+        });
+        updateSkillUiStatus();
+    }
+
+    function renderCategoryTabs(tabContainer, skillGridContainer) {
+        tabContainer.innerHTML = '';
+        Object.keys(SKILL_CATEGORIES).forEach(category => {
+            const button = document.createElement('button');
+            button.className = 'category-tab btn-bounce';
+            button.textContent = category; button.dataset.category = category;
+            if (category === state.user.selectedCategory) {
+                button.classList.add('active');
+                renderSkillCheckboxes(category, skillGridContainer);
+            }
+            button.addEventListener('click', () => {
+                state.user.selectedCategory = category;
+                document.querySelectorAll('.category-tab').forEach(btn => {
+                    btn.classList.remove('active');
+                    if (btn.dataset.category === category) btn.classList.add('active');
+                });
+                renderSkillCheckboxes(category, profileSkillGrid);
+                renderSkillCheckboxes(category, modalSkillGrid);
+            });
+            tabContainer.appendChild(button);
+        });
+    }
+    
+    function updateProfileSkillsUI() {
+        const inputArea = document.getElementById('profile-skills-input-area');
+        const displayArea = document.getElementById('profile-skills-display');
+        if (state.user.isProfileComplete) {
+            inputArea.classList.add('hidden'); displayArea.classList.remove('hidden');
+            document.getElementById('profile-skills-list').innerText = state.user.selectedSkills.join(', ');
+        } else {
+            inputArea.classList.remove('hidden'); displayArea.classList.add('hidden');
+            renderCategoryTabs(profileCategoryTabs, profileSkillGrid); 
+        }
+        updateBankDetailsUI();
+    }
+    
+    function updateBankDetailsUI() {
+        const { status, name, account, ifsc } = state.user.bankDetails;
+        const statusEl = profileBankStatus;
+        const displayEl = profileBankDisplay;
+        const btn = btnAddBankDetails;
+
+        statusEl.className = `bank-status ${status}`;
+        statusEl.innerText = TRANSLATIONS[state.language][`bank_status_${status}`];
+
+        if (status === 'missing' || status === 'pending') {
+            displayEl.classList.add('hidden');
+            btn.classList.remove('hidden');
+            btn.innerText = TRANSLATIONS[state.language]['add_bank_details'];
+        } else {
+            displayEl.classList.remove('hidden');
+            btn.classList.add('hidden');
+            
+            document.getElementById('bank-name-display').innerText = name || 'N/A';
+            const maskedAccount = account ? '*** *** *' + account.slice(-5) : 'N/A';
+            document.getElementById('bank-account-display').innerText = maskedAccount;
+            document.getElementById('bank-ifsc-display').innerText = ifsc || 'N/A';
+        }
+    }
+    
+    function handleFileUpload(event) {
+        const input = event.target, file = input.files[0];
+        const fileType = input.dataset.fileType;
+        let statusElement;
+        
+        if (fileType === 'id') statusElement = modalIdProofStatus;
+        else if (fileType === 'passbook') statusElement = modalPassbookStatus;
+        else if (fileType === 'passbook-edit') statusElement = editPassbookStatus;
+
+        if (file) {
+            if (file.size > FILE_SIZE_LIMIT) {
+                showToast('File size must be less than 2MB.', 'error');
+                input.value = ''; 
+                if (fileType === 'id') state.user.idProofFile = null;
+                else state.user.bankDetails.passbookFile = null;
+                statusElement.innerText = 'Upload failed (File too large)';
+                statusElement.style.color = 'var(--danger)';
+                return;
+            }
+            if (fileType === 'id') state.user.idProofFile = file;
+            else state.user.bankDetails.passbookFile = file;
+            
+            statusElement.innerText = `Uploaded: ${file.name}`; 
+            statusElement.style.color = 'var(--success)';
+        } else {
+            if (fileType === 'id') state.user.idProofFile = null;
+            else state.user.bankDetails.passbookFile = null;
+            
+            statusElement.innerText = fileType.includes('id') ? TRANSLATIONS[state.language]['upload_id_proof'].split('(')[0].trim() + ' (max 2MB)' : TRANSLATIONS[state.language]['upload_passbook'].split('(')[0].trim() + ' (max 2MB)';
+            statusElement.style.color = 'var(--text-muted)';
+        }
+    }
+    modalIdFileInput.addEventListener('change', handleFileUpload);
+    modalPassbookFileInput.addEventListener('change', handleFileUpload);
+    editPassbookFileInput.addEventListener('change', handleFileUpload);
+    
+    function captureModalBankDetails() {
+        state.user.bankDetails.name = modalBankNameSelect.value;
+        state.user.bankDetails.branch = modalBankBranchSelect.value;
+        state.user.bankDetails.account = modalBankAccountInput.value.trim();
+        state.user.bankDetails.ifsc = modalBankIfscInput.value.trim().toUpperCase();
+        state.user.hasBankDetails = !!(state.user.bankDetails.name && state.user.bankDetails.branch && state.user.bankDetails.account && state.user.bankDetails.ifsc && state.user.bankDetails.passbookFile);
+    }
+    
+    function captureEditBankDetails() {
+        state.user.bankDetails.name = editBankNameSelect.value;
+        state.user.bankDetails.branch = editBankBranchSelect.value;
+        state.user.bankDetails.account = editBankAccountInput.value.trim();
+        state.user.bankDetails.ifsc = editBankIfscInput.value.trim().toUpperCase();
+        state.user.hasBankDetails = !!(state.user.bankDetails.name && state.user.bankDetails.branch && state.user.bankDetails.account && state.user.bankDetails.ifsc && state.user.bankDetails.passbookFile);
+    }
+    
+    function validateBankDetails(bank) {
+        if (!bank.name || !bank.branch || !bank.account || !bank.ifsc) {
+            showToast('Bank Name, Branch, Account, and IFSC are required.', 'error');
+            return false;
+        }
+        if (!bank.passbookFile) {
+            showToast('Passbook photo or Cheque photo is required.', 'error');
+            return false;
+        }
+        return true;
+    }
+    
+    function handleLogout() {
+        state.isLoggedIn = false;
+        state.isActive = false;
+        state.user.name = 'Worker';
+        state.loginStartTime = 0; // Reset timer on logout
+        
+        screens.app.classList.add('hidden'); 
+        screens.auth.style.display = 'flex';
+        
+        updateStatusUI();
+        showToast('Logged out successfully.', 'success');
+    }
+
+    // Timer to update Login Time display
+    function startLoginTimer() {
+        if (!state.loginStartTime) return;
+        
+        function updateTimer() {
+            const now = Date.now();
+            const diff = now - state.loginStartTime;
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            const loginTimeEl = document.getElementById('ov-login-time');
+            if (loginTimeEl) {
+                loginTimeEl.innerText = `${hours}h ${minutes}m`;
+            }
+        }
+        
+        updateTimer();
+        setInterval(updateTimer, 60000); // Update every minute
+    }
+
+    authBtn.addEventListener('click', () => {
+        const isSignup = !signupForm.classList.contains('hidden');
+        const phoneInput = isSignup ? document.getElementById('signup-phone') : document.getElementById('login-phone');
+        const phone = phoneInput.value;
+        const password = isSignup ? document.getElementById('signup-password').value : document.getElementById('login-password').value;
+        const referralCode = isSignup ? signupReferralInput.value.trim().toUpperCase() : null;
+        const name = isSignup ? document.getElementById('signup-name').value : 'David';
+        
+        if (phone.length !== 10 || !/^\d+$/.test(phone)) {
+            showToast('Please enter a valid 10-digit mobile number.', 'error');
+            return;
+        }
+        
+        if (isSignup && !signupAreaSelect.value) { showToast('Please select your working area.', 'error'); return; }
+        if(password.length < 4) { showToast('Invalid password length (min 4).', 'error'); return; }
+        
+        state.isLoggedIn = true; 
+        state.isActive = false; 
+        state.loginStartTime = Date.now(); // Set login start time
+
+        state.user.name = name; state.user.phone = phone; state.user.password = password;
+        if (isSignup) {
+            state.user.location = { state: signupStateSelect.value, city: signupCitySelect.value, area: signupAreaSelect.value };
+            state.user.isProfileComplete = false; 
+            state.user.isApproved = false;
+            state.user.bankDetails.status = 'missing';
+            state.user.signupReferralCode = referralCode; 
+            if (referralCode) showToast(`Referral code ${referralCode} applied!`, 'success');
+        } else {
+            state.jobsDone = 42; 
+            state.rating = 4.6;
+            state.reviews = 188;
+            
+            state.user.location = { state: 'Karnataka', city: 'Bengaluru', area: 'Whitefield' };
+            state.user.isProfileComplete = true; state.user.isApproved = true;
+            state.user.bankDetails = { name: 'ICICI Bank', branch: 'Whitefield, Bengaluru', account: '987654321', ifsc: 'ICIC0000010', passbookFile: new File(["mock data"], "passbook.jpg"), status: 'verified' };
+            state.user.hasBankDetails = true;
+        }
+        
+        document.getElementById('user-name').innerText = state.user.name;
+        document.getElementById('profile-name-display').innerText = state.user.name;
+        document.getElementById('app-logo').innerText = state.user.name.charAt(0).toUpperCase();
+        
+        referralCodeDisplay.innerText = state.user.referralCode;
+
+        updateLocationDisplay();
+        screens.auth.style.display = 'none'; screens.app.classList.remove('hidden');
+        
+        if (state.user.location.state) setSelectedLocation(state.user.location.state, state.user.location.city, state.user.location.area, true);
+        updateProfileSkillsUI();
+
+        if (!state.user.isProfileComplete) showProfileModal();
+        else showToast('Welcome back, ' + state.user.name + '!');
+        
+        updateNavState(); 
+        renderChart(document.querySelector('.analytics-chip.active').dataset.range);
+        updateBankDetailsUI();
+        updateWorkerLevelAndRating(); 
+        updateStatusUI(); 
+        startLoginTimer(); // Begin tracking login time
+        updateStats(); // Initial stats update
+    });
+
+    tabLogin.addEventListener('click', () => {
+        tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+        loginForm.classList.remove('hidden'); signupForm.classList.add('hidden');
+        document.getElementById('auth-btn-text').innerText = TRANSLATIONS[state.language]['auth_btn_login'];
+        document.getElementById('auth-btn-text').setAttribute('data-i18n', 'auth_btn_login');
+    });
+
+    tabSignup.addEventListener('click', () => {
+        tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+        signupForm.classList.remove('hidden'); loginForm.classList.add('hidden');
+        document.getElementById('auth-btn-text').innerText = TRANSLATIONS[state.language]['auth_btn_signup'];
+        document.getElementById('auth-btn-text').setAttribute('data-i18n', 'auth_btn_signup');
+        initLocationSelectors();
+    });
+
+    modalIdTypeSelect.addEventListener('change', (e) => { state.user.idProofType = e.target.value; });
+
+    function showProfileModal() {
+        populateBankSelectors(modalBankNameSelect, modalBankBranchSelect, modalBankIfscInput);
+        setupBankListeners(modalBankNameSelect, modalBankBranchSelect, modalBankIfscInput);
+        
+        profileModal.style.display = 'flex'; switchSection('profile'); 
+        jobsNavItem.classList.add('disabled'); jobsNavItem.title = "Complete profile first";
+    }
+    function hideProfileModal() {
+        profileModal.style.display = 'none';
+        jobsNavItem.classList.remove('disabled'); jobsNavItem.removeAttribute('title');
+    }
+    
+    btnAddBankDetails.addEventListener('click', () => {
+        if (state.user.bankDetails.status !== 'missing') {
+            showToast('Bank details are already submitted and cannot be edited. Contact support.', 'error');
+            return;
+        }
+        
+        populateBankSelectors(editBankNameSelect, editBankBranchSelect, editBankIfscInput, state.user.bankDetails.name, state.user.bankDetails.branch);
+        setupBankListeners(editBankNameSelect, editBankBranchSelect, editBankIfscInput);
+
+        editBankAccountInput.value = state.user.bankDetails.account;
+        editPassbookStatus.innerText = state.user.bankDetails.passbookFile ? `Uploaded: ${state.user.bankDetails.passbookFile.name}` : TRANSLATIONS[state.language]['upload_passbook'].split('(')[0].trim() + ' (max 2MB)';
+        editPassbookStatus.style.color = state.user.bankDetails.passbookFile ? 'var(--success)' : 'var(--text-muted)';
+        bankEditModal.style.display = 'flex';
+    });
+    
+    btnCancelBankDetails.addEventListener('click', () => { bankEditModal.style.display = 'none'; });
+
+    btnSubmitBankDetails.addEventListener('click', () => {
+        captureEditBankDetails();
+        if (!validateBankDetails(state.user.bankDetails)) return;
+
+        state.user.bankDetails.status = 'pending';
+        updateBankDetailsUI();
+        bankEditModal.style.display = 'none';
+        showToast('Bank details submitted for verification.', 'warning');
+    });
+    
+    modalSubmitBtn.addEventListener('click', () => {
+        captureModalBankDetails();
+
+        const stateVal = modalStateSelect.value;
+        const cityVal = modalCitySelect.value;
+        const areaVal = modalAreaSelect.value;
+
+        if (!areaVal || !stateVal) { showToast('Area selection incomplete.', 'error'); return; }
+        if (state.user.selectedSkills.length === 0) { showToast('Please select at least one skill.', 'error'); return; }
+        if (!state.user.idProofFile) { showToast('Please upload ID proof.', 'error'); return; }
+        if (!validateBankDetails(state.user.bankDetails)) return;
+
+        state.user.location = { state: stateVal, city: cityVal, area: areaVal };
+        state.user.bankDetails.status = 'pending';
+        updateLocationDisplay();
+
+        state.user.isProfileComplete = true;
+        document.getElementById('profile-status-text').innerText = TRANSLATIONS[state.language]['bank_status_pending'];
+        document.getElementById('profile-status-text').style.color = 'var(--warning)';
+        
+        hideProfileModal(); updateProfileSkillsUI();
+        showToast(`Profile submitted. Waiting for approval.`, 'warning');
+        setTimeout(adminApproveProfile, 3000);
+    });
+    
+    btnEditProfile.addEventListener('click', () => {
+        editProfileNameInput.value = state.user.name;
+        setSelectedLocation(state.user.location.state, state.user.location.city, state.user.location.area, true, editStateSelect, editCitySelect, editAreaSelect);
+
+        profileEditModal.style.display = 'flex';
+    });
+
+    btnCancelProfileEdit.addEventListener('click', () => {
+        profileEditModal.style.display = 'none';
+    });
+    
+    btnSubmitProfileEdit.addEventListener('click', () => {
+        const newName = editProfileNameInput.value.trim();
+        const newState = editStateSelect.value;
+        const newCity = editCitySelect.value;
+        const newArea = editAreaSelect.value;
+
+        if (!newName || !newName.length) { showToast('Name cannot be empty.', 'error'); return; }
+        if (!newArea || !newCity || !newState) { showToast('Working Area selection incomplete.', 'error'); return; }
+
+        const areaChanged = state.user.location.area !== newArea || state.user.location.city !== newCity || state.user.location.state !== newState;
+
+        state.user.name = newName;
+        state.user.location = { state: newState, city: newCity, area: newArea };
+        
+        document.getElementById('user-name').innerText = newName;
+        document.getElementById('profile-name-display').innerText = newName;
+        document.getElementById('app-logo').innerText = newName.charAt(0).toUpperCase();
+
+        updateLocationDisplay();
+        profileEditModal.style.display = 'none';
+        
+        if (areaChanged && state.user.isApproved) {
+             state.user.isApproved = false;
+             document.getElementById('profile-status-text').innerText = TRANSLATIONS[state.language]['bank_status_pending'];
+             document.getElementById('profile-status-text').style.color = 'var(--warning)';
+             showToast('Location updated. Re-approval required to receive jobs.', 'warning');
+             jobsNavItem.classList.add('disabled'); jobsNavItem.title = "Approval required";
+             setTimeout(adminApproveProfile, 3000); 
+        } else {
+             showToast('Profile updated successfully.', 'success');
+        }
+    });
+    
+    function adminApproveProfile() {
+        state.user.isApproved = true;
+        state.user.bankDetails.status = 'verified';
+        document.getElementById('profile-status-text').innerText = TRANSLATIONS[state.language]['bank_status_verified'];
+        document.getElementById('profile-status-text').style.color = 'var(--success)';
+        
+        jobsNavItem.classList.remove('disabled'); jobsNavItem.removeAttribute('title');
+        if (document.getElementById('jobs').classList.contains('visible')) updateJobsUI();
+        showToast('Profile Approved! You can now accept jobs.');
+        updateProfileSkillsUI();
+    }
+    
+    // --- UPDATED WITHDRAWAL MODAL LOGIC ---
+    function openWithdrawalModal() {
+        if (state.user.bankDetails.status !== 'verified') {
+            showToast('Bank details must be Verified to withdraw funds.', 'error');
+            switchSection('profile');
+            return;
+        }
+        if (state.wallet.net <= 0) {
+            showToast('No funds available for withdrawal.', 'error');
+            return;
+        }
+        
+        document.getElementById('modal-current-bal').innerText = `₹${state.wallet.net}`;
+        document.getElementById('withdraw-amount-input').value = '';
+        document.getElementById('withdrawal-modal').style.display = 'flex';
+    }
+
+    document.getElementById('btn-confirm-withdrawal').addEventListener('click', () => {
+        const amountInput = document.getElementById('withdraw-amount-input');
+        const amount = parseInt(amountInput.value);
+
+        if (!amount || amount <= 0) {
+            showToast('Please enter a valid amount.', 'error');
+            return;
+        }
+
+        if (amount > state.wallet.net) {
+            showToast('Insufficient balance.', 'error');
+            return;
+        }
+
+        // Logic to subtract from balance and record history
+        state.wallet.net -= amount;
+        state.wallet.gross -= amount; // Maintaining mock consistency
+        
+        state.withdrawals.push({
+            date: new Date().toLocaleDateString(),
+            refId: 'WDR-' + Math.floor(100000 + Math.random() * 900000),
+            amount: amount
+        });
+
+        document.getElementById('withdrawal-modal').style.display = 'none';
+        playCashRegister();
+        updateStats();
+        updateWalletUI();
+        updateWithdrawalHistory();
+        showToast(`Withdrawal of ₹${amount} successful!`, 'success');
+    });
+
+    document.getElementById('btn-close-withdrawal').addEventListener('click', () => {
+        document.getElementById('withdrawal-modal').style.display = 'none';
+    });
+
+    function updateWithdrawalHistory() {
+        const historyBody = document.getElementById('withdrawal-history-body');
+        if (state.withdrawals.length > 0) {
+            historyBody.innerHTML = state.withdrawals.slice().reverse().map(w => `
+                <tr>
+                    <td>${w.date}</td>
+                    <td style="font-weight:700;">${w.refId}</td>
+                    <td style="color: var(--danger); font-weight: 600;">-₹${w.amount}</td>
+                    <td style="text-align: right; color: var(--success); font-weight: 600;">Success</td>
+                </tr>
+            `).join('');
+        } else {
+            historyBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;">No withdrawals yet.</td></tr>';
+        }
+    }
+
+    document.getElementById('btn-withdraw-now-overview').addEventListener('click', openWithdrawalModal);
+    document.getElementById('btn-withdraw-now-wallet').addEventListener('click', openWithdrawalModal);
+
+    function switchSection(target) {
+        navBtns.forEach(b => b.classList.remove('active'));
+        const btn = document.querySelector(`.nav-item[data-target="${target}"]`);
+        if (btn) btn.classList.add('active');
+        sections.forEach(sec => {
+            sec.classList.remove('visible');
+            if(sec.id === target) sec.classList.add('visible');
+        });
+        
+        navBtns.forEach(btn => {
+            const icon = btn.querySelector('i');
+            if (btn.dataset.target === target) {
+                gsap.to(icon, { duration: 0.3, scale: 1.2, rotation: 360, ease: "back.out(1.7)" });
+            } else {
+                gsap.to(icon, { duration: 0.3, scale: 1, rotation: 0, ease: "power1.out" });
+            }
+        });
+
+        if (target === 'analytics') { 
+            const activeRange = document.querySelector('.analytics-chip.active').dataset.range || 'weekly';
+            renderChart(activeRange); 
+            renderPieChart(JOB_CATEGORY_BREAKDOWN);
+            gsap.set(earningsFlipInner, { rotationY: state.isFlipped ? 180 : 0 });
+            updateChartHeader(state.isFlipped);
+        }
+        if (target === 'profile') updateProfileSkillsUI();
+        if (target === 'jobs') state.user.isApproved ? updateJobsUI() : (jobApprovalMsg.classList.remove('hidden'), jobOfflineMessage.style.display = 'none', incomingJobCard.classList.add('hidden'));
+    }
+
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const target = btn.dataset.target;
+            if (target === 'jobs' && (!state.user.isApproved || state.isSuspended)) { 
+                if (!state.user.isApproved) showToast('Approval required.', 'error');
+                else showToast('Account suspended.', 'error');
+                showProfileModal(); 
+                return; 
+            }
+            switchSection(target);
+        });
+    });
+
+    function updateNavState() {
+        navBtns.forEach(btn => {
+            if (btn.dataset.target === 'jobs' && (!state.user.isApproved || state.isSuspended)) { 
+                btn.classList.add('disabled'); 
+                btn.title = state.isSuspended ? "Account suspended" : "Approval required";
+            }
+            else { btn.classList.remove('disabled'); btn.removeAttribute('title'); }
+        });
+    }
+    
+    function checkSuspension() {
+        if (!state.isSuspended) {
+            suspensionMsg.classList.remove('visible');
+            return false;
+        }
+
+        const now = Date.now();
+        if (now < state.suspensionEndTime) {
+            state.isActive = false; 
+            
+            const remainingMs = state.suspensionEndTime - now;
+            const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+            const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+            
+            suspensionMsgText.innerHTML = `<b>Account Suspended:</b> Too many declines. Cannot go online for ${hours}h ${minutes}m.`;
+            suspensionMsg.classList.add('visible');
+            
+            jobsNavItem.classList.add('disabled');
+            jobsNavItem.title = "Suspended";
+            
+            return true;
+        } else {
+            state.isSuspended = false;
+            state.declinedCount = 0; 
+            suspensionMsg.classList.remove('visible');
+            jobsNavItem.classList.remove('disabled');
+            jobsNavItem.removeAttribute('title');
+            return false;
+        }
+    }
+
+    statusToggle.addEventListener('click', () => {
+        if (state.isFrozen) { showToast('Account Locked! Pay fees.', 'error'); return; }
+        if (state.hasActiveJob) { showToast('Cannot go offline with active job.', 'error'); return; }
+        if (state.isSuspended) { showToast('Account is suspended. Cannot go online.', 'error'); return; }
+        
+        state.isActive = !state.isActive;
+        updateStatusUI();
+        if (document.getElementById('jobs').classList.contains('visible')) updateJobsUI();
+    });
+
+    function updateStatusUI() {
+        const suspended = checkSuspension(); 
+        
+        const toggleDisabled = suspended || state.isFrozen || state.hasActiveJob;
+        statusToggle.classList.toggle('disabled', toggleDisabled);
+        
+        if (suspended) {
+            state.isActive = false;
+            statusToggle.classList.remove('active');
+            statusText.innerText = "Suspended";
+            statusText.style.color = "var(--warning)";
+            return; 
+        }
+
+        if (state.hasActiveJob) {
+            statusToggle.classList.add('job-locked', 'active');
+            statusText.innerText = "Job Active (Online)"; statusText.style.color = "var(--warning)";
+        } else {
+            statusToggle.classList.remove('job-locked');
+            if(!state.isActive) {
+                statusToggle.classList.remove('active'); 
+                statusText.innerText = TRANSLATIONS[state.language]['status_offline']; 
+                statusText.style.color = "var(--text-muted)";
+                if(state.isFrozen) {
+                    statusText.innerText = "Account Locked"; statusText.style.color = "var(--danger)";
+                    statusToggle.classList.add('disabled'); freezeMsg.classList.add('visible');
+                } else {
+                    statusToggle.classList.remove('disabled'); freezeMsg.classList.remove('visible');
+                }
+            } else {
+                statusToggle.classList.add('active'); 
+                statusText.innerText = TRANSLATIONS[state.language]['status_online']; 
+                statusText.style.color = "var(--text-main)";
+                statusToggle.classList.remove('disabled'); 
+                freezeMsg.classList.remove('visible');
+            }
+        }
+    }
+
+    function checkCommissionLimit() {
+        if (state.wallet.fees >= COMMISSION_LIMIT) {
+            state.isFrozen = true; state.isActive = false;
+            updateStatusUI(); freezeMsg.classList.add('visible');
+            document.getElementById('pay-dues-box').classList.remove('hidden');
+            showToast('Limit Reached! Account Frozen.', 'error');
+            return true;
+        }
+        return false;
+    }
+
+    const btnAccept = document.getElementById('btn-accept'), btnReject = document.getElementById('btn-reject'), btnComplete = document.getElementById('btn-complete');
+
+    function updateJobsUI() {
+        jobApprovalMsg.classList.add('hidden');
+        jobOfflineMessage.style.display = 'none';
+        incomingJobCard.classList.add('hidden'); 
+        activeJobArea.classList.add('hidden');
+
+        if (!state.user.isApproved || state.isSuspended) {
+            jobApprovalMsg.classList.remove('hidden');
+            return;
+        }
+
+        if (state.hasActiveJob) { 
+            activeJobArea.classList.remove('hidden'); 
+        } else if (state.isActive) {
+            incomingJobCard.classList.remove('hidden'); 
+        } else {
+            jobOfflineMessage.style.display = 'block';
+        }
+        
+        if (state.isSuspended) {
+            incomingJobCard.classList.add('disabled'); 
+        } else {
+             incomingJobCard.classList.remove('disabled');
+        }
+    }
+
+    btnAccept.addEventListener('click', () => {
+        if(!state.isActive) { showToast('Please go online first'); return; }
+        if(state.isFrozen) { showToast('Pay fees first!', 'error'); return; }
+        
+        state.declinedCount = 0; 
+        
+        state.hasActiveJob = true;
+        updateJobsUI(); updateStatusUI();
+        activeJobArea.style.animation = 'slideUp 0.4s ease';
+        showToast('Job Accepted!');
+    });
+
+    btnReject.addEventListener('click', () => {
+        if (state.isSuspended) { 
+             showToast('Account is already suspended.', 'error');
+             return; 
+        }
+        
+        state.declinedCount++; 
+        
+        if (state.declinedCount >= 3) {
+            const suspensionDuration = 8 * 60 * 60 * 1000; 
+            state.isSuspended = true;
+            state.suspensionEndTime = Date.now() + suspensionDuration;
+            state.declinedCount = 0; 
+            state.isActive = false; 
+            
+            showToast('3 Declines reached. Account suspended for 8 hours!', 'error');
+        } else {
+            showToast(`Job Declined. ${3 - state.declinedCount} declines until suspension.`, 'warning');
+        }
+
+        incomingJobCard.style.opacity = '0.5';
+        setTimeout(() => { 
+            incomingJobCard.style.opacity = '1'; 
+            updateStatusUI(); 
+            if (document.getElementById('jobs').classList.contains('visible')) updateJobsUI();
+        }, 500);
+    });
+
+    function generateJobId() {
+        return 'JOB-' + Math.floor(10000 + Math.random() * 90000);
+    }
+
+    btnComplete.addEventListener('click', () => {
+        const fees = JOB_VALUE * COMMISSION;
+        const net = JOB_VALUE - fees;
+        state.wallet.gross += JOB_VALUE; state.wallet.fees += fees; state.wallet.net += net;
+        state.jobsDone++;
+        
+        state.declinedCount = 0;
+
+        if (state.jobsDone === 5) {
+            state.rating = 4.9;
+            state.reviews += 1;
+        } else if (state.jobsDone === 1) {
+             state.reviews += 1;
+        }
+        
+        state.transactions.push({ jobId: generateJobId(), service: 'Tap Repair', date: new Date().toLocaleDateString(), amount: net });
+        state.hasActiveJob = false;
+        
+        if (state.jobsDone === 1 && state.user.signupReferralCode) {
+             showToast(`Job done! ₹50 reward triggered for referrer: ${state.user.signupReferralCode}`, 'warning');
+        }
+
+        updateJobsUI(); checkCommissionLimit(); if (!state.isFrozen) updateStatusUI();
+        updateStats(); updateWalletUI(); 
+        updateWorkerLevelAndRating(); 
+        
+        renderChart(document.querySelector('.analytics-chip.active').dataset.range || 'weekly');
+        renderPieChart(JOB_CATEGORY_BREAKDOWN);
+        
+        // --- UPDATED: PLAY REGISTER SOUND ON JOB COMPLETION ---
+        playCashRegister();
+        // ------------------------------------------------------
+        
+        // Play synthesized gold coin prize sound
+        playPrizeSound();
+        coinShower(); 
+        showToast(`Job Complete! ₹${net} added.`);
+
+        updatePastJobsList();
+    });
+
+    document.getElementById('btn-pay-dues').addEventListener('click', () => {
+        if (state.wallet.fees <= 0) return;
+        showToast('Processing Payment...');
+        setTimeout(() => {
+            state.wallet.fees = 0; state.isFrozen = false; state.isActive = true;
+            freezeMsg.classList.remove('visible'); document.getElementById('pay-dues-box').classList.add('hidden');
+            updateWalletUI(); updateStatusUI();
+            showToast('Fees Paid! Account Unlocked.', 'success');
+            if (document.getElementById('jobs').classList.contains('visible')) updateJobsUI();
+        }, 1500);
+    });
+
+    function updateStats() {
+        document.getElementById('ov-earnings').innerText = `₹${state.wallet.net}`;
+        document.getElementById('ov-jobs').innerText = state.jobsDone;
+        document.getElementById('ov-balance').innerText = `₹${state.wallet.net}`;
+        
+        const MOCK_INCOMING_JOB_COUNT = 2;
+        const MOCK_INCOMING_POTENTIAL_EARNINGS = MOCK_INCOMING_JOB_COUNT * JOB_VALUE;
+        ovIncomingCount.innerText = MOCK_INCOMING_JOB_COUNT;
+        ovPotentialEarnings.innerText = `~₹${MOCK_INCOMING_POTENTIAL_EARNINGS}`;
+    }
+    
+    function updatePastJobsList() {
+        const pastList = document.getElementById('past-jobs-list');
+        pastList.innerHTML = ''; 
+
+        if (state.transactions.length > 0) {
+            const reversedTransactions = state.transactions.slice().reverse();
+            reversedTransactions.forEach(tx => {
+                pastList.innerHTML += `<tr>
+                    <td style="font-weight: 700; color: var(--text-main);">${tx.jobId}</td>
+                    <td>${tx.service}</td>
+                    <td style="font-size: 13px; color: var(--text-muted);">${tx.date}</td>
+                    <td class="amount-col" style="color: var(--success);">+₹${tx.amount}</td>
+                </tr>`;
+            });
+        } else {
+             pastList.innerHTML = `<tr><td colspan="4" style="text-align:center; color: var(--text-muted); padding: 20px;" data-i18n="no_past_jobs">${TRANSLATIONS[state.language]['no_past_jobs']}</td></tr>`;
+        }
+    }
+
+    function updateWalletUI() {
+        document.getElementById('wallet-total').innerText = `₹${state.wallet.gross}`;
+        document.getElementById('wallet-fees').innerText = `-₹${state.wallet.fees}`;
+        document.getElementById('wallet-net').innerText = `₹${state.wallet.net}`;
+        
+        if (state.wallet.fees >= COMMISSION_LIMIT) document.getElementById('pay-dues-box').classList.remove('hidden');
+        else document.getElementById('pay-dues-box').classList.add('hidden');
+        
+        const tbody = document.getElementById('tx-table-body');
+        if (state.transactions.length > 0) {
+            tbody.innerHTML = state.transactions.slice().reverse().map(tx => `<tr><td>${tx.service}</td><td>${tx.date}</td><td class="amount-col" style="color: var(--success);">+₹${tx.amount}</td></tr>`).join('');
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color: var(--text-muted); padding: 20px;" data-i18n="no_transactions">${TRANSLATIONS[state.language]['no_transactions']}</td></tr>`;
+        }
+    }
+
+    const barChartArea = document.getElementById('bar-chart-area'), lineChartArea = document.getElementById('line-chart-area'), analyticsChips = document.querySelectorAll('.analytics-chip');
+    analyticsChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            analyticsChips.forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            renderChart(chip.dataset.range);
+        });
+    });
+
+    function updateChartHeader(isFlipped) {
+        chartTitle.innerText = isFlipped 
+            ? TRANSLATIONS[state.language]['earnings_trend']
+            : TRANSLATIONS[state.language]['earnings_growth'];
+        chartIcon.className = isFlipped ? 'ph-fill ph-chart-line' : 'ph-fill ph-trend-up';
+    }
+
+    if(earningsFlipContainer) {
+        earningsFlipContainer.addEventListener('click', () => {
+            state.isFlipped = !state.isFlipped;
+            
+            gsap.to(earningsFlipInner, {
+                duration: 0.8,
+                rotationY: state.isFlipped ? 180 : 0,
+                ease: "power2.inOut",
+                onComplete: () => {
+                    updateChartHeader(state.isFlipped);
+                }
+            });
+
+            updateChartHeader(!state.isFlipped);
+            const activeRange = document.querySelector('.analytics-chip.active')?.dataset.range || 'weekly';
+            renderChart(activeRange);
+        });
+    }
+
+    function generateMockData(count, baseVal) { return Array.from({ length: count }, () => Math.floor(Math.random() * (baseVal * 0.4) + baseVal * 0.8)); }
+    
+    function getChartData(range) {
+        let data = [], labels = [];
+        if (range === 'weekly') { data = generateMockData(7, 4000); labels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']; }
+        else if (range === '1m') { data = generateMockData(4, 15000); labels = ['W1', 'W2', 'W3', 'W4']; } 
+        else { data = generateMockData(6, 15000); labels = ['J', 'F', 'M', 'A', 'M', 'J']; }
+        return { data, labels };
+    }
+
+    function renderChart(range) {
+        const { data, labels } = getChartData(range);
+        
+        barChartArea.innerHTML = '';
+        const max = Math.max(...data, 100);
+        data.forEach((val, i) => {
+            barChartArea.innerHTML += `<div class="bar-wrap"><span class="bar-label-val">₹${val}</span><div class="bar" style="height: ${(val/max)*100}%;"></div><span class="bar-lbl">${labels[i]}</span></div>`;
+        });
+        
+        renderLineChart(data, labels);
+        updateChartHeader(state.isFlipped);
+    }
+    
+    function renderLineChart(data, labels) {
+        lineChartArea.innerHTML = '';
+        const margin = { top: 20, right: 30, bottom: 30, left: 10 };
+        const width = lineChartArea.offsetWidth - margin.left - margin.right;
+        const height = lineChartArea.offsetHeight - margin.top - margin.bottom - 10;
+        const maxVal = Math.max(...data, 100);
+        const minVal = 0;
+        const numPoints = data.length;
+
+        const scaleX = i => i * width / (numPoints - 1);
+        const scaleY = val => height - (val - minVal) * height / (maxVal - minVal);
+        
+        let linePath = "M" + scaleX(0) + " " + scaleY(data[0]);
+        for (let i = 1; i < numPoints; i++) {
+            linePath += " L" + scaleX(i) + " " + scaleY(data[i]);
+        }
+        let areaPath = linePath;
+        areaPath += ` L${scaleX(numPoints - 1)} ${height} L${scaleX(0)} ${height} Z`;
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute('viewBox', `0 0 ${width} ${height + 25}`); 
+        svg.classList.add('line-chart-svg');
+        
+        const chartGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        const numGridLines = 5;
+        for (let i = 0; i < numGridLines; i++) {
+            const y = (i / (numGridLines - 1)) * height;
+            const gridLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            gridLine.setAttribute('x1', 0); gridLine.setAttribute('y1', y);
+            gridLine.setAttribute('x2', width); gridLine.setAttribute('y2', y);
+            gridLine.classList.add('chart-grid-line');
+            chartGroup.appendChild(gridLine);
+        }
+        
+        const area = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        area.setAttribute('d', areaPath); area.classList.add('line-area');
+        chartGroup.appendChild(area);
+
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        line.setAttribute('d', linePath); line.classList.add('line-path');
+        
+        const lineLength = line.getTotalLength ? line.getTotalLength() : 1000;
+        line.style.strokeDasharray = lineLength;
+        line.style.strokeDashoffset = lineLength;
+
+        chartGroup.appendChild(line);
+
+        data.forEach((val, i) => {
+            const cx = scaleX(i);
+            const cy = scaleY(val);
+            const point = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            point.setAttribute('cx', cx); point.setAttribute('cy', cy);
+            point.setAttribute('r', 4);
+            point.classList.add('line-point');
+            point.addEventListener('mouseover', () => showToast(`₹${val} (${labels[i]})`, 'warning'));
+            chartGroup.appendChild(point);
+        });
+
+        labels.forEach((label, i) => {
+            const x = scaleX(i);
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute('x', x); text.setAttribute('y', height + 15);
+            text.setAttribute('text-anchor', 'middle');
+            text.textContent = label;
+            text.classList.add('chart-label-x');
+            chartGroup.appendChild(text);
+        });
+
+        svg.appendChild(chartGroup);
+        lineChartArea.appendChild(svg);
+        
+        if(state.isFlipped) {
+             gsap.to(line, { duration: 1.5, strokeDashoffset: 0, ease: 'power3.out' });
+             gsap.from(chartGroup.querySelectorAll('.line-point'), { duration: 0.5, scale: 0, ease: 'back.out(1.7)', stagger: 0.1, delay: 1 });
+        }
+    }
+    
+    function renderPieChart(data) {
+        pieChartArea.innerHTML = '';
+        pieLegendList.innerHTML = '';
+
+        const total = Object.values(data).reduce((sum, value) => sum + value, 0);
+        if (total === 0) {
+            pieChartArea.innerHTML = '<p style="color: var(--text-muted); font-size: 14px; text-align: center;">No job data yet.</p>';
+            return;
+        }
+
+        const radius = 90;
+        const center = 100;
+        let cumulativeAngle = 0;
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute('viewBox', `0 0 200 200`);
+        svg.classList.add('pie-chart-svg');
+        
+        const bgCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        bgCircle.setAttribute('cx', center); bgCircle.setAttribute('cy', center);
+        bgCircle.setAttribute('r', radius); bgCircle.setAttribute('fill', 'rgba(255, 255, 255, 0.05)');
+        svg.appendChild(bgCircle);
+
+        Object.entries(data).forEach(([label, value], index) => {
+            const percentage = (value / total);
+            const angle = percentage * 360;
+            const startAngle = cumulativeAngle;
+            const endAngle = cumulativeAngle + angle;
+            const color = PIE_COLORS[label] || `hsl(${index * 60}, 70%, 50%)`;
+            const largeArcFlag = angle > 180 ? 1 : 0;
+            
+            const toX = (angle) => center + radius * Math.cos(angle * Math.PI / 180);
+            const toY = (angle) => center + radius * Math.sin(angle * Math.PI / 180);
+
+            const x1 = toX(startAngle - 90);
+            const y1 = toY(startAngle - 90);
+            const x2 = toX(endAngle - 90);
+            const y2 = toY(endAngle - 90);
+            
+            const d = (
+                `M ${center},${center} ` + `L ${x1},${y1} ` +
+                `A ${radius},${radius} 0 ${largeArcFlag},1 ${x2},${y2} ` + `Z`
+            );
+            
+            const segment = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            segment.setAttribute('d', d); segment.setAttribute('fill', color);
+            segment.classList.add('pie-segment');
+            segment.dataset.label = label;
+            segment.dataset.percentage = (percentage * 100).toFixed(1);
+
+            segment.addEventListener('mouseover', () => showToast(`${label}: ₹${value}`, 'warning'));
+            
+            svg.appendChild(segment);
+            cumulativeAngle += angle;
+            
+            const legendItem = document.createElement('li');
+            legendItem.classList.add('legend-item');
+            legendItem.innerHTML = `<span class="legend-color" style="background-color: ${color};"></span>${label}<span class="legend-percentage">${(percentage * 100).toFixed(1)}%</span>`;
+            pieLegendList.appendChild(legendItem);
+        });
+
+        pieChartArea.appendChild(svg);
+    }
+    
+    function showToast(msg, type='success') {
+        const toast = document.getElementById('toast'), txt = document.getElementById('toast-msg');
+        toast.className = 'toast'; if(type === 'error') toast.classList.add('error');
+        toast.querySelector('i').className = type === 'error' ? 'ph-fill ph-warning-circle' : 'ph-fill ph-check-circle';
+        txt.innerText = msg; toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function coinShower() {
+        for(let i=0; i<20; i++) {
+            const coin = document.createElement('div');
+            coin.innerText = '🪙'; coin.classList.add('coin');
+            coin.style.left = Math.random() * 100 + 'vw';
+            coin.style.animationDuration = (Math.random() * 2 + 1) + 's';
+            document.body.appendChild(coin);
+            setTimeout(() => coin.remove(), 3000);
+        }
+    }
+
+    function updateTheme(theme) {
+        state.theme = theme;
+        if (theme === 'light') { body.classList.add('light-theme'); body.classList.remove('dark-theme'); }
+        else { body.classList.add('dark-theme'); body.classList.remove('light-theme'); }
+        
+        const toggles = [settingsThemeToggle, headerThemeToggle].filter(Boolean);
+        const isLight = theme === 'light';
+        const sliderDistance = isLight ? 30 : 0;
+        
+        toggles.forEach(toggle => {
+            const slider = toggle.querySelector('.toggle-slider');
+            const moonIcon = toggle.querySelector('.icon-moon');
+            const sunIcon = toggle.querySelector('.icon-sun');
+            
+            gsap.to(slider, { duration: 0.5, x: sliderDistance, ease: 'power2.inOut' });
+            gsap.to(moonIcon, { 
+                color: isLight ? 'var(--text-muted)' : 'var(--logo-accent)', 
+                scale: isLight ? 1 : 1.1,
+                rotation: isLight ? 0 : 10,
+                duration: 0.4 
+            });
+            gsap.to(sunIcon, { 
+                color: isLight ? 'var(--logo-accent)' : 'var(--text-muted)', 
+                scale: isLight ? 1.1 : 1,
+                rotation: isLight ? 10 : 0,
+                duration: 0.4
+            });
+            toggle.classList.toggle('light-theme', isLight);
+        });
+    }
+    
+    function handleThemeToggle() {
+        const newTheme = state.theme === 'dark' ? 'light' : 'dark';
+        updateTheme(newTheme);
+        showToast(`${newTheme === 'dark' ? 'Dark' : 'Light'} Theme Selected`, 'success');
+    }
+
+    if (settingsThemeToggle) { settingsThemeToggle.addEventListener('click', handleThemeToggle); }
+    if (headerThemeToggle) { headerThemeToggle.addEventListener('click', handleThemeToggle); }
+
+    function updateLanguage(lang) {
+        state.language = lang;
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (TRANSLATIONS[lang][key]) el.innerText = TRANSLATIONS[lang][key];
+        });
+        
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (TRANSLATIONS[lang][key]) el.placeholder = TRANSLATIONS[lang][key];
+        });
+
+        const authLangSelect = document.getElementById('auth-language-select');
+        if(authLangSelect && authLangSelect.value !== lang) authLangSelect.value = lang;
+
+        if (languageToggleGroup) {
+            languageToggleGroup.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+        }
+        
+        updateStatusUI();
+        updateChartHeader(state.isFlipped);
+        updateBankDetailsUI();
+        updateWorkerLevelAndRating(); 
+        updatePastJobsList(); 
+    }
+
+    if(languageToggleGroup) {
+        languageToggleGroup.querySelectorAll('.lang-toggle-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                if (state.language !== lang) {
+                    updateLanguage(lang);
+                    showToast(`Language set to ${lang.toUpperCase()}`, 'success');
+                }
+            });
+        });
+    }
+
+    function runSplashAnimation() {
+        const tl = gsap.timeline();
+        const chars = document.querySelectorAll('.logo-char');
+        const splashText = document.getElementById('splash-text');
+
+        // QUICK CONSTRUCT Animation
+        tl.to(chars, {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            rotation: 0,
+            duration: 0.4,
+            stagger: 0.08,
+            ease: "bounce.out",
+            startAt: { y: -100, scale: 0.5, rotation: -20 }
+        })
+        .to(splashText, {
+            opacity: 1,
+            y: 0,
+            duration: 0.5,
+            ease: "power2.out"
+        }, "-=0.2")
+        .to("#splash-screen", {
+            opacity: 0,
+            duration: 0.5,
+            delay: 1.5,
+            onComplete: () => {
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('auth-screen').style.display = 'flex';
+            }
+        });
+    }
+    
+    function mockCall() {
+        showToast('Initiating mock call with client...', 'warning');
+    }
+
+    function mockChat() {
+        showToast('Opening mock chat window...', 'success');
+    }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        const storedTheme = 'dark';
+        
+        const initialSliderX = storedTheme === 'light' ? 30 : 0;
+        const initialMoonColor = storedTheme === 'light' ? 'var(--text-muted)' : 'var(--logo-accent)';
+        const initialSunColor = storedTheme === 'light' ? 'var(--logo-accent)' : 'var(--text-muted)';
+        const initialMoonScale = storedTheme === 'light' ? 1 : 1.1;
+        const initialSunScale = storedTheme === 'light' ? 1.1 : 1;
+        
+        [settingsThemeToggle, headerThemeToggle].filter(Boolean).forEach(toggle => {
+            const slider = toggle.querySelector('.toggle-slider');
+            const moonIcon = toggle.querySelector('.icon-moon');
+            const sunIcon = toggle.querySelector('.icon-sun');
+
+            gsap.set(slider, { x: initialSliderX });
+            gsap.set(moonIcon, { color: initialMoonColor, scale: initialMoonScale, rotation: 0 });
+            gsap.set(sunIcon, { color: initialSunColor, scale: initialSunScale, rotation: 0 });
+        });
+        
+        updateTheme(storedTheme);
+
+        runSplashAnimation(); 
+        updateStatusUI(); 
+        updateWalletUI(); 
+        renderChart('weekly');
+        renderPieChart(JOB_CATEGORY_BREAKDOWN);
+        
+        renderCategoryTabs(profileCategoryTabs, profileSkillGrid); renderCategoryTabs(modalCategoryTabs, modalSkillGrid);
+        initLocationSelectors(); updateProfileSkillsUI();
+        referralCodeDisplay.innerText = state.user.referralCode;
+        updateLanguage('en');
+        
+        const activeNavIcon = document.querySelector('.nav-item.active i');
+        if(activeNavIcon) {
+             gsap.set(activeNavIcon, { scale: 1.2, rotation: 360 });
+        }
+        
+        updateStats();
+        updateWorkerLevelAndRating(); 
+        updatePastJobsList(); 
+        
+        if(earningsFlipInner) {
+            gsap.set(earningsFlipInner, { rotationY: 0 });
+        }
+    });
+
+    setInterval(() => {
+        if (state.isSuspended) {
+            updateStatusUI();
+            if (document.getElementById('jobs').classList.contains('visible')) updateJobsUI();
+        }
+    }, 60000); 
+  </script>
+</body>
+</html>

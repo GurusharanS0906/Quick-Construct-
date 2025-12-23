@@ -1,0 +1,3323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Construct - Premium Seller Hub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            brandYellow: '#FFC107',
+            brandDark: '#0F172A',
+            brandGray: '#1E293B',
+            // Colors from the screenshot
+            boostBlue: '#0056b3', 
+            boostTag: '#FFF9C4',
+          },
+          boxShadow: {
+            'glow': '0 0 20px rgba(255, 193, 7, 0.3)',
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Custom Scrollbar */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Base Animations */
+    .fade-in { animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide-in { animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* Modal Slide Up Animation */
+    @keyframes modalSlideUp {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .modal-slide-up {
+        animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Smooth hover animation for cards/buttons */
+    .soft-hover {
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .soft-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(15, 23, 42, 0.18);
+    }
+
+    /* Global smoothness for micro-interactions */
+    * {
+      transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, left, width;
+      transition-duration: 300ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Glassmorphism */
+    .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+    }
+    .dark .glass {
+        background: rgba(15, 23, 42, 0.7);
+    }
+
+    /* Toggle Switch */
+    .toggle-checkbox:checked { right: 0; border-color: #10B981; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #10B981; }
+
+    /* PRINT STYLES (For Invoice) */
+    @media print {
+        body * { visibility: hidden; }
+        #invoice-print-area, #invoice-print-area * { visibility: visible; }
+        #invoice-print-area {
+          position: relative !important;
+          left: 0;
+          top: 0;
+          width: 100%;
+          margin: 0;
+          padding: 0;
+          background: white;
+          color: black;
+        }
+        .no-print { display: none !important; }
+    }
+
+    /* LOGO SPIN + TOOL GLITCH */
+    @keyframes logoSpin {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(360deg) scale(1.1); }
+        100% { transform: rotate(720deg) scale(1); }
+    }
+    .logo-spin {
+        animation: logoSpin 1s ease-in-out;
+    }
+
+    @keyframes toolGlitch {
+      0% { letter-spacing: 0px; transform: scale(1); }
+      20% { letter-spacing: 2px; transform: scale(1.1) rotate(-2deg); }
+      40% { letter-spacing: -1px; transform: scale(1.05) rotate(1deg); }
+      60% { letter-spacing: 3px; transform: scale(1.15); }
+      80% { letter-spacing: 0px; transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+    .logo-glitch:hover .logo-text-main {
+      animation: toolGlitch 0.6s ease-out;
+    }
+
+    /* QUICK ACTION ICON ANIMATIONS */
+    @keyframes boxRealOpen {
+      0% { transform: scale(1) rotate(0deg); }
+      30% { transform: scale(1.1) rotate(-8deg); }
+      60% { transform: scale(1.15) rotate(6deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes truckDrive {
+      0% { transform: translateX(-10%) scale(1); }
+      50% { transform: translateX(20%) scale(1.03); }
+      100% { transform: translateX(0%) scale(1); }
+    }
+    @keyframes walletBounce {
+      0% { transform: translateY(0) scale(1); }
+      30% { transform: translateY(-6px) scale(1.06); }
+      60% { transform: translateY(2px) scale(0.97); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    @keyframes chartGrow {
+      0% { transform: scale(0.7) translateY(4px); opacity: 0.4; }
+      70% { transform: scale(1.1) translateY(-2px); opacity: 1; }
+      100% { transform: scale(1) translateY(0); }
+    }
+    .quick-action-card {
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .quick-action-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 35px rgba(15, 23, 42, 0.25);
+    }
+    .quick-action-card:hover .quick-box-icon {
+      animation: boxRealOpen 0.7s ease-out forwards;
+    }
+    .quick-action-card:hover .quick-truck-icon {
+      animation: truckDrive 0.7s ease-out;
+    }
+    .quick-action-card:hover .quick-wallet-icon {
+      animation: walletBounce 0.6s ease-out;
+    }
+    .quick-action-card:hover .quick-analytics-icon {
+      animation: chartGrow 0.6s ease-out;
+    }
+
+    /* ORDER TAB FLOW / PROGRESS LOOK */
+    .order-tabs-gradient {
+      position: absolute;
+      left: 16px;
+      right: 16px;
+      top: 50%;
+      height: 2px;
+      transform: translateY(-50%);
+      background: linear-gradient(90deg, rgba(250, 204, 21, 0.5), rgba(59,130,246,0.5), rgba(16,185,129,0.7));
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    /* STICK MAN RUNNING ANIMATION */
+    @keyframes runBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .animate-run {
+      animation: runBounce 0.4s infinite ease-in-out;
+    }
+    @keyframes cloudPuff {
+      0% { transform: scale(0); opacity: 0.8; }
+      100% { transform: scale(1.5) translateX(-10px); opacity: 0; }
+    }
+    .dust-cloud {
+      animation: cloudPuff 0.6s infinite linear;
+    }
+
+    /* --- VEHICLE SUGGESTION ANIMATIONS --- */
+    @keyframes realBikeEnter {
+        0% { transform: translateX(-100%) rotate(-5deg); opacity: 0; }
+        60% { transform: translateX(10%) rotate(2deg); opacity: 1; }
+        80% { transform: translateX(-5%) rotate(0deg); }
+        100% { transform: translateX(0) rotate(0deg); }
+    }
+    .vehicle-anim-bike {
+        animation: realBikeEnter 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes realAutoEnter {
+        0% { transform: scale(0.5) translateY(20px); opacity: 0; }
+        60% { transform: scale(1.1) translateY(-5px); opacity: 1; }
+        100% { transform: scale(1) translateY(0); }
+    }
+    .vehicle-anim-auto {
+        animation: realAutoEnter 0.8s ease-out forwards;
+    }
+    @keyframes realTruckEnter {
+        0% { transform: translateX(-120%); opacity: 0; }
+        70% { transform: translateX(10%); opacity: 1; }
+        100% { transform: translateX(0); }
+    }
+    .vehicle-anim-truck {
+        animation: realTruckEnter 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* --- UPDATED ANIMATION: SPLASH SCREEN REVEAL WITH TOOLS CLASH --- */
+    @keyframes splashExit {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.1); pointer-events: none; visibility: hidden; }
+    }
+    .splash-container {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background-color: #0F172A; /* Slate 900 */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: splashExit 0.8s ease-in-out forwards;
+        animation-delay: 3.2s; /* Increased delay to allow tool animation */
+    }
+
+    /* Tools Animations */
+    @keyframes hammerThrow {
+        0% { transform: translate(-150%, 150%) rotate(-90deg) scale(0.5); opacity: 0; }
+        40% { opacity: 1; }
+        70% { transform: translate(0, 0) rotate(-15deg) scale(1.2); } /* Impact Point */
+        85% { transform: translate(-40px, 40px) rotate(-45deg) scale(1); opacity: 1; } /* Recoil */
+        100% { transform: translate(-100px, 100px) rotate(-90deg) scale(0.8); opacity: 0; } /* Fade Out */
+    }
+    @keyframes spannerThrow {
+        0% { transform: translate(150%, 150%) rotate(90deg) scale(0.5); opacity: 0; }
+        40% { opacity: 1; }
+        70% { transform: translate(0, 0) rotate(-15deg) scale(1.2); } /* Impact Point */
+        85% { transform: translate(-40px, 40px) rotate(-45deg) scale(1); opacity: 1; } /* Recoil */
+        100% { transform: translate(-100px, 100px) rotate(-90deg) scale(0.8); opacity: 0; } /* Fade Out */
+    }
+    @keyframes clashSpark {
+        0%, 65% { opacity: 0; transform: scale(0); }
+        70% { opacity: 1; transform: scale(2) rotate(45deg); } /* FLASH */
+        85% { opacity: 0; transform: scale(2.5); }
+        100% { opacity: 0; }
+    }
+    @keyframes logoBurstReveal {
+        0%, 75% { transform: scale(0); opacity: 0; }
+        85% { transform: scale(1.1); opacity: 1; }
+        90% { transform: scale(0.95); opacity: 1; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+
+    .splash-hammer { animation: hammerThrow 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .splash-spanner { animation: spannerThrow 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .splash-spark { animation: clashSpark 2.5s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+    .splash-logo-reveal { animation: logoBurstReveal 2.5s ease-out forwards; }
+    
+    /* Truck Bounce for Order Page - FIXED DIRECTION */
+    @keyframes truckDriveBounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-2px); }
+    }
+    .animate-truck-bounce {
+        animation: truckDriveBounce 0.6s infinite ease-in-out;
+    }
+  </style>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-900 dark:bg-slate-950 dark:text-white transition-colors duration-300 font-sans">
+  <div id="root"></div>
+
+  <div id="error-container" style="display:none; padding: 20px; text-align: center; color: red;">
+    <h2>⚠️ Application Error</h2>
+    <p>Please check your internet connection to load libraries.</p>
+    <p id="error-text"></p>
+  </div>
+  <script>
+    window.onerror = function(m){
+      document.getElementById('error-container').style.display='block';
+      document.getElementById('error-text').innerText=m;
+    };
+  </script>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- ICONS (Lucide Style SVGs) ---
+    const Icons = {
+      Home: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>,
+      Package: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16.5 9.4-9-5.19"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>,
+      Wallet: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>,
+      Grid: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="14" y="3" rx="1"/><rect width="7" height="7" x="14" y="14" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/></svg>,
+      BarChart: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></svg>,
+      Receipt: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17V7"/></svg>,
+      Settings: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.35a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>,
+      Bell: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>,
+      Plus: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>,
+      Truck: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="13" x="1" y="3" rx="2"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/><path d="M17 3h4a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-2"/></svg>,
+      Box: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5"/><path d="M12 12v9"/><path d="M12 12L4 7.5"/></svg>,
+      BoxOpen: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 7L4 12v9l8 4.5L20 21v-9l-8-4.5z"/><path d="M12 7v9"/><path d="M12 16l8-4.5"/><path d="M12 16L4 11.5"/><path d="m16 7 4-2.5"/><path d="m8 7-4-2.5"/></svg>,
+      Alert: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>,
+      Award: () => <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>,
+      Tool: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
+      CheckCircle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+      AlertTriangle: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+      Info: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>,
+      Pencil: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>,
+      Tag: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>,
+      Trash: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+    };
+
+    // --- BIGGER MOCK DATABASE OF TOOLS ---
+    const HARDWARE_DB = [
+      { name: 'Allen Key Set', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Adjustable Wrench', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Bench Vise', hsn: '8205', category: 'Workholding' },
+      { name: 'Bolt (Hex M6)', hsn: '7318', category: 'Fasteners' },
+      { name: 'Box Spanner Set', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Cable Cutter', hsn: '8203', category: 'Cutting Tools' },
+      { name: 'Chisel (Wood)', hsn: '8205', category: 'Carpentry' },
+      { name: 'Combination Plier', hsn: '8203', category: 'Pliers' },
+      { name: 'Cordless Drill Machine', hsn: '8467', category: 'Power Tools' },
+      { name: 'Cutting Plier', hsn: '8203', category: 'Pliers' },
+      { name: 'C-Clamp 4 Inch', hsn: '8205', category: 'Workholding' },
+      { name: 'Digital Vernier Caliper', hsn: '9017', category: 'Measuring' },
+      { name: 'Drill Bit (Masonry)', hsn: '8207', category: 'Accessories' },
+      { name: 'Electric Screwdriver', hsn: '8467', category: 'Power Tools' },
+      { name: 'Extension Board (Heavy Duty)', hsn: '8536', category: 'Electrical' },
+      { name: 'Flat Screwdriver', hsn: '8205', category: 'Hand Tools' },
+      { name: 'Garden Shovel', hsn: '8201', category: 'Garden Tools' },
+      { name: 'Glass Cutter', hsn: '8205', category: 'Cutting Tools' },
+      { name: 'Glue Gun (Hot Melt)', hsn: '8516', category: 'Power Tools' },
+      { name: 'Grinder (Angle 4 Inch)', hsn: '8467', category: 'Power Tools' },
+      { name: 'Hammer (Claw)', hsn: '8205', category: 'Hand Tools' },
+      { name: 'Hammer (Sledge)', hsn: '8205', category: 'Hand Tools' },
+      { name: 'Hex Bit Set', hsn: '8207', category: 'Accessories' },
+      { name: 'Impact Drill', hsn: '8467', category: 'Power Tools' },
+      { name: 'Jigsaw Machine', hsn: '8467', category: 'Power Tools' },
+      { name: 'L-Clamp', hsn: '8205', category: 'Workholding' },
+      { name: 'Ladder (Aluminium 6 Step)', hsn: '7616', category: 'Ladders' },
+      { name: 'Measuring Tape', hsn: '9017', category: 'Measuring' },
+      { name: 'Mini Hand Saw', hsn: '8202', category: 'Cutting Tools' },
+      { name: 'Nut Driver Set', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Paint Brush 4 Inch', hsn: '9603', category: 'Painting' },
+      { name: 'Paint Roller', hsn: '9603', category: 'Painting' },
+      { name: 'Phillips Screwdriver', hsn: '8205', category: 'Hand Tools' },
+      { name: 'Pipe Wrench 14 Inch', hsn: '8204', category: 'Plumbing' },
+      { name: 'Pliers (Long Nose)', hsn: '8203', category: 'Pliers' },
+      { name: 'PVC Pipe Cutter', hsn: '8203', category: 'Plumbing' },
+      { name: 'Ratchet Spanner Set', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Rotary Hammer', hsn: '8467', category: 'Power Tools' },
+      { name: 'Safety Gloves (Nitrile)', hsn: '4015', category: 'Safety' },
+      { name: 'Safety Helmet', hsn: '6506', category: 'Safety' },
+      { name: 'Safety Shoes (Steel Toe)', hsn: '6403', category: 'Safety' },
+      { name: 'Sandpaper Pack', hsn: '6805', category: 'Abrasives' },
+      { name: 'Saw Blade (Wood)', hsn: '8202', category: 'Cutting Tools' },
+      { name: 'Socket Set 1/2 Inch', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Spanner Set (Double Open End)', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Spirit Level 24 Inch', hsn: '9015', category: 'Measuring' },
+      { name: 'Square (Carpenter Try Square)', hsn: '9017', category: 'Measuring' },
+      { name: 'Screwdriver Set', hsn: '8205', category: 'Hand Tools' },
+      { name: 'Tile Cutter', hsn: '8205', category: 'Cutting Tools' },
+      { name: 'Toolbox (Metal)', hsn: '7326', category: 'Storage' },
+      { name: 'Torque Wrench', hsn: '8204', category: 'Hand Tools' },
+      { name: 'USB Voltage Tester', hsn: '9030', category: 'Electrical' },
+      { name: 'Wire Stripper', hsn: '8203', category: 'Electrical' },
+      { name: 'Wrench (Adjustable)', hsn: '8204', category: 'Hand Tools' },
+      { name: 'Wood Planer (Hand)', hsn: '8465', category: 'Carpentry' },
+      { name: 'Wood Router Machine', hsn: '8465', category: 'Carpentry' },
+      { name: 'Workbench Foldable', hsn: '9403', category: 'Workbenches' },
+      // --- CONSTRUCTION MATERIALS ADDED ---
+      { name: 'M-Sand (Manufactured Sand)', hsn: '2505', category: 'Construction Materials' },
+      { name: 'River Sand', hsn: '2505', category: 'Construction Materials' },
+      { name: 'Cement (OPC 53 Grade)', hsn: '2523', category: 'Construction Materials' },
+      { name: 'Red Clay Bricks', hsn: '6904', category: 'Construction Materials' },
+      { name: 'Fly Ash Bricks', hsn: '6810', category: 'Construction Materials' },
+      { name: 'Granite Slab (Black Galaxy)', hsn: '6802', category: 'Flooring' },
+      { name: 'TMT Steel Bar 12mm', hsn: '7214', category: 'Construction Materials' },
+      { name: 'Gravel / Blue Metal 20mm', hsn: '2517', category: 'Construction Materials' },
+      { name: 'Ceramic Floor Tiles', hsn: '6907', category: 'Flooring' },
+      { name: 'White Cement', hsn: '2523', category: 'Painting' },
+      { name: 'AAC Blocks', hsn: '6810', category: 'Construction Materials' },
+      { name: 'Plywood Sheet 18mm', hsn: '4412', category: 'Carpentry' },
+      { name: 'Teak Wood Plank', hsn: '4407', category: 'Carpentry' },
+      { name: 'Vitrified Tiles (2x2)', hsn: '6907', category: 'Flooring' },
+      { name: 'Plaster of Paris (POP)', hsn: '2520', category: 'Construction Materials' },
+    ];
+
+    // --- HELPER LOGIC (Updated for 3-Wheeler Support) ---
+    const calculateVehicle = (l, w, h, weight) => {
+      const wt = Number(weight);
+      // Logic for Two Wheeler
+      if (l <= 50 && w <= 50 && h <= 50 && wt <= 20) return 'Two Wheeler (Bike)';
+      // Logic for Three Wheeler (Added to support Auto animation)
+      if (l <= 120 && w <= 120 && h <= 120 && wt <= 100) return 'Three Wheeler (Auto)';
+      // Fallback to Four Wheeler
+      return 'Four Wheeler (Truck/Van)';
+    };
+
+    const getGreeting = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'Good Morning';
+      if (hour < 18) return 'Good Afternoon';
+      return 'Good Evening';
+    };
+
+    // --- UPDATED SPLASH SCREEN COMPONENT WITH TOOLS ANIMATION ---
+    const SplashScreen = () => {
+      return (
+        <div className="splash-container">
+            <div className="relative flex items-center justify-center w-64 h-64">
+                
+                {/* Tools Animation Layer */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+                    {/* Hammer SVG */}
+                    <div className="splash-hammer absolute text-gray-400">
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                           <path d="M22.6 6.7c-.5-.5-1.3-.5-1.8 0l-2.4 2.4c-.4.4-.4 1.1 0 1.5.2.2.5.3.7.3.3 0 .5-.1.7-.3l2.4-2.4c.5-.5.5-1.3 0-1.8zM4.6 20.3L9.3 25l6.4-6.4-4.7-4.7L4.6 20.3z"/> 
+                           <rect x="2" y="16" width="12" height="4" rx="1" transform="rotate(45 8 18)" fill="#5A5A5A"/>
+                        </svg>
+                    </div>
+                    {/* Spanner SVG */}
+                    <div className="splash-spanner absolute text-brandYellow">
+                        <svg width="120" height="120" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                            <path d="M22.7 19.3l-6.6-6.6c.8-1.7.6-3.7-.7-5.1-1.7-1.7-4.4-2-6.2-.6l3.3 3.3c.2.2.2.5 0 .7-.2.2-.5.2-.7 0l-3.3-3.3c-1.4 1.8-1.1 4.5.6 6.2 1.3 1.3 3.3 1.5 5.1.7l6.6 6.6c.4.4 1 .4 1.4 0 .4-.4.4-1 .4-1.4z"/>
+                        </svg>
+                    </div>
+                    {/* Impact Spark */}
+                    <div className="splash-spark absolute text-white">
+                        <svg width="140" height="140" viewBox="0 0 24 24" fill="currentColor">
+                             <polygon points="12 2 15 8 21 9 17 14 18 20 12 17 6 20 7 14 3 9 9 8 12 2" />
+                        </svg>
+                    </div>
+                </div>
+
+                {/* Final Logo Reveal - Shows after clash */}
+                <div className="splash-logo-reveal flex flex-col items-center gap-4 z-10">
+                    <div className="w-24 h-24 rounded-2xl bg-brandYellow flex items-center justify-center shadow-glow">
+                        <span className="text-5xl font-black text-black">QC</span>
+                    </div>
+                    <div className="text-center">
+                        <h1 className="text-3xl font-bold text-white tracking-wide">QUICK CONSTRUCT</h1>
+                        <p className="text-gray-400 text-sm uppercase tracking-widest mt-1">Premium Seller Hub</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+      );
+    };
+
+    // --- UI COMPONENTS ---
+    const Toast = ({ message, type, onClose }) => {
+      useEffect(() => {
+        const timer = setTimeout(onClose, 3000);
+        return () => clearTimeout(timer);
+      }, []);
+      const colors =
+        type === 'success'
+          ? 'bg-green-500'
+          : type === 'error'
+          ? 'bg-red-500'
+          : 'bg-blue-500';
+      
+      const Icon = type === 'success' ? Icons.CheckCircle : type === 'error' ? Icons.AlertTriangle : Icons.Info;
+
+      return (
+        <div className={`fixed bottom-5 right-5 ${colors} text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 slide-in z-50 no-print`}>
+          <Icon />
+          <span className="font-medium text-sm">{message}</span>
+        </div>
+      );
+    };
+
+    // -------------------------------------------------------------------
+    // 1. UPDATED MODAL COMPONENT WITH PORTAL (FIXED OVERLAY ISSUE)
+    // -------------------------------------------------------------------
+    const BoostPaymentModal = ({ product, onClose, onConfirm }) => {
+        const [plan, setPlan] = useState('30days'); // '30days' or '15days'
+        const [processing, setProcessing] = useState(false);
+        const [completed, setCompleted] = useState(false);
+
+        const handlePay = () => {
+            setProcessing(true);
+            setTimeout(() => {
+                setProcessing(false);
+                setCompleted(true);
+                setTimeout(() => {
+                    onConfirm(product.id);
+                }, 1500);
+            }, 2000);
+        };
+
+        const totalPayable = plan === '30days' ? 399 : 249;
+
+        // Use React Portal to render at body level
+        return ReactDOM.createPortal(
+            <div className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 fade-in">
+                {/* Success View */}
+                {completed ? (
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-8 flex flex-col items-center justify-center text-center shadow-2xl modal-slide-up border border-green-500/50 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-green-500/10 animate-pulse"></div>
+                        <div className="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center text-white mb-4 shadow-lg scale-110">
+                            <Icons.CheckCircle />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white relative z-10">Boost Active!</h3>
+                        <p className="text-gray-500 mt-2 text-sm relative z-10">"{product.name}" is now being promoted.</p>
+                    </div>
+                ) : (
+                    // Selection View
+                    <div className="bg-white dark:bg-slate-950 w-full max-w-md sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl modal-slide-up relative flex flex-col max-h-[90vh]">
+                        {/* Header Area */}
+                        <div className="bg-[#FFF9C4] p-6 text-center pb-8 relative">
+                            <button onClick={onClose} className="absolute top-4 left-4 text-black hover:bg-black/10 rounded-full p-2 transition">
+                                ✕
+                            </button>
+                            <div className="flex justify-end absolute top-4 right-4">
+                                <span className="text-blue-600 font-bold text-xs uppercase cursor-pointer">Help</span>
+                            </div>
+                            <div className="flex justify-center mb-3">
+                                {/* Yellow Tag Icon */}
+                                <div className="w-16 h-16 bg-brandYellow rounded-2xl rotate-12 flex items-center justify-center shadow-lg text-black transform hover:scale-110 transition">
+                                    <span className="text-3xl font-bold">%</span>
+                                </div>
+                            </div>
+                            <h2 className="text-xl font-bold text-gray-900 leading-tight">Reach more buyers and sell faster</h2>
+                            <p className="text-gray-600 text-sm mt-1">Buy any package and call buyers instantly</p>
+                        </div>
+
+                        {/* Content Area */}
+                        <div className="p-6 bg-white dark:bg-slate-900 flex-1 overflow-y-auto rounded-t-3xl -mt-4 relative z-10">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-bold text-lg dark:text-white">Feature Ad</h3>
+                                <span className="text-xs underline text-gray-500 cursor-pointer">See Example</span>
+                            </div>
+
+                            <div className="flex items-center gap-2 mb-6 text-sm text-gray-600 dark:text-gray-400">
+                                <Icons.CheckCircle /> <span>Get noticed with "FEATURED" tag in a top position</span>
+                            </div>
+
+                            {/* Plan Selection */}
+                            <div className="space-y-4">
+                                {/* Plan 1: 30 Days */}
+                                <div 
+                                    onClick={() => setPlan('30days')}
+                                    className={`border rounded-xl p-4 relative cursor-pointer transition-all ${
+                                    plan === '30days' 
+                                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500 shadow-md ring-1 ring-blue-600' 
+                                        : 'border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <div className="absolute top-0 right-0 bg-brandYellow text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
+                                        -40%
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${plan === '30days' ? 'border-blue-600' : 'border-gray-400'}`}>
+                                            {plan === '30days' && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <div>
+                                                    <div className="font-bold text-gray-900 dark:text-white">Featured Ad 30 days:</div>
+                                                    <div className="font-bold text-gray-900 dark:text-white">Guaranteed Sale*</div>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-bold text-blue-600 text-lg">₹399.00</div>
+                                                    <div className="text-gray-400 line-through text-xs">₹665.00</div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-3 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <Icons.CheckCircle />
+                                                <span>Sale means 15 Buyers Guaranteed or Money back*</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Plan 2: 15 Days */}
+                                <div 
+                                    onClick={() => setPlan('15days')}
+                                    className={`border rounded-xl p-4 relative cursor-pointer transition-all ${
+                                    plan === '15days' 
+                                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500 shadow-md ring-1 ring-blue-600' 
+                                        : 'border-gray-200 dark:border-slate-700 hover:bg-gray-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <div className="absolute top-0 right-0 bg-brandYellow text-black text-[10px] font-bold px-2 py-1 rounded-bl-lg rounded-tr-lg">
+                                        -40%
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className={`mt-1 w-5 h-5 rounded-full border-2 flex items-center justify-center ${plan === '15days' ? 'border-blue-600' : 'border-gray-400'}`}>
+                                            {plan === '15days' && <div className="w-2.5 h-2.5 bg-blue-600 rounded-full"></div>}
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-start">
+                                                <div className="font-bold text-gray-900 dark:text-white">
+                                                    Featured Ad for 15 Days
+                                                    <span className="block text-[10px] bg-blue-600 text-white w-max px-1.5 rounded mt-1">Best Value</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="font-bold text-blue-600 text-lg">₹249.00</div>
+                                                    <div className="text-gray-400 line-through text-xs">₹415.00</div>
+                                                </div>
+                                            </div>
+                                            <div className="mt-2 flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                                <Icons.CheckCircle />
+                                                <span>Reach up to 6 times more buyers</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Banner */}
+                            <div className="mt-6 bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl flex items-center gap-4">
+                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-800 rounded-full flex items-center justify-center text-blue-600 dark:text-blue-300">
+                                    <Icons.Tag />
+                                </div>
+                                <div>
+                                    <div className="font-bold text-gray-900 dark:text-white text-sm">Want to sell more?</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">Post more Ads for less. Packages that help you save money.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer / Pay Button */}
+                        <div className="p-4 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-slate-800">
+                            <button 
+                                onClick={handlePay}
+                                disabled={processing}
+                                className="w-full bg-[#0056b3] hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center text-lg"
+                            >
+                                {processing ? 'Processing...' : `Pay ₹ ${totalPayable}`}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>,
+            document.body
+        );
+    };
+
+    const Logo = () => {
+      const [spinning, setSpinning] = useState(false);
+
+      const handleClick = () => {
+        setSpinning(true);
+        setTimeout(() => setSpinning(false), 1000);
+      };
+
+      return (
+        <div
+          className={`flex items-center gap-3 cursor-pointer select-none logo-glitch ${spinning ? 'logo-spin' : ''}`}
+          onClick={handleClick}
+          title="Quick Construct"
+        >
+          <div className="w-10 h-10 rounded-xl bg-brandYellow flex items-center justify-center shadow-glow">
+            <span className="text-base font-black text-black">QC</span>
+          </div>
+          <div className="leading-tight">
+            <div className="logo-text-main text-sm font-bold tracking-wide text-gray-900 dark:text-brandYellow">
+              QUICK CONSTRUCT
+            </div>
+            <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">
+              Seller Hub
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const Input = ({ label, type = 'text', value, onChange, placeholder, readOnly, className }) => (
+      <div className={`space-y-1.5 ${className || ''}`}>
+        <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+          {label}
+        </label>
+        <input
+          type={type}
+          value={value}
+          onChange={onChange}
+          readOnly={readOnly}
+          placeholder={placeholder}
+          className={
+            'w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm outline-none transition-all focus:border-brandYellow focus:ring-2 focus:ring-brandYellow/20 dark:border-slate-800 dark:bg-slate-900 dark:text-white ' +
+            (readOnly ? 'opacity-60 cursor-not-allowed bg-gray-100 dark:bg-slate-800/50' : '')
+          }
+        />
+      </div>
+    );
+
+    const Card = ({ children, className = "" }) => (
+      <div className={`rounded-2xl border border-gray-100 bg-white p-5 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-950 ${className}`}>
+        {children}
+      </div>
+    );
+
+    const ToggleSwitch = ({ checked, onChange }) => (
+      <div className="relative inline-block w-11 h-6 align-middle select-none transition duration-200 ease-in">
+        <input
+          type="checkbox"
+          name="toggle"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 transition-all duration-300 ease-in-out top-0.5"
+          style={{ right: checked ? '2px' : 'calc(100% - 22px)', borderColor: checked ? '#10B981' : '#E5E7EB' }}
+        />
+        <label
+          className={`toggle-label block overflow-hidden h-6 rounded-full cursor-pointer transition-colors duration-300 ${
+            checked ? 'bg-green-500' : 'bg-gray-200 dark:bg-slate-700'
+          }`}
+        ></label>
+      </div>
+    );
+
+    // --- CHART COMPONENT ---
+    const ChartComponent = ({ type, data, options, id }) => {
+      const chartRef = useRef(null);
+      const canvasRef = useRef(null);
+
+      useEffect(() => {
+        if (canvasRef.current) {
+          if (chartRef.current) chartRef.current.destroy();
+          const ctx = canvasRef.current.getContext('2d');
+          chartRef.current = new Chart(ctx, {
+            type,
+            data,
+            options: {
+              ...options,
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: { duration: 1000, easing: 'easeOutQuart' },
+            },
+          });
+        }
+        return () => {
+          if (chartRef.current) chartRef.current.destroy();
+        };
+      }, [data, type, options]);
+
+      return (
+        <div className="relative h-full w-full">
+          <canvas ref={canvasRef} id={id}></canvas>
+        </div>
+      );
+    };
+
+    // --- INVOICE COMPONENT ---
+    const InvoiceComponent = ({ order, vendor, products, onClose }) => {
+      const product = products.find((p) => p.name === order.productName) || {};
+      const hsn = product.hsn || '8205';
+      const total = order.totalAmount;
+      const taxableValue = total / 1.18;
+      const taxAmount = total - taxableValue;
+      const cgst = taxAmount / 2;
+      const sgst = taxAmount / 2;
+
+      const handlePrint = () => {
+        window.print();
+      };
+
+      // USE REACT PORTAL TO FIX OVERLAY ISSUES
+      return ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-300">
+          <div className="bg-white text-black w-full max-w-3xl h-[90vh] overflow-y-auto rounded-lg relative shadow-2xl flex flex-col">
+            <div className="sticky top-0 bg-gray-100 z-10 p-4 flex justify-between items-center border-b border-gray-300 no-print shrink-0 shadow-sm">
+              <h2 className="font-bold text-lg">Invoice Preview</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={handlePrint}
+                  className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-blue-700"
+                >
+                  🖨️ Print
+                </button>
+                <button
+                  onClick={onClose}
+                  className="bg-gray-300 text-black px-4 py-2 rounded text-sm font-bold hover:bg-gray-400"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div id="invoice-print-area" className="p-8 text-xs font-sans leading-relaxed flex-1 overflow-visible">
+              <div className="flex justify-between items-start mb-6">
+                <div>
+                  <h1 className="text-xl font-bold italic font-serif">Quick Construct</h1>
+                  <p className="text-gray-500">www.quick-construct.com</p>
+                </div>
+                <div className="text-right">
+                  <h2 className="font-bold text-sm uppercase">
+                    Tax Invoice/Bill of Supply/Cash Memo
+                  </h2>
+                  <p>(Original for Recipient)</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 border border-gray-400 mb-4">
+                <div className="p-3 border-r border-gray-400">
+                  <div className="font-bold mb-1">Sold By:</div>
+                  <div className="uppercase font-bold">{vendor.shopName}</div>
+                  <div>
+                    {vendor.location}, {vendor.area}
+                  </div>
+                  <div>India</div>
+                  <div className="mt-2">
+                    <strong>PAN No:</strong>{' '}
+                    {vendor.gst ? vendor.gst.slice(2, 12) : 'ABCDE1234F'}
+                  </div>
+                  <div>
+                    <strong>GST Registration No:</strong> {vendor.gst || 'NA'}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <div className="font-bold mb-1">Billing Address:</div>
+                  <div>Customer Name: {order.customerName || 'Standard Customer'}</div>
+                  <div>123, Buyer Street, Locality</div>
+                  <div>City, State, 600001</div>
+                  <div>IN</div>
+                  <div className="mt-2">
+                    <strong>State/UT Code:</strong> 33
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-between mb-4">
+                <div>
+                  <div>
+                    <strong>Order Number:</strong> {order.id}-{Date.now().toString().slice(-6)}
+                  </div>
+                  <div>
+                    <strong>Order Date:</strong> {order.date}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div>
+                    <strong>Invoice Number:</strong> INV-{order.id}
+                  </div>
+                  <div>
+                    <strong>Invoice Date:</strong> {new Date().toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+
+              <table className="w-full border-collapse border border-gray-400 mb-4">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="border border-gray-400 p-1 text-left w-10">Sl. No</th>
+                    <th className="border border-gray-400 p-1 text-left">Description</th>
+                    <th className="border border-gray-400 p-1 text-right">Unit Price</th>
+                    <th className="border border-gray-400 p-1 text-center">Qty</th>
+                    <th className="border border-gray-400 p-1 text-right">Net Amount</th>
+                    <th className="border border-gray-400 p-1 text-right">Tax Rate</th>
+                    <th className="border border-gray-400 p-1 text-right">Tax Amount</th>
+                    <th className="border border-gray-400 p-1 text-right">Total Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-400 p-2 align-top">1</td>
+                    <td className="border border-gray-400 p-2">
+                      <div className="font-bold">{order.productName}</div>
+                      <div>HSN:{hsn}</div>
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      {(taxableValue / order.quantity).toFixed(2)}
+                    </td>
+                    <td className="border border-gray-400 p-2 text-center">
+                      {order.quantity}
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      {taxableValue.toFixed(2)}
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      <div>9% CGST</div>
+                      <div>9% SGST</div>
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      <div>{cgst.toFixed(2)}</div>
+                      <div>{sgst.toFixed(2)}</div>
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right font-bold">
+                      {total.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr className="font-bold bg-gray-100">
+                    <td colSpan="7" className="border border-gray-400 p-2 text-right">
+                      TOTAL:
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      ₹ {total.toFixed(2)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div className="mb-4">
+                <div className="font-bold">Amount in Words:</div>
+                <div className="italic">Rupees {Math.floor(total)} Only</div>
+              </div>
+
+              <div className="mb-4">
+                <div>Whether tax is payable under reverse charge - No</div>
+              </div>
+
+              <div className="flex justify-between items-end mt-12">
+                <div className="w-1/2 text-[10px] text-gray-600">
+                  <p>
+                    <strong>Declaration:</strong>
+                  </p>
+                  <p>
+                    We declare that this invoice shows the actual price of the goods described
+                    and that all particulars are true and correct.
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="mb-4">For {vendor.shopName.toUpperCase()}:</div>
+                  <div className="border-b border-black w-40 ml-auto mb-1"></div>
+                  <div>Authorized Signatory</div>
+                </div>
+              </div>
+
+              <div className="mt-8 text-center text-gray-400 text-[10px]">
+                This is a computer generated invoice.
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      );
+    };
+
+    // --- OFFLINE BILLING MODAL ---
+    const OfflineBillModal = ({ products, onClose, onGenerate }) => {
+      const [cart, setCart] = useState([]);
+      const [selectedProduct, setSelectedProduct] = useState('');
+      const [qty, setQty] = useState(1);
+      const [customerName, setCustomerName] = useState('');
+      const [customerPhone, setCustomerPhone] = useState('');
+
+      const addToCart = () => {
+        if(!selectedProduct) return;
+        const product = products.find(p => p.name === selectedProduct);
+        if(!product) return;
+
+        const newItem = {
+          productName: product.name,
+          price: product.price,
+          quantity: qty,
+          total: product.price * qty
+        };
+        setCart([...cart, newItem]);
+        setSelectedProduct('');
+        setQty(1);
+      };
+
+      const removeFromCart = (idx) => {
+        const newCart = [...cart];
+        newCart.splice(idx, 1);
+        setCart(newCart);
+      };
+
+      const totalAmount = cart.reduce((acc, item) => acc + item.total, 0);
+
+      const handleGenerate = () => {
+        if(cart.length === 0) return alert("Cart is empty");
+        // For simplicity in this demo, we create one order entry per item or bundle it.
+        // We will create individual order entries to match the existing system structure
+        // But practically we might want a grouped order. Here we loop.
+        
+        cart.forEach(item => {
+           const orderData = {
+              id: Date.now() + Math.floor(Math.random() * 1000),
+              productName: item.productName,
+              quantity: item.quantity,
+              totalAmount: item.total,
+              customerName: customerName || 'Walk-in Customer',
+              customerPhone: customerPhone,
+              date: new Date().toISOString().slice(0, 10),
+              status: 'Completed',
+              type: 'Offline', // Distinguish offline
+              isBulk: false
+           };
+           onGenerate(orderData);
+        });
+        onClose();
+      };
+
+      return ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+           <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl p-6 shadow-2xl modal-slide-up">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold dark:text-white">New Offline Bill</h2>
+                <button onClick={onClose} className="text-gray-500 hover:text-red-500">✕</button>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                 <div>
+                    <label className="text-xs font-bold text-gray-500 block mb-1">Select Product</label>
+                    <select 
+                      value={selectedProduct} 
+                      onChange={(e) => setSelectedProduct(e.target.value)}
+                      className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    >
+                       <option value="">-- Select --</option>
+                       {products.filter(p=>p.active).map(p => (
+                         <option key={p.id} value={p.name}>{p.name} (Stock: {p.stock})</option>
+                       ))}
+                    </select>
+                 </div>
+                 <div>
+                    <label className="text-xs font-bold text-gray-500 block mb-1">Quantity</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      value={qty} 
+                      onChange={e => setQty(parseInt(e.target.value))}
+                      className="w-full p-2 rounded-lg border dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                    />
+                 </div>
+                 <div className="md:col-span-2">
+                    <button 
+                       onClick={addToCart}
+                       className="w-full bg-brandYellow text-black font-bold py-2 rounded-lg hover:bg-yellow-400"
+                    >
+                       Add to Bill
+                    </button>
+                 </div>
+              </div>
+
+              {/* Cart List */}
+              <div className="bg-gray-50 dark:bg-slate-800 rounded-lg p-4 mb-6 max-h-40 overflow-y-auto">
+                 {cart.length === 0 ? (
+                    <p className="text-center text-gray-400 text-sm">No items added yet.</p>
+                 ) : (
+                    <table className="w-full text-sm text-left">
+                       <thead>
+                          <tr className="text-gray-500 border-b dark:border-slate-700">
+                             <th className="pb-2">Item</th>
+                             <th className="pb-2 text-center">Qty</th>
+                             <th className="pb-2 text-right">Total</th>
+                             <th className="pb-2"></th>
+                          </tr>
+                       </thead>
+                       <tbody>
+                          {cart.map((item, idx) => (
+                             <tr key={idx} className="border-b dark:border-slate-700 last:border-0">
+                                <td className="py-2 dark:text-white">{item.productName}</td>
+                                <td className="py-2 text-center dark:text-white">{item.quantity}</td>
+                                <td className="py-2 text-right dark:text-white">₹{item.total}</td>
+                                <td className="py-2 text-right">
+                                   <button onClick={() => removeFromCart(idx)} className="text-red-500"><Icons.Trash /></button>
+                                </td>
+                             </tr>
+                          ))}
+                       </tbody>
+                    </table>
+                 )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mb-6">
+                 <input 
+                   placeholder="Customer Name (Optional)" 
+                   value={customerName}
+                   onChange={e => setCustomerName(e.target.value)}
+                   className="p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                 />
+                 <input 
+                   placeholder="Phone Number (Optional)" 
+                   value={customerPhone}
+                   onChange={e => setCustomerPhone(e.target.value)}
+                   className="p-2 border rounded-lg dark:bg-slate-800 dark:border-slate-700 dark:text-white text-sm"
+                 />
+              </div>
+
+              <div className="flex justify-between items-center border-t pt-4 dark:border-slate-700">
+                 <div className="text-lg font-bold dark:text-white">Total: ₹ {totalAmount}</div>
+                 <button 
+                    onClick={handleGenerate}
+                    className="bg-green-600 text-white font-bold px-6 py-2 rounded-lg hover:bg-green-700"
+                 >
+                    Generate Invoice
+                 </button>
+              </div>
+           </div>
+        </div>,
+        document.body
+      );
+    };
+
+    // --- BILLING PAGE ---
+    const BillingPage = ({ orders, products, vendor, onGenerateOfflineBill }) => {
+      const [selectedInvoice, setSelectedInvoice] = useState(null);
+      const [showOfflineModal, setShowOfflineModal] = useState(false);
+      
+      const billableOrders = orders.filter((o) => o.status !== 'Pending');
+
+      return (
+        <div className="p-6 space-y-6 fade-in">
+          {showOfflineModal && (
+             <OfflineBillModal 
+                products={products}
+                onClose={() => setShowOfflineModal(false)}
+                onGenerate={(order) => {
+                   onGenerateOfflineBill(order);
+                }}
+             />
+          )}
+
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Invoices & Billing
+            </h2>
+            <button 
+               onClick={() => setShowOfflineModal(true)}
+               className="bg-brandYellow text-black px-4 py-2 rounded-lg font-bold text-sm shadow hover:bg-yellow-400 transition flex items-center gap-2"
+            >
+               <Icons.Plus /> New Offline Bill
+            </button>
+          </div>
+
+          <Card>
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 dark:bg-slate-900 text-gray-500 uppercase text-xs font-semibold">
+                <tr>
+                  <th className="px-6 py-4">Invoice ID</th>
+                  <th className="px-6 py-4">Date</th>
+                  <th className="px-6 py-4">Type</th> {/* NEW COLUMN */}
+                  <th className="px-6 py-4">Customer</th>
+                  <th className="px-6 py-4 text-right">Amount</th>
+                  <th className="px-6 py-4 text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                {billableOrders.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="p-6 text-center text-gray-500">
+                      No invoices generated yet.
+                    </td>
+                  </tr>
+                ) : (
+                  billableOrders.map((order) => (
+                    <tr
+                      key={order.id}
+                      className="hover:bg-gray-50 dark:hover:bg-slate-900/50 transition"
+                    >
+                      <td className="px-6 py-4 font-mono text-xs">INV-{order.id}</td>
+                      <td className="px-6 py-4">{order.date}</td>
+                      <td className="px-6 py-4">
+                         <span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${order.type === 'Offline' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                            {order.type || 'Online'}
+                         </span>
+                      </td>
+                      <td className="px-6 py-4">{order.customerName || 'Standard Customer'}</td>
+                      <td className="px-6 py-4 text-right font-bold">₹ {order.totalAmount}</td>
+                      <td className="px-6 py-4 text-center">
+                        <button
+                          onClick={() => {
+                            setSelectedInvoice(order);
+                          }}
+                          className="text-blue-500 hover:text-blue-700 font-bold text-xs border border-blue-500 px-3 py-1 rounded"
+                        >
+                          View Invoice
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </Card>
+
+          {selectedInvoice && (
+            <InvoiceComponent
+              order={selectedInvoice}
+              vendor={vendor}
+              products={products}
+              onClose={() => setSelectedInvoice(null)}
+            />
+          )}
+        </div>
+      );
+    };
+
+    // --- LOGIN PAGE ---
+    const LoginPage = ({ onLoginSuccess, toggleTheme, isDark, notify }) => {
+      const [isSignUp, setIsSignUp] = useState(false);
+      const [method, setMethod] = useState('mobile');
+      const [mobile, setMobile] = useState('');
+      const [otpSent, setOtpSent] = useState(false);
+      const [otp, setOtp] = useState('');
+      const [gstNo, setGstNo] = useState('');
+      const [shopLoc, setShopLoc] = useState('');
+      const [shopArea, setShopArea] = useState('');
+      const [shopName, setShopName] = useState('');
+      
+      // -- NEW FIELDS FOR SIGN UP --
+      const [ownerName, setOwnerName] = useState('');
+      const [bankAccount, setBankAccount] = useState('');
+      const [ifsc, setIfsc] = useState('');
+      const [bankName, setBankName] = useState('');
+      // File States
+      const [bankStatement, setBankStatement] = useState(null);
+      const [cancelledCheque, setCancelledCheque] = useState(null);
+
+      const [loading, setLoading] = useState(false);
+
+      const handleSendOTP = () => {
+        if (mobile.length < 10) return notify('Please enter valid mobile number', 'error');
+        setLoading(true);
+        setTimeout(() => {
+          setLoading(false);
+          setOtpSent(true);
+          notify('OTP Sent: 1234', 'info');
+        }, 1200);
+      };
+
+      const handleVerify = () => {
+        if (otp === '1234') {
+          if (isSignUp) {
+            if (
+              !shopName.trim() ||
+              gstNo.trim().length < 5 ||
+              shopLoc.trim().length < 3 ||
+              shopArea.trim().length < 2 ||
+              !ownerName.trim() ||
+              bankAccount.length < 9 ||
+              ifsc.length < 11 ||
+              !bankName.trim() ||
+              !bankStatement ||
+              !cancelledCheque
+            ) {
+              return notify('Please fill all Shop details and upload Bank PDFs', 'error');
+            }
+            notify('Account Created & Logged in!', 'success');
+            onLoginSuccess({
+              name: ownerName,
+              shopName,
+              gst: gstNo.trim(),
+              location: shopLoc.trim(),
+              area: shopArea.trim(),
+              ownerName,
+              bankAccount,
+              ifsc,
+              bankName
+            });
+          } else {
+            notify('Login Successful!', 'success');
+            onLoginSuccess({
+              name: shopName || 'Existing Vendor',
+              shopName: shopName || 'My Tool Shop',
+              gst: gstNo.trim() || 'NA',
+              location: shopLoc || 'City',
+              area: shopArea || 'Main Area',
+              ownerName: 'Vendor Owner',
+              bankAccount: 'XXXXXXXXXX',
+              ifsc: 'XXXX0000',
+              bankName: 'HDFC Bank'
+            });
+          }
+        } else {
+          notify('Invalid OTP (Use 1234)', 'error');
+        }
+      };
+
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [emailShopName, setEmailShopName] = useState('');
+      const [emailGst, setEmailGst] = useState('');
+      const [emailLoc, setEmailLoc] = useState('');
+      const [emailArea, setEmailArea] = useState('');
+
+      const handleEmailLogin = () => {
+        if (!email.trim() || !password.trim()) {
+          return notify('Enter Email and Password', 'error');
+        }
+        if (!emailShopName.trim() || emailGst.trim().length < 5) {
+          return notify('Enter Shop Name and valid GST for account', 'error');
+        }
+        notify('Logged in via Email', 'success');
+        onLoginSuccess({
+          name: emailShopName.trim(),
+          shopName: emailShopName.trim(),
+          gst: emailGst.trim(),
+          location: emailLoc.trim() || 'City',
+          area: emailArea.trim() || 'Main Area',
+        });
+      };
+
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-slate-950 p-4 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+            <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-brandYellow/10 rounded-full blur-[100px]"></div>
+            <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px]"></div>
+          </div>
+          <div className="absolute top-6 right-6 z-20">
+            <button
+              onClick={toggleTheme}
+              className="p-3 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur shadow-sm hover:shadow-md transition"
+            >
+              {isDark ? '☀️' : '🌙'}
+            </button>
+          </div>
+          <Card className="w-full max-w-lg shadow-2xl z-10 fade-in border-t-4 border-t-brandYellow relative soft-hover my-8">
+            <div className="flex justify-center mb-8 transform hover:scale-105 transition duration-300">
+              <Logo />
+            </div>
+            <h2 className="text-2xl font-bold text-center mb-2 dark:text-white">
+              {isSignUp ? 'Partner Registration' : 'Partner Login'}
+            </h2>
+            <p className="text-center text-xs text-gray-500 mb-4">
+              {isSignUp ? 'Enter complete business details to verify.' : 'Access your shop dashboard.'}
+            </p>
+            <div className="flex bg-gray-100 dark:bg-slate-900 p-1.5 rounded-xl mb-6">
+              <button
+                onClick={() => setMethod('mobile')}
+                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition ${
+                  method === 'mobile'
+                    ? 'bg-white shadow text-black dark:bg-slate-700 dark:text-white'
+                    : 'text-gray-500'
+                }`}
+              >
+                Mobile & OTP
+              </button>
+              <button
+                onClick={() => setMethod('email')}
+                className={`flex-1 py-2.5 text-xs font-bold rounded-lg transition ${
+                  method === 'email'
+                    ? 'bg-white shadow text-black dark:bg-slate-700 dark:text-white'
+                    : 'text-gray-500'
+                }`}
+              >
+                Email / Password
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {method === 'mobile' ? (
+                <>
+                  <Input
+                    label="Mobile Number"
+                    placeholder="+91 98765 43210"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                  />
+
+                  {isSignUp && (
+                    <div className="fade-in space-y-3 p-4 bg-gray-50 dark:bg-slate-900/50 rounded-xl border border-gray-100 dark:border-slate-800 h-80 overflow-y-auto no-scrollbar">
+                        <h3 className="text-sm font-bold border-b pb-2 mb-2 dark:border-slate-700">Essential Shop Details</h3>
+                      <Input
+                        label="Shop Name"
+                        placeholder="Quick Construct & Hardware"
+                        value={shopName}
+                        onChange={(e) => setShopName(e.target.value)}
+                      />
+                      <Input
+                        label="Owner Full Name"
+                        placeholder="John Doe"
+                        value={ownerName}
+                        onChange={(e) => setOwnerName(e.target.value)}
+                      />
+                      <Input
+                        label="GST Number"
+                        placeholder="22AAAAA0000A1Z5"
+                        value={gstNo}
+                        onChange={(e) => setGstNo(e.target.value)}
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                        <Input
+                          label="Location (City)"
+                          placeholder="Chennai"
+                          value={shopLoc}
+                          onChange={(e) => setShopLoc(e.target.value)}
+                        />
+                        <Input
+                          label="Area"
+                          placeholder="T-Nagar"
+                          value={shopArea}
+                          onChange={(e) => setShopArea(e.target.value)}
+                        />
+                      </div>
+
+                      <h3 className="text-sm font-bold border-b pb-2 pt-2 mb-2 dark:border-slate-700">Bank Details & Verification</h3>
+                      <Input
+                        label="Bank Account Number"
+                        placeholder="000000000000"
+                        value={bankAccount}
+                        onChange={(e) => setBankAccount(e.target.value)}
+                        type="password"
+                      />
+                      <div className="grid grid-cols-2 gap-3">
+                          <Input
+                           label="IFSC Code"
+                           placeholder="HDFC0001234"
+                           value={ifsc}
+                           onChange={(e) => setIfsc(e.target.value)}
+                         />
+                         <Input
+                           label="Bank Name"
+                           placeholder="HDFC Bank"
+                           value={bankName}
+                           onChange={(e) => setBankName(e.target.value)}
+                         />
+                      </div>
+                      
+                      {/* --- NEW UPLOAD FIELDS --- */}
+                      <div className="space-y-2 pt-2">
+                        <div className="flex flex-col gap-1">
+                          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            Bank Statement (6 Months - PDF)
+                          </label>
+                          <input 
+                             type="file" 
+                             accept="application/pdf"
+                             onChange={(e) => setBankStatement(e.target.files[0])}
+                             className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-brandYellow/10 file:text-brandDark hover:file:bg-brandYellow/20 cursor-pointer"
+                          />
+                        </div>
+                        <div className="flex flex-col gap-1 pt-2">
+                          <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                            Empty Cheque Leaf (PDF)
+                          </label>
+                          <input 
+                             type="file" 
+                             accept="application/pdf"
+                             onChange={(e) => setCancelledCheque(e.target.files[0])}
+                             className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-500/10 file:text-blue-600 hover:file:bg-blue-500/20 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+
+                    </div>
+                  )}
+
+                  {otpSent && (
+                    <div className="fade-in">
+                      <Input
+                        label="Enter OTP"
+                        placeholder="1234"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                      />
+                    </div>
+                  )}
+
+                  {!otpSent ? (
+                    <button
+                      onClick={handleSendOTP}
+                      disabled={loading}
+                      className="w-full bg-brandYellow hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl shadow-lg shadow-yellow-500/20 transition transform active:scale-95"
+                    >
+                      {loading ? 'Sending OTP...' : 'Send OTP'}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleVerify}
+                      className="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-500/20 transition transform active:scale-95"
+                    >
+                      Verify & {isSignUp ? 'Register' : 'Login'}
+                    </button>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-4 fade-in">
+                  <Input
+                    label="Email Address"
+                    placeholder="vendor@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Input
+                    label="Password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    onClick={handleEmailLogin}
+                    className="w-full bg-brandYellow hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl shadow-lg shadow-yellow-500/20 transition"
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8 text-center text-xs text-gray-500">
+              {isSignUp ? 'Already a partner?' : 'New to Quick Construct?'}
+              <button
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="text-brandYellow font-bold hover:underline ml-1"
+              >
+                {isSignUp ? 'Sign In' : 'Register Shop'}
+              </button>
+            </div>
+          </Card>
+        </div>
+      );
+    };
+    // --- DASHBOARD ---
+    const Dashboard = ({ products, orders, setView }) => {
+      const pending = orders.filter((o) => o.status === 'Pending').length;
+      const topProduct =
+        products.length > 0
+          ? products.reduce((prev, current) => (prev.stock < current.stock ? prev : current))
+          : null;
+
+      // Calculate Today's Revenue
+      const today = new Date().toISOString().slice(0, 10);
+      const todaysRevenue = orders
+        .filter(o => o.date === today)
+        .reduce((acc, o) => acc + o.totalAmount, 0);
+
+      // Get Recent 5 Orders (Sorted by ID desc)
+      const recentOrders = [...orders].sort((a, b) => b.id - a.id).slice(0, 5);
+
+      return (
+        <div className="p-6 space-y-8 fade-in">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {getGreeting()}, Partner! 👋
+              </h1>
+              <p className="text-gray-500 text-sm mt-1">
+                Live view of your tools, orders & earnings.
+              </p>
+            </div>
+            <button
+              onClick={() => setView('add-product')}
+              className="bg-black dark:bg-white dark:text-black text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:shadow-lg transition flex items-center gap-2 soft-hover"
+            >
+              <Icons.Plus /> Add Product
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div
+              onClick={() => setView('orders')}
+              className="bg-brandYellow p-6 rounded-2xl shadow-glow transform hover:-translate-y-1 transition cursor-pointer relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 p-4 opacity-10 text-white">
+                <Icons.Alert />
+              </div>
+              <div className="text-black/70 text-xs font-bold uppercase tracking-wider">
+                Action Required
+              </div>
+              <div className="text-4xl font-black text-black mt-2">{pending}</div>
+              <div className="mt-4 text-xs font-bold text-black flex items-center gap-1 group-hover:gap-2 transition-all">
+                Pending Orders <span>→</span>
+              </div>
+            </div>
+            <Card className="hover:border-blue-200 dark:hover:border-blue-900 soft-hover">
+              <div className="text-gray-500 text-xs font-bold uppercase">Total Inventory</div>
+              <div className="text-3xl font-bold dark:text-white mt-1">{products.length}</div>
+              <div className="text-xs text-green-500 mt-2">items listed</div>
+            </Card>
+            <Card className="hover:border-green-200 dark:hover:border-green-900 soft-hover">
+              <div className="text-gray-500 text-xs font-bold uppercase">Today's Orders</div>
+              <div className="text-3xl font-bold dark:text-white mt-1">
+                {orders.filter((o) => o.date === new Date().toISOString().slice(0, 10)).length}
+              </div>
+              <div className="text-xs text-gray-400 mt-2">New volume</div>
+            </Card>
+            <Card className="hover:border-purple-200 dark:hover:border-purple-900 soft-hover">
+              {/* UPDATED: Today's Revenue */}
+              <div className="text-gray-500 text-xs font-bold uppercase">Today's Revenue</div>
+              <div className="text-3xl font-bold text-green-600 mt-1">
+                ₹ {todaysRevenue.toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-400 mt-2">Daily earnings</div>
+            </Card>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="md:col-span-2">
+              <Card className="h-full">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-gray-800 dark:text-white">Quick Actions</h3>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <button
+                    onClick={() => setView('add-product')}
+                    className="quick-action-card flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-slate-900 rounded-xl hover:bg-brandYellow/10 hover:border-brandYellow border border-transparent transition group text-gray-600 dark:text-gray-300"
+                  >
+                    <span className="text-brandYellow mb-2 quick-box-icon"><Icons.Box /></span>
+                    <span className="text-xs font-bold">Add Item</span>
+                  </button>
+                  <button
+                    onClick={() => setView('orders')}
+                    className="quick-action-card flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-slate-900 rounded-xl hover:bg-blue-500/10 hover:border-blue-500 border border-transparent transition group text-gray-600 dark:text-gray-300"
+                  >
+                    <span className="text-blue-500 mb-2 quick-truck-icon"><Icons.Truck /></span>
+                    <span className="text-xs font-bold">Orders</span>
+                  </button>
+                  <button
+                    onClick={() => setView('wallet')}
+                    className="quick-action-card flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-slate-900 rounded-xl hover:bg-green-500/10 hover:border-green-500 border border-transparent transition group text-gray-600 dark:text-gray-300"
+                  >
+                    <span className="text-green-500 mb-2 quick-wallet-icon"><Icons.Wallet /></span>
+                    <span className="text-xs font-bold">Wallet</span>
+                  </button>
+                  <button
+                    onClick={() => setView('sales')}
+                    className="quick-action-card flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-slate-900 rounded-xl hover:bg-purple-500/10 hover:border-purple-500 border border-transparent transition group text-gray-600 dark:text-gray-300"
+                  >
+                    <span className="text-purple-500 mb-2 quick-analytics-icon"><Icons.BarChart /></span>
+                    <span className="text-xs font-bold">Analytics</span>
+                  </button>
+                </div>
+              </Card>
+            </div>
+
+            <Card className="bg-gradient-to-br from-slate-800 to-black text-white border-none relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-10 bg-brandYellow/20 blur-3xl rounded-full"></div>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 text-xs text-brandYellow uppercase font-bold mb-2">
+                  <span className="animate-pulse"><Icons.Award /></span> Best Performer
+                </div>
+                <div className="text-2xl font-bold mb-1">
+                  {topProduct?.name || 'No products yet'}
+                </div>
+                <div className="text-sm text-gray-300 mb-4">
+                  {topProduct?.category || 'Add items to see performance'}
+                </div>
+                {topProduct && (
+                  <div className="inline-block bg-white/10 backdrop-blur px-3 py-1 rounded-lg text-xs">
+                    {topProduct.stock < 5 ? 'Low Stock' : `${topProduct.stock} in stock`}
+                  </div>
+                )}
+              </div>
+            </Card>
+          </div>
+
+          {/* UPDATED: Recent Orders Section */}
+          <div className="mt-8">
+            <h3 className="font-bold text-gray-800 dark:text-white mb-4">Recent Orders</h3>
+            <div className="overflow-x-auto">
+              <Card className="p-0 overflow-hidden">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 dark:bg-slate-900 text-gray-500 uppercase text-xs font-semibold">
+                    <tr>
+                      <th className="px-6 py-3">Order ID</th>
+                      <th className="px-6 py-3">Product</th>
+                      <th className="px-6 py-3 text-right">Amount</th>
+                      <th className="px-6 py-3 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                    {recentOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="p-6 text-center text-gray-500">No orders yet.</td>
+                      </tr>
+                    ) : (
+                      recentOrders.map(order => (
+                        <tr key={order.id} className="hover:bg-gray-50 dark:hover:bg-slate-900/50">
+                          <td className="px-6 py-3 font-mono text-xs">#{order.id}</td>
+                          <td className="px-6 py-3">{order.productName}</td>
+                          <td className="px-6 py-3 text-right font-bold">₹ {order.totalAmount}</td>
+                          <td className="px-6 py-3 text-center">
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                              order.status === 'Completed' ? 'bg-green-100 text-green-700' : 
+                              order.status === 'Live' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {order.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </Card>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // --- ORDER JOURNEY ANIMATION COMPONENT ---
+    const OrderJourneyAnimation = ({ currentStage }) => {
+      // Logic for position based on stage
+      let position = '10%'; // Pending
+      let animClass = '';
+      let dust = false;
+      let label = 'Waiting...';
+      let transform = 'translate(-50%, -20%)'; // REMOVED SCALE X
+
+      if (currentStage === 'Live') {
+        position = '50%';
+        animClass = 'animate-truck-bounce'; // Truck bounce animation
+        dust = true;
+        label = 'On the way!';
+      } else if (currentStage === 'Completed') {
+        position = '90%';
+        label = 'Delivered!';
+        animClass = '';
+      }
+
+      return (
+        <div className="w-full h-32 bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm relative overflow-hidden mb-6 flex items-center px-8">
+            {/* Background Road */}
+            <div className="absolute w-full h-1 bg-gray-200 dark:bg-slate-700 top-2/3 left-0"></div>
+            
+            {/* Milestones */}
+            <div className="absolute top-2/3 left-[10%] w-3 h-3 bg-gray-400 rounded-full -translate-y-1 text-center">
+              <span className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 font-bold uppercase">Pending</span>
+            </div>
+            <div className="absolute top-2/3 left-[50%] w-3 h-3 bg-gray-400 rounded-full -translate-y-1 text-center">
+              <span className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 font-bold uppercase">Live</span>
+            </div>
+            <div className="absolute top-2/3 left-[90%] w-3 h-3 bg-gray-400 rounded-full -translate-y-1 text-center">
+              <span className="absolute top-4 left-1/2 -translate-x-1/2 text-[10px] text-gray-400 font-bold uppercase">Done</span>
+            </div>
+
+            {/* The Truck Character */}
+            <div 
+              className="absolute top-1/2 transition-all duration-1000 ease-in-out z-10 flex flex-col items-center"
+              style={{ left: position, transform: transform }}
+            >
+              {/* Speech Bubble - REMOVED COUNTER SCALE */}
+              <div 
+                  className="mb-2 bg-brandYellow text-black text-[10px] font-bold px-2 py-1 rounded-lg shadow-sm whitespace-nowrap opacity-0 animate-[fadeIn_0.5s_ease-out_forwards_0.5s]"
+              >
+                {label}
+              </div>
+
+              {/* Truck Icon SVG */}
+              <div className={`text-blue-600 dark:text-blue-400 ${animClass}`}>
+                <svg viewBox="0 0 100 60" className="w-16 h-12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="25" cy="52" r="7" className="fill-gray-800/20" />
+                  <circle cx="40" cy="52" r="7" className="fill-gray-800/20" />
+                  <circle cx="80" cy="52" r="7" className="fill-gray-800/20" />
+                  <rect x="5" y="15" width="50" height="30" rx="2" className="fill-current opacity-20" />
+                  <path d="M5 15 L55 15 L55 45 L5 45 Z" />
+                  <path d="M25 15 L25 45" className="stroke-1 opacity-50" />
+                  <path d="M45 15 L45 45" className="stroke-1 opacity-50" />
+                  <path d="M55 45 L90 45 L90 25 L75 15 L55 15" />
+                  <path d="M75 15 L75 45" />
+                  <path d="M75 18 L88 25 L75 25 Z" className="fill-current opacity-20" />
+                  <path d="M85 45 L92 45 L92 40" />
+                </svg>
+              </div>
+
+              {/* Dust Effect for Running */}
+              {dust && (
+                <div className="absolute bottom-0 -left-4 text-lg text-gray-400 dust-cloud">💨</div>
+              )}
+            </div>
+        </div>
+      );
+    };
+
+    // --- ORDERS PAGE (AUTO PROGRESS + PROGRESS TABS) ---
+    const OrdersPage = ({ orders, onUpdateStatus, notify, products, vendor }) => {
+      const [filter, setFilter] = useState('Pending');
+      const [viewInvoice, setViewInvoice] = useState(null);
+
+      const steps = ['Pending', 'Live', 'Completed'];
+
+      const filtered = orders.filter((o) => {
+        if (filter === 'Pending') return o.status === 'Pending';
+        if (filter === 'Live') return o.status === 'Live';
+        if (filter === 'Completed') return o.status === 'Completed';
+        return true;
+      });
+
+      const handleExport = () => {
+        notify('Downloading CSV...', 'info');
+        setTimeout(() => notify('Orders Exported Successfully', 'success'), 1500);
+      };
+
+      const handleStatusFlow = (order) => {
+        if (order.status === 'Pending') {
+          onUpdateStatus(order.id, 'Live');
+          notify('Order moved to Live', 'success');
+        } else if (order.status === 'Live') {
+          onUpdateStatus(order.id, 'Completed');
+          notify('Order Completed', 'success');
+        }
+      };
+
+      const getNextLabel = (status) => {
+        if (status === 'Pending') return 'Accept → Live';
+        if (status === 'Live') return 'Delivered → Completed';
+        return 'Completed';
+      };
+
+      return (
+        <div className="p-6 space-y-6 fade-in">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h2>
+            <div className="flex flex-col md:flex-row gap-3 md:items-center">
+              <button
+                onClick={handleExport}
+                className="px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-xs font-bold hover:bg-gray-50 transition flex items-center gap-2"
+              >
+                ⬇ Export CSV
+              </button>
+            </div>
+          </div>
+            
+          {/* --- NEW ANIMATION COMPONENT HERE --- */}
+          <div className="relative z-10">
+             <OrderJourneyAnimation currentStage={filter} />
+          </div>
+
+          {/* UPDATED: Interactive Touch Tabs - ADDED Z-INDEX */}
+          <div className="flex justify-center md:justify-start">
+              <div className="relative z-20 bg-gray-100 dark:bg-slate-900 rounded-full px-2 py-2 flex items-center gap-1 inline-flex w-full md:w-auto overflow-x-auto">
+                {steps.map((step) => {
+                  const isActive = filter === step;
+                  return (
+                    <button
+                      key={step}
+                      onClick={() => setFilter(step)}
+                      className={`flex-1 md:flex-none relative z-20 px-4 py-2 text-xs font-bold rounded-full flex items-center justify-center gap-2 transition-all duration-300 ${
+                        isActive
+                          ? 'bg-black text-white dark:bg-white dark:text-black shadow-lg scale-105'
+                          : 'text-gray-500 hover:bg-gray-200 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      <span className={`w-2 h-2 rounded-full border ${isActive ? 'bg-green-500 border-green-500' : 'border-gray-400'}`}></span>
+                      {step}
+                    </button>
+                  );
+                })}
+              </div>
+          </div>
+
+          <div className="space-y-4">
+            {filtered.length === 0 && (
+              <div className="text-center py-24 bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-gray-300 dark:border-slate-700">
+                <div className="text-5xl text-gray-300 mb-4 flex justify-center"><Icons.BoxOpen /></div>
+                <p className="text-gray-500 font-medium">
+                  No {filter.toLowerCase()} orders found.
+                </p>
+              </div>
+            )}
+            {filtered.map((order) => (
+              <Card
+                key={order.id}
+                className="group hover:border-brandYellow/50 transition duration-300 soft-hover"
+              >
+                <div className="flex flex-col md:flex-row gap-6 justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-2xl group-hover:scale-110 transition text-gray-500">
+                      {order.isBulk ? <Icons.Box /> : <Icons.Package />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                          {order.productName}
+                        </h3>
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-slate-800 rounded font-mono text-gray-500">
+                          #{order.id}
+                        </span>
+                      </div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Qty:{' '}
+                        <span className="font-bold text-gray-900 dark:text-white">
+                          {order.quantity}
+                        </span>
+                        {order.isBulk && (
+                          <span className="ml-2 text-purple-600 font-bold text-xs uppercase">
+                            Bulk Order
+                          </span>
+                        )}
+                        {/* Display Type if Offline */}
+                        {order.type === 'Offline' && (
+                           <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded text-[10px] uppercase font-bold">
+                              Offline Sale
+                           </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-400 mt-2 flex items-center gap-2">
+                        📅 {order.date} • 🚛 {order.vehicleType || 'Auto Assigned'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col items-end gap-2">
+                    <div className="text-2xl font-bold text-brandYellow">
+                      ₹ {order.totalAmount.toLocaleString()}
+                    </div>
+                    <div className="flex items-center gap-3 mt-2 flex-wrap justify-end">
+                      
+                      {/* UPDATED: Download Invoice Button for Live/Completed */}
+                      {(order.status === 'Live' || order.status === 'Completed') && (
+                        <button
+                          onClick={() => setViewInvoice(order)}
+                          className="bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg text-xs font-bold hover:bg-gray-200 dark:hover:bg-slate-700 transition flex items-center gap-1"
+                        >
+                          <Icons.Receipt /> Invoice
+                        </button>
+                      )}
+
+                      {order.status !== 'Completed' && (
+                        <button
+                          onClick={() => handleStatusFlow(order)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-xs font-bold transition shadow-lg shadow-blue-500/20"
+                        >
+                          {getNextLabel(order.status)}
+                        </button>
+                      )}
+                      {order.status === 'Completed' && (
+                        <span className="text-xs font-bold text-green-500 flex items-center gap-1">
+                          <Icons.CheckCircle /> Completed
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Invoice Modal for Orders Page */}
+          {viewInvoice && (
+            <InvoiceComponent
+              order={viewInvoice}
+              vendor={vendor}
+              products={products}
+              onClose={() => setViewInvoice(null)}
+            />
+          )}
+        </div>
+      );
+    };
+
+    // --- WALLET PAGE ---
+    const WalletPage = ({ orders, settlements, onSettle }) => {
+      const totalSales = orders.reduce((acc, o) => acc + o.totalAmount, 0);
+      const commissionRate = 0.05;
+      const totalCommissionDue = totalSales * commissionRate;
+      const totalSettled = settlements.reduce((acc, s) => acc + s.amount, 0);
+      const currentDue = totalCommissionDue - totalSettled;
+      const vendorProfit = totalSales - totalCommissionDue;
+
+      return (
+        <div className="p-6 space-y-8 fade-in">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Financials</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-lg relative overflow-hidden">
+              <div className="relative z-10">
+                <div className="text-emerald-100 text-xs font-bold uppercase tracking-wider mb-2">
+                  Total Revenue
+                </div>
+                <div className="text-4xl font-bold">₹ {totalSales.toLocaleString()}</div>
+              </div>
+              <div className="absolute -right-5 -bottom-10 text-9xl text-white opacity-10">₹</div>
+            </div>
+
+            <Card className="border-l-4 border-green-500 soft-hover">
+              <div className="text-gray-500 text-xs font-bold uppercase mb-2">
+                Your Profit (After Commission)
+              </div>
+              <div className="text-3xl font-bold text-green-500">
+                ₹ {vendorProfit.toLocaleString()}
+              </div>
+              <div className="text-xs text-gray-400 mt-2">
+                You keep <span className="font-bold">95%</span> of every sale.
+              </div>
+            </Card>
+
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-red-100 dark:border-red-900/30 shadow-lg relative soft-hover">
+              <div className="text-red-500 text-xs font-bold uppercase mb-2">
+                Commission Due
+              </div>
+              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                ₹ {currentDue > 0 ? currentDue.toLocaleString() : '0'}
+              </div>
+              <div className="text-xs text-gray-500 mb-4">
+                Platform fee @ {commissionRate * 100}% of total revenue.
+              </div>
+              <button
+                onClick={() => onSettle(currentDue)}
+                disabled={currentDue <= 0}
+                className={`w-full py-3 rounded-xl font-bold text-xs transition ${
+                  currentDue > 0
+                    ? 'bg-brandYellow text-black hover:shadow-lg'
+                    : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {currentDue > 0 ? 'Pay Now & Settle' : 'All Dues Cleared ✅'}
+              </button>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-lg text-gray-800 dark:text-white">
+                Settlement History
+              </h3>
+            </div>
+            <Card className="overflow-hidden p-0">
+              {settlements.length === 0 ? (
+                <div className="p-8 text-center text-sm text-gray-500">
+                  No transactions recorded yet.
+                </div>
+              ) : (
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 dark:bg-slate-900 text-gray-500 uppercase text-xs font-semibold">
+                    <tr>
+                      <th className="px-6 py-4">Date</th>
+                      <th className="px-6 py-4">Transaction ID</th>
+                      <th className="px-6 py-4 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-slate-800">
+                    {settlements.map((s, i) => (
+                      <tr
+                        key={i}
+                        className="hover:bg-gray-50 dark:hover:bg-slate-900/50 transition"
+                      >
+                        <td className="px-6 py-4 font-medium">{s.date}</td>
+                        <td className="px-6 py-4 font-mono text-xs text-gray-500">{s.id}</td>
+                        <td className="px-6 py-4 text-right text-green-600 font-bold">
+                          ₹ {s.amount.toFixed(2)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </Card>
+          </div>
+        </div>
+      );
+    };
+    // --- SALES ANALYTICS (WITH RANGE FILTERS) ---
+    const SalesSummary = ({ orders, products, notify }) => {
+      const [analyticsRange, setAnalyticsRange] = useState('today');
+
+      const filteredOrders = useMemo(() => {
+        const now = new Date();
+        return orders.filter((o) => {
+          const d = new Date(o.date);
+          const diff = now - d;
+          const oneDay = 86400000;
+          switch (analyticsRange) {
+            case 'today':
+              return d.toDateString() === now.toDateString();
+            case 'week':
+              return diff <= 7 * oneDay;
+            case 'month':
+              return diff <= 30 * oneDay;
+            case 'year':
+              return diff <= 365 * oneDay;
+            case '2year':
+              return diff <= 2 * 365 * oneDay;
+            case '5year':
+              return diff <= 5 * 365 * oneDay;
+            default:
+              return true;
+          }
+        });
+      }, [orders, analyticsRange]);
+
+      const categoryData = useMemo(() => {
+        const counts = {};
+        filteredOrders.forEach((o) => {
+          const prod = products.find((p) => p.name === o.productName);
+          const cat = prod ? prod.category : 'Others';
+          counts[cat] = (counts[cat] || 0) + o.totalAmount;
+        });
+        return {
+          labels: Object.keys(counts),
+          datasets: [
+            {
+              data: Object.values(counts),
+              backgroundColor: ['#FFC107', '#3B82F6', '#10B981', '#F43F5E', '#8B5CF6'],
+              borderWidth: 0,
+              hoverOffset: 10,
+            },
+          ],
+        };
+      }, [filteredOrders, products]);
+
+      const salesTrendData = useMemo(() => {
+        const data = {};
+        filteredOrders.forEach((o) => {
+          data[o.date] = (data[o.date] || 0) + o.totalAmount;
+        });
+        return {
+          labels: Object.keys(data),
+          datasets: [
+            {
+              label: 'Revenue',
+              data: Object.values(data),
+              backgroundColor: '#FFC107',
+              borderRadius: 6,
+              barThickness: 30,
+            },
+          ],
+        };
+      }, [filteredOrders]);
+
+      return (
+        <div className="p-6 space-y-6 fade-in">
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics</h2>
+              <p className="text-xs text-gray-500 mt-1">
+                Understand your sales by time period & category.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                notify('Report downloaded', 'success');
+              }}
+              className="text-xs font-bold text-blue-500 hover:underline"
+            >
+              Download Report
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-2 mb-3">
+            {[
+              ['today', 'Today'],
+              ['week', 'This Week'],
+              ['month', 'This Month'],
+              ['year', 'This Year'],
+              ['2year', '2 Years'],
+              ['5year', '5 Years'],
+            ].map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setAnalyticsRange(key)}
+                className={`px-3 py-1 text-xs rounded-full font-bold ${
+                  analyticsRange === key
+                    ? 'bg-brandYellow text-black'
+                    : 'bg-gray-800 text-gray-300'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <h3 className="text-sm font-bold mb-6 text-gray-700 dark:text-gray-300">
+                Revenue by Category
+              </h3>
+              <div className="h-64 flex justify-center items-center">
+                <ChartComponent
+                  key={JSON.stringify(categoryData)}
+                  type="doughnut"
+                  data={categoryData}
+                  options={{ plugins: { legend: { position: 'bottom' } } }}
+                  id="pieChart"
+                />
+              </div>
+            </Card>
+            <Card>
+              <h3 className="text-sm font-bold mb-6 text-gray-700 dark:text-gray-300">
+                Sales Trend
+              </h3>
+              <div className="h-64">
+                <ChartComponent
+                  key={JSON.stringify(salesTrendData)}
+                  type="bar"
+                  data={salesTrendData}
+                  options={{ scales: { y: { beginAtZero: true, grid: { display: false } } } }}
+                  id="barChart"
+                />
+              </div>
+            </Card>
+          </div>
+        </div>
+      );
+    };
+
+    // --- ADD PRODUCT ---
+    const ProductForm = ({ onSave, editingProduct, onCancel, notify }) => {
+      const initialForm = editingProduct || {
+        name: '',
+        category: '',
+        mrp: '',
+        price: '',
+        stock: '',
+        length: '',
+        width: '',
+        height: '',
+        weight: '',
+        hsn: '',
+        isBulk: false,
+        bulkDiscount: 0,
+        selfDelivery: false,
+        active: true,
+        images: [] // Changed from single imageUrl to array
+      };
+
+      const [form, setForm] = useState(initialForm);
+      const [vehicleSuggestion, setVehicleSuggestion] = useState('');
+      const [suggestions, setSuggestions] = useState([]);
+      const [previewImage, setPreviewImage] = useState(null); // For Modal
+
+      useEffect(() => {
+        setVehicleSuggestion(
+          calculateVehicle(form.length || 0, form.width || 0, form.height || 0, form.weight || 0)
+        );
+      }, [form.length, form.width, form.height, form.weight]);
+
+      const update = (k, v) => {
+        setForm((f) => ({ ...f, [k]: v }));
+        if (k === 'name') {
+          const value = v.toLowerCase();
+          if (value.length > 0) {
+            const matched = HARDWARE_DB.filter((item) =>
+              item.name.toLowerCase().startsWith(value)
+            );
+            setSuggestions(matched.slice(0, 20)); // show first 20
+          } else {
+            setSuggestions([]);
+          }
+        }
+      };
+
+      const selectSuggestion = (item) => {
+        setForm((f) => ({
+          ...f,
+          name: item.name,
+          hsn: item.hsn,
+          category: item.category,
+        }));
+        setSuggestions([]);
+      };
+
+      const handleImageChange = (e) => {
+        const files = Array.from(e.target.files);
+        if (!files.length) return;
+
+        // Limit check
+        if ((form.images?.length || 0) + files.length > 3) {
+            notify("Maximum 3 images allowed per product", "error");
+            return;
+        }
+
+        files.forEach(file => {
+             const reader = new FileReader();
+             reader.onloadend = () => {
+                setForm((prev) => ({ 
+                    ...prev, 
+                    images: [...(prev.images || []), reader.result] 
+                }));
+             };
+             reader.readAsDataURL(file);
+        });
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        const finalProduct = {
+          ...form,
+          vehicleType: vehicleSuggestion,
+        };
+        onSave(finalProduct);
+        notify(editingProduct ? 'Product Updated!' : 'Product Saved!', 'success');
+      };
+
+      // --- HELPER TO RENDER ANIMATED VEHICLE ---
+      const renderVehicleAnimation = () => {
+        if (!vehicleSuggestion) return null;
+        
+        let icon = null;
+        let animClass = '';
+        let color = '';
+
+        if (vehicleSuggestion.includes('Two Wheeler')) {
+            // DETAILED REALISTIC BIKE
+            icon = (
+              <svg viewBox="0 0 100 60" className="w-24 h-24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {/* Wheels */}
+                <circle cx="20" cy="45" r="12" className="stroke-2 fill-gray-800/20" />
+                <circle cx="80" cy="45" r="12" className="stroke-2 fill-gray-800/20" />
+                <circle cx="20" cy="45" r="4" fill="currentColor" />
+                <circle cx="80" cy="45" r="4" fill="currentColor" />
+                
+                {/* Chassis/Body */}
+                <path d="M20 45 L45 45 L60 25 L80 45" />
+                <path d="M45 45 L40 25 L25 25 L35 15" /> 
+                <path d="M60 25 L75 15" />
+                
+                {/* Handlebars */}
+                <path d="M35 15 L30 15" />
+                
+                {/* Seat */}
+                <path d="M45 25 L65 25" className="stroke-[3]" />
+                
+                {/* Exhaust */}
+                <path d="M50 48 L75 42" className="stroke-2" />
+              </svg>
+            );
+            animClass = 'vehicle-anim-bike';
+            color = 'text-orange-600 dark:text-orange-500';
+
+        } else if (vehicleSuggestion.includes('Three Wheeler')) {
+             // DETAILED REALISTIC AUTO RICKSHAW
+             icon = (
+              <svg viewBox="0 0 100 60" className="w-24 h-24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Wheels */}
+                  <circle cx="25" cy="50" r="8" className="fill-gray-800/20" />
+                  <circle cx="75" cy="50" r="8" className="fill-gray-800/20" />
+                  
+                  {/* Body Frame */}
+                  <path d="M15 50 L15 25 L35 10 L70 10 L85 25 L85 50 Z" />
+                  
+                  {/* Roof */}
+                  <path d="M35 10 L85 15" />
+                  
+                  {/* Window/Front */}
+                  <path d="M35 10 L35 25 L85 25" />
+                  <path d="M15 25 L85 25" />
+                  
+                  {/* Handle/Steering */}
+                  <path d="M30 30 L25 35" />
+              </svg>
+            );
+            animClass = 'vehicle-anim-auto';
+            color = 'text-yellow-600 dark:text-yellow-500';
+
+        } else {
+             // DETAILED REALISTIC TRUCK
+             icon = (
+              <svg viewBox="0 0 100 60" className="w-32 h-24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  {/* Wheels */}
+                  <circle cx="25" cy="52" r="7" className="fill-gray-800/20" />
+                  <circle cx="40" cy="52" r="7" className="fill-gray-800/20" />
+                  <circle cx="80" cy="52" r="7" className="fill-gray-800/20" />
+                  
+                  {/* Cargo Box */}
+                  <rect x="5" y="15" width="50" height="30" rx="2" className="fill-blue-500/10" />
+                  <path d="M5 15 L55 15 L55 45 L5 45 Z" />
+                  <path d="M25 15 L25 45" className="stroke-1 opacity-50" />
+                  <path d="M45 15 L45 45" className="stroke-1 opacity-50" />
+
+                  {/* Cab */}
+                  <path d="M55 45 L90 45 L90 25 L75 15 L55 15" />
+                  <path d="M75 15 L75 45" />
+                  
+                  {/* Window */}
+                  <path d="M75 18 L88 25 L75 25 Z" className="fill-blue-200/20" />
+                  
+                  {/* Bumper */}
+                  <path d="M85 45 L92 45 L92 40" />
+              </svg>
+            );
+            animClass = 'vehicle-anim-truck';
+            color = 'text-blue-600 dark:text-blue-500';
+        }
+
+        return (
+            <div className={`mt-4 flex flex-col justify-center items-center h-40 overflow-hidden bg-white dark:bg-slate-950 rounded-2xl border-2 border-dashed border-gray-200 dark:border-slate-800 ${color} relative shadow-inner`}>
+                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/graphy.png')] opacity-10"></div>
+                 <div className={`scale-150 transform origin-center ${animClass}`}>
+                    {icon}
+                 </div>
+                 <div className="mt-4 text-xs font-bold uppercase tracking-widest opacity-60">
+                   {vehicleSuggestion}
+                 </div>
+            </div>
+        );
+      };
+
+      return (
+        <div className="p-6 max-w-4xl mx-auto fade-in">
+          {/* IMAGE PREVIEW MODAL */}
+          {previewImage && (
+             <div 
+                className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out fade-in"
+                onClick={() => setPreviewImage(null)}
+             >
+                <div className="relative max-w-4xl max-h-screen">
+                    <img src={previewImage} alt="Full Preview" className="max-w-full max-h-[90vh] rounded-lg shadow-2xl" />
+                    <button 
+                        className="absolute top-4 right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-2 backdrop-blur transition"
+                        onClick={() => setPreviewImage(null)}
+                    >
+                        ✕
+                    </button>
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/50 text-xs">Click anywhere to close</div>
+                </div>
+             </div>
+          )}
+
+          <Card>
+            <div className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-slate-800 pb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                 {editingProduct ? 'Edit Product' : 'Add New Inventory'}
+              </h2>
+              <button
+                onClick={onCancel}
+                className="text-xs text-gray-500 hover:text-red-500 transition"
+              >
+                Cancel
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-8 relative">
+              <div className="space-y-5">
+                <div className="relative">
+                  <Input
+                    label="Product Name"
+                    value={form.name}
+                    onChange={(e) => update('name', e.target.value)}
+                    placeholder="Start typing: Sand, Cement, Drill..."
+                  />
+                  {suggestions.length > 0 && (
+                    <div className="absolute z-50 w-full bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-xl shadow-xl mt-1 max-height-48 max-h-56 overflow-y-auto">
+                      {suggestions.map((item, idx) => (
+                        <div
+                          key={idx}
+                          onClick={() => selectSuggestion(item)}
+                          className="px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700 cursor-pointer text-sm border-b border-gray-50 dark:border-slate-700 last:border-0"
+                        >
+                          <span className="font-bold">{item.name}</span>
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({item.category})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                    Product Images (Max 3)
+                  </label>
+                  
+                  {/* UPDATED IMAGE LAYOUT: GRID FOR SINGLE LINE WITHOUT SCROLL */}
+                  <div className="grid grid-cols-4 gap-3 w-full">
+                    {/* Add Button */}
+                    <label className="aspect-square cursor-pointer flex flex-col items-center justify-center rounded-xl bg-gray-50 dark:bg-slate-900 border-2 border-dashed border-gray-300 dark:border-slate-700 hover:bg-gray-100 dark:hover:bg-slate-800 transition text-gray-400 hover:text-brandYellow hover:border-brandYellow w-full h-auto">
+                      <span className="text-2xl"><Icons.Plus /></span>
+                      <span className="text-[8px] sm:text-[10px] font-bold mt-1 text-center">Add Img</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                        multiple
+                      />
+                    </label>
+                    
+                    {/* Render Thumbnails in Grid Slots */}
+                    {form.images && form.images.map((img, index) => (
+                      <div 
+                        key={index} 
+                        className="aspect-square rounded-xl overflow-hidden border border-gray-200 dark:border-slate-700 shadow-sm relative group cursor-zoom-in bg-white w-full h-auto"
+                        onClick={() => setPreviewImage(img)}
+                      >
+                        <img
+                          src={img}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-full object-cover transition transform group-hover:scale-110"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition"></div>
+                        {/* Remove Image Button */}
+                        <div 
+                           className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] opacity-0 group-hover:opacity-100 cursor-pointer transition"
+                           onClick={(e) => {
+                               e.stopPropagation();
+                               setForm(prev => ({...prev, images: prev.images.filter((_, i) => i !== index)}))
+                           }}
+                        >✕</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-[10px] text-gray-400">
+                    {form.images?.length || 0} / 3 images uploaded. Click to view full size.
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="Category"
+                    value={form.category}
+                    onChange={(e) => update('category', e.target.value)}
+                  />
+                  <Input
+                    label="HSN Code"
+                    value={form.hsn}
+                    onChange={(e) => update('hsn', e.target.value)}
+                  />
+                </div>
+
+                <div className="p-4 bg-gray-50 dark:bg-slate-900 rounded-xl space-y-4">
+                  <Input
+                    label="Stock Quantity"
+                    type="number"
+                    value={form.stock}
+                    onChange={(e) => update('stock', e.target.value)}
+                  />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-gray-600 dark:text-gray-300">
+                      Enable Bulk Order
+                    </span>
+                    <ToggleSwitch
+                      checked={form.isBulk}
+                      onChange={(val) => update('isBulk', val)}
+                    />
+                  </div>
+                  {form.isBulk && (
+                    <div className="fade-in">
+                      <Input
+                        label="Bulk Discount (%)"
+                        type="number"
+                        value={form.bulkDiscount}
+                        onChange={(e) => update('bulkDiscount', e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="MRP (₹)"
+                    type="number"
+                    value={form.mrp}
+                    onChange={(e) => update('mrp', e.target.value)}
+                  />
+                  <Input
+                    label="Selling Price (₹)"
+                    type="number"
+                    value={form.price}
+                    onChange={(e) => update('price', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-5 border-l border-gray-100 dark:border-slate-800 pl-0 md:pl-8">
+                <h3 className="text-xs font-bold text-brandYellow uppercase tracking-wider">
+                  Logistics
+                </h3>
+                <div className="grid grid-cols-3 gap-3">
+                  <Input
+                    label="L (cm)"
+                    type="number"
+                    value={form.length}
+                    onChange={(e) => update('length', e.target.value)}
+                  />
+                  <Input
+                    label="W (cm)"
+                    type="number"
+                    value={form.width}
+                    onChange={(e) => update('width', e.target.value)}
+                  />
+                  <Input
+                    label="H (cm)"
+                    type="number"
+                    value={form.height}
+                    onChange={(e) => update('height', e.target.value)}
+                  />
+                </div>
+                <Input
+                  label="Weight (kg)"
+                  type="number"
+                  value={form.weight}
+                  onChange={(e) => update('weight', e.target.value)}
+                />
+                
+                {/* --- VEHICLE SUGGESTION AND ANIMATION AREA --- */}
+                <div className="mt-4">
+                   <h4 className="text-[10px] text-gray-500 uppercase font-bold text-center mb-2">
+                    Predicted Vehicle Type
+                  </h4>
+                  {renderVehicleAnimation()}
+                </div>
+
+              </div>
+
+              <div className="md:col-span-2 pt-4">
+                <button
+                  type="submit"
+                  className="w-40 bg-brandYellow hover:bg-yellow-400 text-black font-bold py-2.5 rounded-xl shadow-lg transition transform active:scale-95 text-sm"
+                >
+                  {editingProduct ? 'Update Product' : 'Save Product'}
+                </button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      );
+    };
+
+    const ProductList = ({ products, setView, toggleActive, onBoost, onEdit }) => {
+        const [boostModalData, setBoostModalData] = useState(null);
+
+        // 1. User clicks "Boost" button
+        const handleBoostClick = (product) => {
+            if(product.isBoosted) return; // Prevent if already active
+            setBoostModalData(product); // Open Modal
+        };
+
+        // 2. Modal confirms payment success
+        const confirmBoost = (id) => {
+            onBoost(id); // Call parent function to update data
+            setBoostModalData(null); // Close Modal
+        };
+
+        return (
+            <div className="p-6 fade-in">
+                {/* Conditionally Render Modal */}
+                {boostModalData && (
+                    <BoostPaymentModal 
+                        product={boostModalData} 
+                        onClose={() => setBoostModalData(null)} 
+                        onConfirm={confirmBoost} 
+                    />
+                )}
+
+                <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Catalog</h2>
+                <button
+                    onClick={() => setView('add-product')}
+                    className="bg-brandYellow text-black px-5 py-2 rounded-xl text-sm font-bold shadow hover:bg-yellow-400 transition"
+                >
+                    Add Item
+                </button>
+                </div>
+                <div className="grid gap-4">
+                {products.map((p) => (
+                    <div
+                    key={p.id}
+                    className={`flex items-center justify-between p-5 rounded-2xl border transition duration-300 relative overflow-hidden ${
+                        p.active
+                        ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800'
+                        : 'bg-gray-50 dark:bg-slate-900/50 border-gray-100 dark:border-slate-800 opacity-60 grayscale'
+                    } ${p.isBoosted ? 'border-brandYellow dark:border-brandYellow ring-1 ring-brandYellow/20' : ''}`}
+                    >
+                    {/* Boosted Background Effect */}
+                    {p.isBoosted && <div className="absolute top-0 right-0 p-12 bg-brandYellow/5 rounded-bl-full blur-xl pointer-events-none"></div>}
+
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-2xl text-gray-500">
+                        {p.images && p.images.length > 0 ? (
+                            <img src={p.images[0]} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                            <Icons.Tool />
+                        )}
+                        </div>
+                        <div>
+                        <div className="flex items-center gap-3">
+                            <div className="font-bold text-lg text-gray-800 dark:text-white">
+                            {p.name}
+                            </div>
+                            {p.isBoosted && <span className="text-[10px] bg-brandYellow text-black px-2 py-0.5 rounded font-bold uppercase shadow-sm">Boosted 🚀</span>}
+                            {p.isBulk && (
+                            <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-bold uppercase">
+                                Bulk -{p.bulkDiscount}%
+                            </span>
+                            )}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                            HSN: {p.hsn} • {p.category}
+                        </div>
+                        <div className="text-xs text-yellow-500 mt-1 flex gap-1">
+                            {Array(p.rating).fill('★').join('')}
+                            <span className="text-gray-300">
+                            {Array(5 - p.rating).fill('★').join('')}
+                            </span>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-4 sm:gap-6 relative z-10">
+                        <div className="text-right hidden sm:block">
+                        <div className="font-bold text-brandYellow text-lg">₹ {p.price}</div>
+                        <div
+                            className={`text-[10px] font-bold ${
+                            p.stock < 5 ? 'text-red-500' : 'text-green-500'
+                            }`}
+                        >
+                            {p.stock} in stock
+                        </div>
+                        </div>
+
+                        {/* EDIT BUTTON (NEW) */}
+                        <button 
+                            onClick={() => onEdit(p)}
+                            className="bg-gray-100 text-gray-600 dark:bg-slate-800 dark:text-gray-300 hover:bg-gray-200 p-2 rounded-lg transition"
+                            title="Edit Product"
+                        >
+                            <Icons.Pencil />
+                        </button>
+
+                        {/* BOOST BUTTON */}
+                        <button 
+                            onClick={() => handleBoostClick(p)}
+                            disabled={p.isBoosted}
+                            className={`text-xs font-bold px-3 py-1.5 rounded-lg border transition ${
+                                p.isBoosted 
+                                ? 'bg-transparent border-transparent text-gray-400 cursor-default' 
+                                : 'bg-black text-white border-black hover:bg-gray-800 dark:bg-white dark:text-black dark:border-white'
+                            }`}
+                        >
+                            {p.isBoosted ? 'Active ✅' : 'Boost 🚀'}
+                        </button>
+
+                        <ToggleSwitch checked={p.active} onChange={() => toggleActive(p.id)} />
+                    </div>
+                    </div>
+                ))}
+                </div>
+            </div>
+        );
+    };
+
+    const SettingsPage = ({ vendor, updateVendor, notify, sellerActive, setSellerActive }) => {
+      const [preferences, setPreferences] = useState({ email: true, sms: false });
+      const [isEditing, setIsEditing] = useState(false);
+      const [editForm, setEditForm] = useState(vendor);
+
+      useEffect(() => {
+        if (!isEditing) setEditForm(vendor);
+      }, [vendor, isEditing]);
+
+      const handlePref = (key) => {
+        setPreferences({ ...preferences, [key]: !preferences[key] });
+        notify('Preferences Updated', 'info');
+      };
+
+      const handleSave = () => {
+        updateVendor(editForm);
+        setIsEditing(false);
+        notify('Profile Updated Successfully', 'success');
+      };
+
+      const handleChange = (key, val) => {
+        setEditForm(prev => ({ ...prev, [key]: val }));
+      };
+
+      return (
+        <div className="p-6 fade-in">
+          <Card className="max-w-2xl mx-auto">
+            <div className="flex justify-between items-center mb-8">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Settings</h2>
+                <button
+                    onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                    className={`px-4 py-2 rounded-lg text-xs font-bold transition ${
+                        isEditing 
+                        ? 'bg-green-500 text-white hover:bg-green-600'
+                        : 'bg-brandYellow text-black hover:bg-yellow-400'
+                    }`}
+                >
+                    {isEditing ? 'Save Changes' : 'Edit Profile'}
+                </button>
+            </div>
+            
+            <div className="space-y-6 mb-8">
+              <Input
+                label="Shop Name"
+                value={editForm?.shopName || ''}
+                onChange={(e) => handleChange('shopName', e.target.value)}
+                readOnly={!isEditing}
+                className={!isEditing ? "opacity-70" : ""}
+              />
+              <Input
+                label="Owner Name"
+                value={editForm?.ownerName || ''}
+                onChange={(e) => handleChange('ownerName', e.target.value)}
+                readOnly={!isEditing}
+                className={!isEditing ? "opacity-70" : ""}
+              />
+              <Input
+                label="GST Number"
+                value={editForm?.gst || ''}
+                onChange={(e) => handleChange('gst', e.target.value)}
+                readOnly={!isEditing}
+                className={!isEditing ? "opacity-70" : ""}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <Input 
+                    label="Location" 
+                    value={editForm?.location || ''} 
+                    onChange={(e) => handleChange('location', e.target.value)}
+                    readOnly={!isEditing} 
+                />
+                <Input 
+                    label="Area" 
+                    value={editForm?.area || ''} 
+                    onChange={(e) => handleChange('area', e.target.value)}
+                    readOnly={!isEditing} 
+                />
+              </div>
+              
+              <div className="border-t border-gray-100 dark:border-slate-800 pt-6">
+                <h3 className="font-bold text-sm text-gray-500 dark:text-gray-400 uppercase mb-4">Bank Information</h3>
+                  <Input 
+                    label="Bank Name" 
+                    value={editForm?.bankName || ''} 
+                    onChange={(e) => handleChange('bankName', e.target.value)}
+                    readOnly={!isEditing} 
+                  />
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <Input 
+                        label="Account No" 
+                        value={isEditing ? (editForm?.bankAccount || '') : (editForm?.bankAccount ? 'XXXX' + editForm.bankAccount.slice(-4) : '')} 
+                        onChange={(e) => handleChange('bankAccount', e.target.value)}
+                        readOnly={!isEditing} 
+                    />
+                    <Input 
+                        label="IFSC Code" 
+                        value={editForm?.ifsc || ''} 
+                        onChange={(e) => handleChange('ifsc', e.target.value)}
+                        readOnly={!isEditing} 
+                    />
+                  </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 mt-6">
+                <div>
+                  <div className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase">
+                    Seller Account Status
+                  </div>
+                  <div className="text-sm text-gray-500 mt-1">
+                    Toggle your shop visibility on Quick Construct marketplace.
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-xs font-bold ${
+                      sellerActive ? 'text-green-500' : 'text-red-500'
+                    }`}
+                  >
+                    {sellerActive ? 'Active' : 'Inactive'}
+                  </span>
+                  <ToggleSwitch checked={sellerActive} onChange={setSellerActive} />
+                </div>
+              </div>
+            </div>
+
+            <h3 className="font-bold text-gray-800 dark:text-gray-200 mb-4 border-b dark:border-slate-700 pb-2">
+              Notifications
+            </h3>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center bg-gray-50 dark:bg-slate-900 p-4 rounded-xl">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  Email Notifications
+                </span>
+                <ToggleSwitch
+                  checked={preferences.email}
+                  onChange={() => handlePref('email')}
+                />
+              </div>
+              <div className="flex justify-between items-center bg-gray-50 dark:bg-slate-900 p-4 rounded-xl">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                  SMS Alerts
+                </span>
+                <ToggleSwitch checked={preferences.sms} onChange={() => handlePref('sms')} />
+              </div>
+            </div>
+            <button
+              onClick={() => notify('Support Ticket Created', 'info')}
+              className="mt-8 w-full border border-gray-200 dark:border-slate-700 py-3 rounded-xl text-sm font-bold hover:bg-gray-50 dark:hover:bg-slate-800 transition"
+            >
+              Contact Support
+            </button>
+          </Card>
+        </div>
+      );
+    };
+    // --- MAIN APP ---
+    const App = () => {
+      const [isAuthenticated, setIsAuthenticated] = useState(false);
+      const [view, setView] = useState('home');
+      const [isDark, setIsDark] = useState(true);
+      const [vendor, setVendor] = useState({
+        shopName: '',
+        email: '',
+        isActive: true,
+        gst: '',
+        location: '',
+        area: '',
+        ownerName: '',
+        bankAccount: '',
+        ifsc: '',
+        bankName: ''
+      });
+      const [settlements, setSettlements] = useState([]);
+      const [toasts, setToasts] = useState([]);
+      const [sellerActive, setSellerActive] = useState(true);
+
+      const notify = (msg, type = 'info') => {
+        const id = Date.now() + Math.random();
+        setToasts((prev) => [...prev, { id, msg, type }]);
+        setTimeout(
+          () => setToasts((prev) => prev.filter((t) => t.id !== id)),
+          3000
+        );
+      };
+
+      const [products, setProducts] = useState([
+        {
+          id: 1,
+          name: 'Allen Key Set',
+          category: 'Hand Tools',
+          hsn: '8204',
+          isBulk: false,
+          bulkDiscount: 0,
+          price: 450,
+          mrp: 500,
+          stock: 12,
+          active: true,
+          rating: 4,
+          length: 15,
+          width: 5,
+          height: 2,
+          weight: 0.5,
+          vehicleType: 'Two Wheeler (Bike)',
+          selfDelivery: true,
+          images: [],
+          isBoosted: false, // Initial State
+        },
+        {
+          id: 2,
+          name: 'Hammer (Claw)',
+          category: 'Hand Tools',
+          hsn: '8205',
+          isBulk: true,
+          bulkDiscount: 10,
+          price: 250,
+          mrp: 300,
+          stock: 2,
+          active: true,
+          rating: 5,
+          length: 30,
+          width: 10,
+          height: 5,
+          weight: 1.2,
+          vehicleType: 'Two Wheeler (Bike)',
+          selfDelivery: false,
+          images: [],
+          isBoosted: false, // Initial State
+        },
+      ]);
+
+      const [orders, setOrders] = useState([
+        {
+          id: 101,
+          productName: 'Allen Key Set',
+          quantity: 1,
+          isBulk: false,
+          totalAmount: 450,
+          status: 'Pending',
+          date: new Date().toISOString().slice(0, 10),
+          vehicleType: 'Two Wheeler (Bike)',
+          deliveryMode: 'Self Delivery',
+          type: 'Online' // DEFAULT
+        },
+        {
+          id: 102,
+          productName: 'Hammer (Claw)',
+          quantity: 20,
+          isBulk: true,
+          totalAmount: 4500,
+          status: 'Completed',
+          date: '2025-12-05',
+          vehicleType: 'Three Wheeler (Auto)',
+          deliveryMode: 'Courier',
+          type: 'Online' // DEFAULT
+        },
+      ]);
+      
+      // NEW STATE FOR EDITING
+      const [editingProduct, setEditingProduct] = useState(null);
+
+      useEffect(() => {
+        const root = window.document.documentElement;
+        if (isDark) root.classList.add('dark');
+        else root.classList.remove('dark');
+      }, [isDark]);
+
+      const handleLoginSuccess = (userData) => {
+        setVendor((prev) => ({ ...prev, ...userData }));
+        setIsAuthenticated(true);
+      };
+
+      const handleSaveProduct = (prod) => {
+        const newProd = { ...prod, rating: prod.rating || Math.floor(Math.random() * 2) + 3 };
+        if (prod.id) {
+          // Update existing product
+          setProducts((prev) => prev.map((p) => (p.id === prod.id ? newProd : p)));
+        } else {
+          // Create new product
+          setProducts((prev) => [...prev, { ...newProd, id: Date.now() }]);
+        }
+        setEditingProduct(null); // Clear editing state
+        setView('products');
+      };
+      
+      const handleEditProduct = (product) => {
+          setEditingProduct(product);
+          setView('add-product');
+      };
+
+      const handleUpdateOrderStatus = (id, newStatus) => {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === id ? { ...o, status: newStatus } : o))
+        );
+      };
+      
+      const handleGenerateOfflineBill = (newOrder) => {
+         setOrders((prev) => [newOrder, ...prev]);
+         notify("Offline Bill Generated Successfully", "success");
+      };
+
+      const toggleProductActive = (id) => {
+        setProducts((prevProducts) =>
+          prevProducts.map((p) => (p.id === id ? { ...p, active: !p.active } : p))
+        );
+      };
+
+      // --- HANDLE BOOST LOGIC ---
+      const handleBoost = (id) => {
+          setProducts(prevProducts => 
+            prevProducts.map(product => 
+                product.id === id ? { ...product, isBoosted: true } : product
+            )
+          );
+          notify('Product Boosted Successfully!', 'success');
+      };
+
+      const handleSettle = (amount) => {
+        if (amount <= 0) return;
+        if (confirm(`Confirm payment of ₹${amount.toFixed(2)}?`)) {
+          const newTxn = {
+            date: new Date().toLocaleDateString(),
+            id: 'TXN' + Date.now().toString().slice(-6),
+            amount: amount,
+          };
+          setSettlements((prev) => [newTxn, ...prev]);
+          notify(`Payment of ₹${amount} successful`, 'success');
+        }
+      };
+
+      const lowStockCount = products.filter((p) => p.stock < 5).length;
+      const [showNotif, setShowNotif] = useState(false);
+
+      if (!isAuthenticated)
+        return (
+          <>
+            <SplashScreen /> {/* Add SplashScreen here for initial load */}
+            <LoginPage
+              onLoginSuccess={handleLoginSuccess}
+              isDark={isDark}
+              toggleTheme={() => setIsDark(!isDark)}
+              notify={notify}
+            />
+            {toasts.map((t) => (
+              <Toast
+                key={t.id}
+                message={t.msg}
+                type={t.type}
+                onClose={() =>
+                  setToasts((prev) => prev.filter((toast) => toast.id !== t.id))
+              }
+            />
+          ))}
+        </>
+      );
+
+    // --- AUTHENTICATED DASHBOARD LAYOUT ---
+    const navItems = [
+      { id: 'home', label: 'Dashboard', icon: <Icons.Home /> },
+      { id: 'products', label: 'Catalog', icon: <Icons.Grid /> },
+      { id: 'orders', label: 'Orders', icon: <Icons.Truck /> },
+      { id: 'wallet', label: 'Wallet', icon: <Icons.Wallet /> },
+      { id: 'sales', label: 'Analytics', icon: <Icons.BarChart /> },
+      { id: 'billing', label: 'Billing', icon: <Icons.Receipt /> },
+      { id: 'settings', label: 'Settings', icon: <Icons.Settings /> },
+    ];
+
+    return (
+      <div className="flex h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300 overflow-hidden font-sans text-gray-900 dark:text-white">
+        
+        {/* --- SIDEBAR (Desktop) --- */}
+        {/* UPDATED: Sidebar now has a consistent dark background to support bright white navigation text */}
+        <aside className="hidden md:flex flex-col w-64 bg-slate-900 border-r border-slate-800 z-30 shadow-2xl">
+          <div className="p-6">
+            <Logo />
+          </div>
+          
+          <nav className="flex-1 px-4 space-y-2 overflow-y-auto no-scrollbar py-4">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setView(item.id)}
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-extrabold tracking-wide uppercase transition-all duration-300 ${
+                  view === item.id
+                    ? 'bg-brandYellow text-black shadow-lg shadow-yellow-500/20 transform scale-105'
+                    : 'text-white hover:bg-white/10 hover:pl-6'
+                }`}
+              >
+                <span className="text-lg">{item.icon}</span>
+                {item.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t border-slate-800 mt-auto">
+            <div className="bg-slate-800/50 p-3 rounded-xl flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-brandYellow flex items-center justify-center font-bold text-black text-sm shadow-sm">
+                {vendor.shopName.substring(0, 1).toUpperCase()}
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <div className="text-xs font-bold text-white truncate">
+                  {vendor.shopName}
+                </div>
+                <div className="text-[10px] text-gray-400 truncate">
+                  {vendor.ownerName}
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAuthenticated(false)}
+                className="text-gray-400 hover:text-red-500 transition p-2"
+                title="Logout"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </button>
+            </div>
+          </div>
+        </aside>
+
+        {/* --- MAIN CONTENT AREA --- */}
+        <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+          {/* Header */}
+          <header className="h-16 bg-white dark:bg-slate-900 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 shrink-0 z-20">
+            <div className="md:hidden">
+              <Logo />
+            </div>
+            <div className="hidden md:block text-xs font-bold text-gray-400 uppercase tracking-widest">
+              {view.replace('-', ' ')}
+            </div>
+
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setIsDark(!isDark)}
+                className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+              >
+                {isDark ? '☀️' : '🌙'}
+              </button>
+              
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotif(!showNotif)}
+                  className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-800 transition relative"
+                >
+                  <Icons.Bell />
+                  {lowStockCount > 0 && (
+                    <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full border border-white dark:border-slate-900"></span>
+                  )}
+                </button>
+                
+                {/* Notification Dropdown */}
+                {showNotif && (
+                  <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 rounded-xl shadow-xl z-50 fade-in overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 dark:border-slate-800 font-bold text-xs bg-gray-50 dark:bg-slate-950">
+                      Notifications
+                    </div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {lowStockCount > 0 ? (
+                        <div className="p-3 hover:bg-gray-50 dark:hover:bg-slate-800 transition cursor-pointer border-l-4 border-red-500">
+                          <div className="text-xs font-bold text-red-500">Low Stock Alert</div>
+                          <div className="text-[10px] text-gray-500 mt-1">
+                            {lowStockCount} items are running low.
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 text-center text-xs text-gray-400">
+                          No new notifications.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <div className="flex-1 overflow-y-auto no-scrollbar relative bg-gray-50 dark:bg-slate-950 pb-20 md:pb-0">
+            {view === 'home' && (
+              <Dashboard products={products} orders={orders} setView={setView} />
+            )}
+            {view === 'products' && (
+              <ProductList
+                products={products}
+                setView={setView}
+                toggleActive={toggleProductActive}
+                onBoost={handleBoost}
+                onEdit={handleEditProduct}
+              />
+            )}
+            {view === 'add-product' && (
+              <ProductForm
+                onSave={handleSaveProduct}
+                onCancel={() => {
+                   setEditingProduct(null);
+                   setView('products');
+                }}
+                notify={notify}
+                editingProduct={editingProduct}
+              />
+            )}
+            {view === 'orders' && (
+              <OrdersPage
+                orders={orders}
+                onUpdateStatus={handleUpdateOrderStatus}
+                notify={notify}
+                products={products}
+                vendor={vendor}
+              />
+            )}
+            {view === 'wallet' && (
+              <WalletPage
+                orders={orders}
+                settlements={settlements}
+                onSettle={handleSettle}
+              />
+            )}
+            {view === 'sales' && (
+              <SalesSummary
+                orders={orders}
+                products={products}
+                notify={notify}
+              />
+            )}
+            {view === 'billing' && (
+               <BillingPage 
+                  orders={orders} 
+                  products={products} 
+                  vendor={vendor}
+                  onGenerateOfflineBill={handleGenerateOfflineBill}
+               />
+            )}
+            {view === 'settings' && (
+              <SettingsPage
+                vendor={vendor}
+                updateVendor={(data) => setVendor({ ...vendor, ...data })}
+                notify={notify}
+                sellerActive={sellerActive}
+                setSellerActive={setSellerActive}
+              />
+            )}
+          </div>
+
+          {/* --- MOBILE NAVIGATION (Bottom Bar) --- */}
+          {/* UPDATED: Bottom navigation now has a consistent dark background and bright white text */}
+          <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 flex justify-around p-2 z-40 pb-safe shadow-[0_-4px_10px_rgba(0,0,0,0.3)]">
+            {navItems.slice(0, 5).map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setView(item.id)}
+                className={`flex flex-col items-center justify-center p-2 rounded-xl transition w-full ${
+                  view === item.id
+                    ? 'text-brandYellow bg-brandYellow/10'
+                    : 'text-white'
+                }`}
+              >
+                {item.icon}
+                <span className="text-[9px] font-extrabold mt-1 uppercase tracking-tight">{item.label}</span>
+              </button>
+            ))}
+             <button
+                onClick={() => setView('settings')}
+                className={`flex flex-col items-center justify-center p-2 rounded-xl transition w-full ${
+                  view === 'settings'
+                    ? 'text-brandYellow bg-brandYellow/10'
+                    : 'text-white'
+                }`}
+              >
+                <Icons.Settings />
+                <span className="text-[9px] font-extrabold mt-1 uppercase tracking-tight">Settings</span>
+              </button>
+          </div>
+        </main>
+
+        {/* --- GLOBAL TOASTS --- */}
+        {toasts.map((t) => (
+          <Toast
+            key={t.id}
+            message={t.msg}
+            type={t.type}
+            onClose={() => setToasts((prev) => prev.filter((toast) => toast.id !== t.id))}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+</body>
+</html>

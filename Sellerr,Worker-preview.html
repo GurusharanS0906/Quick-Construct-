@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quick Construct | Premium Hardware Ecosystem</title>
+
+  <!-- Fonts: Outfit (Display) & Plus Jakarta Sans (Body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: { 
+            sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+            display: ["Outfit", "sans-serif"] 
+          },
+          colors: {
+            brand: {
+              yellow: "#FFC107",
+              dark: "#050505",
+              gray: "#0F1115",
+              accent: "#38BDF8",
+              surface: "#1A1D24"
+            },
+          },
+          boxShadow: {
+            glow: "0 0 60px rgba(255, 193, 7, 0.25)",
+            glass: "0 8px 32px 0 rgba(0, 0, 0, 0.5)",
+          },
+          backgroundImage: {
+            'noise': "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E')",
+          }
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Base Settings */
+    html.lenis { height: auto; }
+    .lenis.lenis-smooth { scroll-behavior: auto; }
+    body { background-color: #050505; color: #F8FAFC; overflow-x: hidden; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: #050505; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #FFC107; }
+
+    /* 3D Canvas Container */
+    #canvas-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: 0; 
+        pointer-events: none; 
+        opacity: 0; 
+        transition: opacity 1s ease;
+    }
+
+    /* Glass Panels */
+    .glass-panel {
+      background: rgba(15, 17, 21, 0.7);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    
+    /* Intro Overlay */
+    #intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: #050505;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .logo-char { opacity: 0; transform: translateY(100%); display: inline-block; }
+    .hero-anim-text { opacity: 0; transform: translateY(20px); }
+
+    /* Video Modal */
+    #video-modal {
+        position: fixed; inset: 0; z-index: 9999;
+        background: rgba(0,0,0,0.9);
+        display: none;
+        opacity: 0;
+        justify-content: center; items-center;
+    }
+
+    /* Navigation */
+    .nav-link { position: relative; overflow: hidden; display: inline-block; }
+    .nav-link span { display: block; transition: transform 0.3s cubic-bezier(0.76, 0, 0.24, 1); }
+    .nav-link::after {
+        content: attr(data-text);
+        position: absolute; top: 100%; left: 0; width: 100%;
+        transition: transform 0.3s cubic-bezier(0.76, 0, 0.24, 1);
+        color: #FFC107; font-weight: 600;
+    }
+    .nav-link:hover span { transform: translateY(-100%); }
+    .nav-link:hover::after { transform: translateY(-100%); }
+
+    /* Horizontal Scroll Layout */
+    .pin-wrap-container { width: 100%; height: 100vh; overflow: hidden; position: relative; }
+    .h-scroll-section { display: flex; height: 100%; align-items: center; padding: 0 5vw; gap: 5vw; width: fit-content; }
+    
+    /* Simulation Stage - Dynamic Layout */
+    #simulation-stage { 
+        height: 350vh; 
+        position: relative; 
+        z-index: 10;
+    } 
+    .sim-text-container {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 300px;
+        z-index: 20;
+        transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        opacity: 0;
+    }
+    /* Positioning classes triggered by JS */
+    .sim-pos-left { left: 10%; opacity: 1; text-align: left; }
+    .sim-pos-right { right: 10%; left: auto; opacity: 1; text-align: right; }
+    .sim-pos-center { left: 50%; transform: translate(-50%, -50%); opacity: 1; text-align: center; }
+    .sim-hidden { opacity: 0; transform: translateY(-40%); }
+
+    /* SCATTER ANIMATION STYLES */
+    #scatter-stats {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+        background-color: #050505; /* Matches brand-dark */
+    }
+    .scatter-item {
+        position: absolute;
+        z-index: 10;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        transition: box-shadow 0.3s ease;
+    }
+    .scatter-item:hover {
+        box-shadow: 0 0 30px rgba(255, 193, 7, 0.4);
+        z-index: 50; /* Bring to front on hover */
+    }
+
+    ::selection { background: #FFC107; color: #000; }
+  </style>
+</head>
+
+<body class="antialiased">
+
+  <!-- 3D SCENE BACKGROUND -->
+  <div id="canvas-container"></div>
+  
+  <!-- VIDEO MODAL -->
+  <div id="video-modal">
+    <div class="relative w-full max-w-4xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 scale-90">
+        <button id="close-modal" class="absolute top-4 right-4 z-50 text-white bg-black/50 hover:bg-brand-yellow hover:text-black rounded-full p-2 transition-colors">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <video class="w-full h-full object-cover" controls loop muted>
+            <source src="#" type="video/mp4">
+            <div class="flex items-center justify-center h-full text-white">Video Source Placeholder</div>
+        </video>
+    </div>
+  </div>
+
+  <!-- INTRO ANIMATION OVERLAY -->
+  <div id="intro-overlay">
+    <div id="intro-scene" class="relative w-full max-w-3xl h-96 flex items-center justify-center">
+        <!-- TRUCK -->
+        <div id="truck-group" class="absolute z-20 w-80 h-40 opacity-0 transform origin-bottom-left">
+             <svg viewBox="0 0 300 150" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full drop-shadow-2xl">
+                <g id="truck-body">
+                    <path d="M20 90 L 250 90 L 250 115 L 20 115 Z" fill="#1a1a1a" />
+                    <path d="M50 115 A 20 20 0 0 1 90 115" fill="#1a1a1a"/> 
+                    <path d="M200 115 A 20 20 0 0 1 240 115" fill="#1a1a1a"/>
+                    <path d="M190 50 H 240 L 260 90 H 190 V 50 Z" fill="#333" />
+                    <path d="M190 50 H 240 L 250 70 H 190 V 50 Z" fill="#000" />
+                    <rect x="195" y="80" width="10" height="5" fill="#FFC107" rx="1"/>
+                    <g transform="translate(70, 115)">
+                         <circle r="18" fill="#111" stroke="#333" stroke-width="3" class="animate-spin-slow"/>
+                         <circle r="8" fill="#555" />
+                    </g>
+                    <g transform="translate(220, 115)">
+                         <circle r="18" fill="#111" stroke="#333" stroke-width="3" class="animate-spin-slow"/>
+                         <circle r="8" fill="#555" />
+                    </g>
+                </g>
+                <g id="truck-bed" transform-origin="20 90">
+                    <path d="M15 30 H 180 V 90 H 15 V 30 Z" fill="#FFC107"/>
+                    <path d="M15 30 H 180 V 35 H 15 Z" fill="#EAB308"/>
+                    <rect x="30" y="50" width="130" height="10" fill="black" opacity="0.1"/>
+                    <!-- FULL NAME ON TRUCK -->
+                    <text x="30" y="75" fill="black" font-family="monospace" font-weight="900" font-size="10" opacity="0.8">QUICK CONSTRUCT</text>
+                </g>
+             </svg>
+        </div>
+
+        <div id="materials-stack" class="absolute z-10 bottom-[25%] left-[30%] opacity-0">
+            <svg width="120" height="80" viewBox="0 0 120 80" fill="none">
+                <rect x="0" y="40" width="40" height="40" fill="#F97316" stroke="#C2410C" stroke-width="2"/>
+                <rect x="40" y="40" width="40" height="40" fill="#F97316" stroke="#C2410C" stroke-width="2"/>
+                <rect x="80" y="40" width="40" height="40" fill="#F97316" stroke="#C2410C" stroke-width="2"/>
+                <rect x="20" y="0" width="40" height="40" fill="#FB923C" stroke="#EA580C" stroke-width="2"/>
+                <rect x="60" y="0" width="40" height="40" fill="#FB923C" stroke="#EA580C" stroke-width="2"/>
+                <rect x="5" y="50" width="30" height="5" fill="#FEF3C7"/>
+                <rect x="85" y="50" width="30" height="5" fill="#FEF3C7"/>
+                <rect x="25" y="10" width="30" height="5" fill="#FEF3C7"/>
+            </svg>
+        </div>
+
+        <div id="intro-workers" class="absolute inset-0 pointer-events-none z-10">
+            <div id="worker-1" class="absolute left-[55%] bottom-[20%] opacity-0 w-32 h-32">
+                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M35 95 V 60 H 65 V 95" stroke="#38BDF8" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M50 60 V 35" stroke="#0EA5E9" stroke-width="10" stroke-linecap="round"/>
+                    <circle cx="50" cy="25" r="12" fill="#FFE4E6"/>
+                    <path d="M35 20 H 65 C 65 10 35 10 35 20 Z" fill="#FFC107"/>
+                    <g id="worker-arm-group" transform-origin="50 35">
+                        <path d="M50 35 L 75 45" stroke="#0EA5E9" stroke-width="6" stroke-linecap="round"/>
+                        <path d="M75 45 L 85 30" stroke="#FFE4E6" stroke-width="5" stroke-linecap="round"/>
+                        <g transform="translate(85, 30) rotate(-45)">
+                            <rect x="-2" y="-15" width="4" height="20" fill="#64748B"/>
+                            <rect x="-8" y="-20" width="16" height="10" fill="#334155"/>
+                        </g>
+                    </g>
+                 </svg>
+            </div>
+            <div id="worker-2" class="absolute left-[25%] bottom-[20%] opacity-0 w-32 h-32">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M35 95 V 60 H 65 V 95" stroke="#FFF" stroke-width="8" stroke-linecap="round"/>
+                    <path d="M50 60 V 35" stroke="#E2E8F0" stroke-width="10" stroke-linecap="round"/>
+                    <circle cx="50" cy="25" r="12" fill="#FFE4E6"/>
+                    <path d="M35 20 H 65 C 65 10 35 10 35 20 Z" fill="#FFC107"/>
+                    <path d="M40 45 L 60 45" stroke="#E2E8F0" stroke-width="6"/> 
+                    <rect x="30" y="40" width="40" height="25" fill="#1E293B" stroke="#38BDF8" stroke-width="1"/>
+                    <line x1="35" y1="45" x2="65" y2="45" stroke="#38BDF8" stroke-width="1" opacity="0.5"/>
+                    <line x1="35" y1="50" x2="65" y2="50" stroke="#38BDF8" stroke-width="1" opacity="0.5"/>
+                </svg>
+            </div>
+        </div>
+
+        <div id="intro-building" class="absolute bottom-[20%] left-1/2 -translate-x-1/2 z-0 opacity-0 w-64 h-64">
+             <svg viewBox="0 0 200 200" fill="none" class="w-full h-full">
+                 <rect x="40" y="40" width="120" height="140" stroke="#333" stroke-width="2" fill="rgba(255, 193, 7, 0.05)" class="build-rect"/>
+                 <path class="build-line" d="M40 140 H 160" stroke="#333" stroke-width="1" />
+                 <path class="build-line" d="M40 90 H 160" stroke="#333" stroke-width="1" />
+                 <path class="build-line" d="M80 40 V 180" stroke="#333" stroke-width="1" />
+                 <path class="build-line" d="M120 40 V 180" stroke="#333" stroke-width="1" />
+                 <path class="build-accent" d="M30 180 V 30 H 170 V 180" stroke="#FFC107" stroke-width="2" stroke-dasharray="10,5"/>
+                 <path class="build-accent" d="M30 100 H 170" stroke="#FFC107" stroke-width="1" stroke-dasharray="10,5"/>
+             </svg>
+        </div>
+    </div>
+
+    <!-- LOGO REVEAL (FULL NAME) -->
+    <div id="stage-logo" class="absolute flex flex-col items-center opacity-0 z-30 transform scale-150">
+        <div class="h-32 w-32 bg-brand-yellow rounded-3xl flex items-center justify-center shadow-[0_0_100px_#FFC107] mb-8 relative overflow-hidden ring-4 ring-white/10">
+             <div class="absolute inset-0 bg-white/40 animate-pulse"></div>
+             <span class="font-display font-black text-7xl text-black">Q</span>
+        </div>
+        <!-- FULL NAME REVEAL -->
+        <h1 class="font-display text-4xl md:text-5xl font-black text-white tracking-tighter overflow-hidden flex flex-wrap justify-center gap-1 md:gap-2 max-w-4xl text-center">
+             <span class="logo-char">Q</span>
+             <span class="logo-char">U</span>
+             <span class="logo-char">I</span>
+             <span class="logo-char">C</span>
+             <span class="logo-char">K</span>
+             <span class="w-2 md:w-4"></span>
+             <span class="logo-char">C</span>
+             <span class="logo-char">O</span>
+             <span class="logo-char">N</span>
+             <span class="logo-char">S</span>
+             <span class="logo-char">T</span>
+             <span class="logo-char">R</span>
+             <span class="logo-char">U</span>
+             <span class="logo-char">C</span>
+             <span class="logo-char">T</span>
+        </h1>
+        <div class="mt-4 flex items-center gap-4 opacity-0 logo-subtitle">
+            <div class="h-px w-12 bg-white/30"></div>
+            <p class="text-sm font-mono text-brand-accent tracking-[0.4em] uppercase">Premium Ecosystem</p>
+            <div class="h-px w-12 bg-white/30"></div>
+        </div>
+    </div>
+  </div>
+
+  <div class="pointer-events-none fixed inset-0 z-40 opacity-10 bg-noise mix-blend-overlay"></div>
+
+  <!-- NAVBAR -->
+  <header class="fixed top-0 w-full z-30 transition-all duration-300 py-4 opacity-0" id="navbar">
+    <div class="absolute inset-0 bg-brand-dark/0 backdrop-blur-none transition-all duration-300" id="nav-bg"></div>
+    <div class="relative mx-auto flex max-w-7xl items-center justify-between px-6">
+      <a href="#" class="group flex items-center gap-3 relative z-10">
+        <div class="h-10 w-10 overflow-hidden rounded-xl bg-brand-yellow flex items-center justify-center shadow-glow group-hover:scale-105 transition-transform duration-300 relative">
+           <div class="absolute inset-0 bg-brand-yellow"></div>
+           <span class="relative font-display font-bold text-black text-xl">Q</span>
+        </div>
+        <div class="flex flex-col">
+          <!-- FULL NAME NAV -->
+          <span class="text-sm font-bold tracking-[0.15em] text-white group-hover:text-brand-yellow transition-colors uppercase">QUICK CONSTRUCT</span>
+          <span class="text-[9px] font-mono uppercase tracking-widest text-slate-500">Hardware Network</span>
+        </div>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-8 relative z-10">
+        <div class="glass-panel rounded-full px-6 py-2.5 flex items-center gap-8">
+          <a href="#about" class="nav-link text-xs font-medium text-slate-300" data-text="About"><span>About</span></a>
+          <a href="#categories" class="nav-link text-xs font-medium text-slate-300" data-text="Explore"><span>Explore</span></a>
+          <a href="#proven-excellence" class="nav-link text-xs font-medium text-slate-300" data-text="Stats"><span>Stats</span></a>
+          <a href="#solutions" class="nav-link text-xs font-medium text-slate-300" data-text="Solutions"><span>Solutions</span></a>
+          <div class="h-4 w-px bg-white/10"></div>
+          <div class="magnetic-wrap">
+              <a href="#contact" class="text-xs font-bold text-brand-yellow hover:text-yellow-300 transition-colors">Get Demo</a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="hidden md:flex items-center gap-4 relative z-10">
+        <div class="magnetic-wrap">
+            <a href="./worker-hub.html" class="flex px-5 py-2.5 rounded-full border border-white/10 bg-white/5 text-xs font-bold text-slate-200 backdrop-blur-md transition hover:bg-white/10 hover:border-white/20 active:scale-95 duration-200">
+            Worker Hub
+            </a>
+        </div>
+        <div class="magnetic-wrap">
+            <a href="./seller-hub.html" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-yellow text-xs font-bold text-black shadow-glow transition hover:bg-yellow-400 active:scale-95 duration-200 group">
+                <span>Seller Hub</span>
+                <span class="group-hover:translate-x-1 transition-transform">→</span>
+            </a>
+        </div>
+      </div>
+      <button class="md:hidden relative z-10 text-white p-2 text-2xl">☰</button>
+    </div>
+  </header>
+
+  <main class="w-full relative z-20">
+    
+    <!-- HERO SECTION -->
+    <section class="relative min-h-screen w-full flex items-center pt-24 overflow-hidden pointer-events-none">
+      <div class="container mx-auto px-6 relative z-10 grid lg:grid-cols-12 gap-16 items-center">
+        <div class="lg:col-span-7 space-y-8 pointer-events-auto">
+          <div class="overflow-hidden">
+            <div class="hero-anim-text inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-bold text-emerald-400 mb-2 backdrop-blur-md">
+              <span class="animate-pulse">⚡</span> Future of hardware retail
+            </div>
+          </div>
+          
+          <h1 class="font-display text-5xl sm:text-7xl font-bold leading-[1.1] tracking-tight text-white drop-shadow-2xl">
+            <div class="overflow-hidden"><span class="hero-anim-text block">Turn every</span></div>
+            <div class="overflow-hidden"><span class="hero-anim-text block text-brand-yellow">local tool shop</span></div>
+            <div class="overflow-hidden"><span class="hero-anim-text block text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-500">into premium.</span></div>
+          </h1>
+
+          <p class="hero-anim-text text-lg text-slate-300 max-w-xl leading-relaxed backdrop-blur-sm bg-black/20 p-2 rounded-lg">
+            Quick Construct connects hardware sellers, contractors and everyday DIY heroes on one powerful platform.
+          </p>
+
+          <div class="hero-anim-text flex flex-wrap gap-4 pt-2">
+            <div class="magnetic-wrap">
+                <a href="#contact" class="group relative overflow-hidden rounded-full bg-brand-yellow px-8 py-3.5 text-sm font-bold text-black shadow-glow transition-transform hover:scale-105 active:scale-95 duration-200 block">
+                    <span class="relative z-10">Book a Demo</span>
+                    <div class="absolute inset-0 -translate-x-full bg-white transition-transform duration-300 group-hover:translate-x-0"></div>
+                </a>
+            </div>
+          </div>
+        </div>
+        <div class="hidden lg:block lg:col-span-5 h-[500px]"></div>
+      </div>
+      <div class="absolute bottom-10 left-1/2 -translate-x-1/2 text-white/30 text-[10px] uppercase tracking-widest animate-bounce">Scroll to Interact</div>
+    </section>
+
+    <!-- POPULAR CATEGORIES -->
+    <section id="categories" class="py-20 relative bg-brand-dark/80 backdrop-blur-md border-t border-white/5">
+        <div class="container mx-auto px-6">
+            <div class="flex items-center justify-between mb-10">
+                <h2 class="font-display text-3xl font-bold text-white">Popular <span class="text-brand-yellow">Categories</span></h2>
+                <a href="#" class="text-xs text-slate-400 hover:text-white transition">View All →</a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                <div class="col-span-2 row-span-2 group relative rounded-3xl overflow-hidden cursor-pointer shadow-lg border border-white/5 bg-brand-surface">
+                    <img src="https://images.unsplash.com/photo-1581244277943-fe4a9c777189?auto=format&fit=crop&q=80&w=800" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" alt="Plumbing">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-6 left-6 z-10">
+                        <span class="inline-block px-2 py-1 rounded bg-brand-yellow/20 text-brand-yellow text-[10px] font-bold uppercase mb-2 backdrop-blur-md">Most Ordered</span>
+                        <div class="text-white font-bold text-2xl">Plumbing</div>
+                        <div class="text-slate-400 text-sm">Pipes & Fittings</div>
+                    </div>
+                </div>
+                <div class="col-span-1 row-span-1 group relative h-48 rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-brand-surface">
+                    <img src="https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=400" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" alt="Electrical">
+                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 z-10">
+                        <div class="text-white font-bold text-lg">Electrical</div>
+                        <div class="text-slate-400 text-xs">Wires & Switches</div>
+                    </div>
+                </div>
+                <div class="col-span-1 row-span-1 group relative h-48 rounded-3xl overflow-hidden cursor-pointer border border-white/5 bg-brand-surface">
+                    <img src="https://images.unsplash.com/photo-1611021061285-19a87a5dea36?auto=format&fit=crop&q=80&w=400" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-60" alt="Carpentry">
+                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 z-10">
+                        <div class="text-white font-bold text-lg">Carpentry</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SIMULATION STAGE (Pinned Animation) -->
+    <section id="simulation-stage">
+         <div class="sim-content z-20 pointer-events-none">
+             <!-- Text Container: Will move dynamically -->
+             <div id="sim-text-overlay" class="bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl sim-text-container sim-hidden">
+                 <h2 class="font-display text-4xl md:text-5xl font-bold text-white mb-2 drop-shadow-xl leading-tight" id="sim-title">Precision <span class="text-brand-yellow">Engineering</span></h2>
+                 <p class="text-slate-300 text-sm drop-shadow-md" id="sim-desc">
+                    Scroll to build. Quality that drives results, every single time.
+                 </p>
+                 <div class="mt-4 flex items-center gap-2">
+                    <div class="h-1 w-12 bg-brand-accent rounded-full"></div>
+                    <div class="text-[10px] font-mono text-brand-accent uppercase tracking-widest">Live Preview</div>
+                 </div>
+             </div>
+         </div>
+    </section>
+
+    <!-- PROVEN EXCELLENCE (NEW SCATTER ANIMATION) -->
+    <section id="proven-excellence" class="relative z-30 -mt-20 overflow-hidden min-h-screen">
+        <!-- Main Container (will be pinned) -->
+        <div id="proven-container" class="relative w-full h-screen bg-brand-surface flex items-center justify-center overflow-hidden">
+            
+            <!-- Center Content (Anchor) -->
+            <div class="relative z-20 text-center flex flex-col items-center">
+                 <h2 class="font-display text-5xl md:text-7xl font-bold text-white mb-8 drop-shadow-2xl">
+                    Proven <span class="text-brand-yellow">Excellence</span>
+                 </h2>
+                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 bg-black/60 backdrop-blur-lg p-6 rounded-3xl border border-white/10 shadow-2xl">
+                    <div class="p-4">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-brand-yellow">50k+</div>
+                        <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Orders</div>
+                    </div>
+                    <div class="p-4">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-brand-accent">120+</div>
+                        <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Cities</div>
+                    </div>
+                    <div class="p-4">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-emerald-400">15k</div>
+                        <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Sellers</div>
+                    </div>
+                    <div class="p-4">
+                        <div class="text-3xl md:text-4xl font-display font-bold text-white">24/7</div>
+                        <div class="text-slate-400 text-[10px] md:text-xs uppercase tracking-widest mt-1">Support</div>
+                    </div>
+                 </div>
+            </div>
+
+            <!-- Scattering Images -->
+            <div id="scatter-grid" class="absolute inset-0 w-full h-full pointer-events-none z-10">
+                <!-- Image 1: Top Left -->
+                <div class="scatter-item absolute top-[15%] left-[10%] w-48 h-32 md:w-72 md:h-48 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 rotate-[-6deg]">
+                    <img src="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity" alt="Construction Site" />
+                </div>
+                
+                <!-- Image 2: Top Right -->
+                <div class="scatter-item absolute top-[20%] right-[12%] w-56 h-40 md:w-80 md:h-56 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 rotate-[4deg]">
+                    <img src="https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity" alt="Pipes" />
+                </div>
+
+                <!-- Image 3: Bottom Left -->
+                <div class="scatter-item absolute bottom-[25%] left-[15%] w-40 h-40 md:w-64 md:h-64 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 rotate-[8deg]">
+                    <img src="https://images.unsplash.com/photo-1503708928676-1cb796a0891e?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity" alt="Paint Cans" />
+                </div>
+
+                <!-- Image 4: Bottom Right -->
+                <div class="scatter-item absolute bottom-[20%] right-[15%] w-48 h-32 md:w-72 md:h-48 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 rotate-[-5deg]">
+                    <img src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity" alt="Electrical Wires" />
+                </div>
+
+                <!-- Image 5: Top Center (Slightly behind) -->
+                <div class="scatter-item absolute top-[10%] left-1/2 -translate-x-1/2 w-40 h-28 md:w-56 md:h-40 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 z-0 opacity-60">
+                    <img src="https://images.unsplash.com/photo-1574359411659-15573a21bc2c?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full" alt="Tools" />
+                </div>
+
+                <!-- Image 6: Bottom Center -->
+                <div class="scatter-item absolute bottom-[10%] left-1/2 -translate-x-1/2 w-56 h-32 md:w-80 md:h-48 rounded-2xl overflow-hidden border border-white/10 bg-slate-800 rotate-[2deg]">
+                    <img src="https://images.unsplash.com/photo-1615818443960-2035eb52c79d?auto=format&fit=crop&q=80&w=600" class="object-cover w-full h-full opacity-80 hover:opacity-100 transition-opacity" alt="Warehouse" />
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HORIZONTAL SCROLL -->
+    <section id="why" class="relative bg-[#0F1115] overflow-hidden">
+      <div class="pin-wrap-container">
+        <div class="h-scroll-section">
+          <div class="w-[90vw] md:w-[40vw] flex-shrink-0">
+             <div class="text-brand-yellow font-mono text-xs mb-4">/// WHY CHOOSE US</div>
+             <h2 class="font-display text-5xl md:text-7xl font-bold leading-none text-white mb-6">
+                Why sellers<br/>love Quick Construct.
+             </h2>
+             <p class="text-slate-400 text-lg max-w-md">
+                We obsess over two things: making life super easy inside your shop and making your brand look top-class outside it.
+             </p>
+          </div>
+          <div class="w-[85vw] md:w-[35vw] h-[60vh] glass-panel rounded-3xl p-8 flex flex-col justify-between flex-shrink-0 group hover:border-brand-yellow/50 transition-colors bg-slate-900/40 relative overflow-hidden">
+             <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&q=80&w=600')] bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
+             <div class="relative z-10">
+                <div class="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:bg-brand-yellow group-hover:text-black transition-colors duration-300">📲</div>
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">FEATURE 01</div>
+                <h3 class="text-3xl font-display font-bold text-white mb-4">Digital-First Ops</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                   One app to run your entire shop. Manage products, prices, offers, orders, invoices & settlements.
+                </p>
+             </div>
+          </div>
+          <div class="w-[85vw] md:w-[35vw] h-[60vh] glass-panel rounded-3xl p-8 flex flex-col justify-between flex-shrink-0 group hover:border-emerald-500/50 transition-colors bg-slate-900/40 relative overflow-hidden">
+             <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&q=80&w=600')] bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
+             <div class="relative z-10">
+                <div class="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:bg-emerald-500 group-hover:text-black transition-colors duration-300">🧮</div>
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">FEATURE 02</div>
+                <h3 class="text-3xl font-display font-bold text-white mb-4">GST-Ready Billing</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                   Smart billing & clean paperwork. Auto HSN suggestions, GST splits, downloadable invoices.
+                </p>
+             </div>
+          </div>
+          <div class="w-[85vw] md:w-[35vw] h-[60vh] glass-panel rounded-3xl p-8 flex flex-col justify-between flex-shrink-0 group hover:border-sky-500/50 transition-colors bg-slate-900/40 relative overflow-hidden">
+             <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1616432043562-3671ea2e5242?auto=format&fit=crop&q=80&w=600')] bg-cover bg-center opacity-20 group-hover:opacity-30 transition-opacity duration-700"></div>
+             <div class="relative z-10">
+                <div class="h-16 w-16 bg-white/5 rounded-full flex items-center justify-center text-3xl mb-4 group-hover:bg-sky-500 group-hover:text-black transition-colors duration-300">🚚</div>
+                <div class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">FEATURE 03</div>
+                <h3 class="text-3xl font-display font-bold text-white mb-4">Fast Logistics</h3>
+                <p class="text-slate-400 text-sm leading-relaxed">
+                   Deliver fast, deliver reliably. We match order weight & size to the right vehicle type.
+                </p>
+             </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="py-32 bg-brand-dark border-t border-white/5">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+           <div class="max-w-xl">
+             <h2 class="font-display text-4xl font-bold text-white mb-4">From sign-up to first order in <span class="text-brand-yellow">3 steps</span>.</h2>
+             <p class="text-slate-400">We’ve removed all the boring friction so you can start selling fast.</p>
+           </div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-8">
+           <div class="glass-panel h-[350px] p-8 rounded-3xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-500 bg-brand-surface">
+              <div class="absolute top-0 right-0 p-8 text-brand-yellow/10 font-black text-8xl font-display">01</div>
+              <div class="relative z-10 h-full flex flex-col justify-end">
+                  <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-6 text-2xl">📝</div>
+                  <h3 class="text-2xl font-bold text-white mb-2">Onboard your shop</h3>
+                  <p class="text-sm text-slate-300">Share GST, location and basic details. We’ll configure your Quick Construct Seller Hub.</p>
+              </div>
+           </div>
+           <div class="glass-panel h-[350px] p-8 rounded-3xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-500 bg-brand-surface">
+              <div class="absolute top-0 right-0 p-8 text-brand-yellow/10 font-black text-8xl font-display">02</div>
+              <div class="relative z-10 h-full flex flex-col justify-end">
+                  <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-6 text-2xl">📦</div>
+                  <h3 class="text-2xl font-bold text-white mb-2">Add catalogue</h3>
+                  <p class="text-sm text-slate-300">Import existing items or add with our smart suggestions for HSN.</p>
+              </div>
+           </div>
+           <div class="glass-panel h-[350px] p-8 rounded-3xl relative overflow-hidden group hover:-translate-y-2 transition-transform duration-500 bg-brand-surface">
+              <div class="absolute top-0 right-0 p-8 text-brand-yellow/10 font-black text-8xl font-display">03</div>
+              <div class="relative z-10 h-full flex flex-col justify-end">
+                  <div class="w-12 h-12 rounded-full border border-white/20 flex items-center justify-center mb-6 text-2xl">🚀</div>
+                  <h3 class="text-2xl font-bold text-white mb-2">Go live & sell</h3>
+                  <p class="text-sm text-slate-300">Start accepting orders from your area, manage deliveries and generate invoices.</p>
+              </div>
+           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOLUTIONS GRID -->
+    <section id="solutions" class="py-32 relative bg-[#08080A]">
+      <div class="container mx-auto px-6">
+        <div class="text-center mb-16">
+          <h2 class="font-display text-4xl md:text-5xl font-bold">Solutions for <span class="text-brand-yellow">Everyone</span></h2>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[300px]">
+           <div class="md:col-span-2 glass-panel rounded-3xl p-10 relative overflow-hidden group flex flex-col justify-end transition hover:shadow-glow">
+              <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1581235720704-06d3acfcb36f?auto=format&fit=crop&q=80&w=1000')] bg-cover bg-center transition-transform duration-700 group-hover:scale-105 opacity-20"></div>
+              <div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div>
+              <div class="relative z-10">
+                 <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xl">🏬</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-brand-yellow">For Sellers</span>
+                 </div>
+                 <h3 class="text-3xl font-bold text-white mb-2">Modern Store Control</h3>
+                 <p class="text-slate-300 text-sm max-w-lg">One place to see orders, stock, revenue & settlements. 1-click GST-compliant invoices & e-bills.</p>
+                 <a href="./seller-hub.html" class="mt-4 text-brand-yellow text-sm font-bold flex items-center gap-2 hover:gap-4 transition-all w-fit">Open Hub →</a>
+              </div>
+           </div>
+           <div class="glass-panel rounded-3xl p-8 relative overflow-hidden group flex flex-col justify-end transition hover:border-emerald-500/30">
+              <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=500')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity"></div>
+              <div class="absolute inset-0 bg-gradient-to-br from-emerald-900/40 to-black/90"></div>
+              <div class="relative z-10">
+                 <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xl">🦺</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-emerald-400">For Workers</span>
+                 </div>
+                 <h3 class="text-2xl font-bold text-white mb-2">Find Gigs</h3>
+                 <p class="text-slate-300 text-sm">Daily job alerts, digital profile & instant payments.</p>
+                 <a href="./worker-hub.html" class="mt-4 text-emerald-400 text-sm font-bold flex items-center gap-2 hover:gap-4 transition-all w-fit">Join Now →</a>
+              </div>
+           </div>
+           <div class="glass-panel rounded-3xl p-8 relative overflow-hidden group flex flex-col justify-end transition hover:border-sky-500/30">
+              <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1491975474562-1f4e30bc9468?auto=format&fit=crop&q=80&w=500')] bg-cover bg-center opacity-30 group-hover:opacity-40 transition-opacity"></div>
+              <div class="absolute inset-0 bg-gradient-to-br from-sky-900/40 to-black/90"></div>
+              <div class="relative z-10">
+                 <div class="flex items-center gap-2 mb-4">
+                    <span class="text-xl">👷</span>
+                    <span class="text-xs font-bold uppercase tracking-widest text-sky-400">For Buyers</span>
+                 </div>
+                 <h3 class="text-2xl font-bold text-white mb-2">Confidence</h3>
+                 <p class="text-slate-300 text-sm">Clear delivery timelines, vehicle matching & transparent pricing.</p>
+              </div>
+           </div>
+           <div class="md:col-span-2 glass-panel rounded-3xl p-8 relative overflow-hidden flex items-center justify-between group cursor-help bg-slate-900">
+              <div class="relative z-10 max-w-md">
+                 <h3 class="text-xl font-bold text-white mb-2">Playful Interactions</h3>
+                 <p class="text-slate-400 text-sm">Fantasy animations even kids in the shop will smile at. Functional first, delightful second.</p>
+              </div>
+              <div class="text-5xl group-hover:scale-125 transition-transform duration-500 group-hover:rotate-12">😄</div>
+           </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT CTA -->
+    <section id="contact" class="py-32 relative overflow-hidden bg-brand-dark">
+      <div class="container mx-auto px-6 relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+        <div>
+           <h2 class="font-display text-5xl font-bold text-white mb-6">Ready to upgrade?</h2>
+           <p class="text-slate-400 text-lg mb-8">
+              Share a few details and we’ll get in touch with a personalised demo of Quick Construct.
+           </p>
+           <ul class="space-y-3 text-sm text-slate-300">
+            <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Simple pricing, transparent commissions.</li>
+            <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Support in English + regional languages.</li>
+            <li class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Designed for Indian market realities.</li>
+           </ul>
+        </div>
+        <form id="contact-form" class="glass-panel p-8 rounded-3xl space-y-4 shadow-2xl bg-black/40">
+           <input type="text" placeholder="Shop Name" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-yellow transition" />
+           <div class="flex gap-4">
+             <input type="text" placeholder="Your Name" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-yellow transition" />
+             <input type="tel" placeholder="Mobile" class="w-full bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-brand-yellow transition" />
+           </div>
+           <button type="submit" class="w-full bg-brand-yellow text-black font-bold text-lg py-4 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-glow">
+              Submit & Request Demo
+           </button>
+        </form>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-white/10 bg-black pt-20 pb-10 relative z-20">
+      <div class="container mx-auto px-6">
+        <div class="flex flex-col md:flex-row justify-between items-start gap-12">
+           <div>
+              <div class="flex items-center gap-3 mb-4">
+                 <div class="h-8 w-8 bg-brand-yellow rounded-lg"></div>
+                 <div class="font-bold text-white tracking-widest">QUICK</div>
+              </div>
+              <!-- FULL NAME FOOTER -->
+              <div class="font-bold text-white tracking-widest uppercase mb-2">Quick Construct</div>
+              <p class="text-slate-500 text-sm max-w-xs">Empowering the hardware industry with next-gen technology.</p>
+           </div>
+           <div class="flex flex-wrap gap-16">
+              <div>
+                 <h4 class="text-white font-bold mb-4">Platform</h4>
+                 <ul class="space-y-2 text-sm text-slate-500">
+                    <li><a href="#" class="hover:text-brand-yellow transition-colors">Seller Hub</a></li>
+                    <li><a href="#" class="hover:text-brand-yellow transition-colors">Worker Hub</a></li>
+                    <li><a href="#" class="hover:text-brand-yellow transition-colors">Logistics</a></li>
+                 </ul>
+              </div>
+              <div>
+                 <h4 class="text-white font-bold mb-4">Links</h4>
+                 <ul class="space-y-2 text-sm text-slate-500">
+                    <li><a href="#about" class="hover:text-brand-yellow transition-colors">About</a></li>
+                    <li><a href="#solutions" class="hover:text-brand-yellow transition-colors">Solutions</a></li>
+                    <li><a href="#contact" class="hover:text-brand-yellow transition-colors">Contact</a></li>
+                 </ul>
+              </div>
+           </div>
+        </div>
+        <div class="mt-20 border-t border-white/10 pt-8 flex justify-between text-xs text-slate-600">
+           <div id="year">© 2024 Quick Construct.</div>
+           <div class="flex gap-4">
+              <span>Privacy</span>
+              <span>Terms</span>
+           </div>
+        </div>
+      </div>
+    </footer>
+
+  </main>
+
+  <script>
+    // --- UTILS ---
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      direction: 'vertical',
+      smooth: true,
+    });
+    function raf(time) {
+      lenis.raf(time);
+      requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+    document.getElementById('year').innerText = `© ${new Date().getFullYear()} Quick Construct.`;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    // --- TEXTURE GENERATORS ---
+    function createWoodTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1024; canvas.height = 1024;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#4a3728'; ctx.fillRect(0,0,1024,1024);
+        for(let i=0; i<600; i++) {
+            ctx.strokeStyle = `rgba(30, 15, 5, ${Math.random()*0.15})`;
+            ctx.lineWidth = Math.random() * 4;
+            ctx.beginPath();
+            ctx.moveTo(Math.random()*1024, 0);
+            const cp1 = Math.random()*200 - 100;
+            const cp2 = Math.random()*200 - 100;
+            ctx.bezierCurveTo(512 + cp1, 300, 512 + cp2, 700, Math.random()*1024, 1024);
+            ctx.stroke();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createMetalTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 256;
+        const ctx = canvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0,0,256,256);
+        grad.addColorStop(0, '#ddd');
+        grad.addColorStop(0.5, '#fff');
+        grad.addColorStop(1, '#ddd');
+        ctx.fillStyle = grad; ctx.fillRect(0,0,256,256);
+        for(let i=0; i<50; i++) {
+             ctx.strokeStyle = `rgba(0,0,0,0.1)`;
+             ctx.beginPath();
+             ctx.moveTo(Math.random()*256, Math.random()*256);
+             ctx.lineTo(Math.random()*256, Math.random()*256);
+             ctx.stroke();
+        }
+        return new THREE.CanvasTexture(canvas);
+    }
+
+    function createBoxTexture() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512; canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#cca476'; ctx.fillRect(0,0,512,512); // Cardboard color
+        
+        // Tape
+        ctx.fillStyle = '#dcb88c'; 
+        ctx.fillRect(230, 0, 52, 512);
+        
+        // Logo Stencil (FULL NAME)
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.font = 'bold 40px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('QUICK', 256, 230);
+        ctx.fillText('CONSTRUCT', 256, 280);
+        
+        return new THREE.CanvasTexture(canvas);
+    }
+
+
+    // -------------------------------------------------------------------------
+    //  THREE.JS LOGIC
+    // -------------------------------------------------------------------------
+    function initThreeJS() {
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050505, 0.04); 
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        // --- MATERIALS ---
+        const yellowMat = new THREE.MeshStandardMaterial({ color: 0xFFC107, roughness: 0.2, metalness: 0.4 });
+        const blackMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.6, metalness: 0.3 });
+        const chromeMat = new THREE.MeshStandardMaterial({ map: createMetalTexture(), roughness: 0.2, metalness: 0.9 });
+        const woodMat = new THREE.MeshStandardMaterial({ map: createWoodTexture(), roughness: 0.8, metalness: 0.0 });
+        const boxMat = new THREE.MeshStandardMaterial({ map: createBoxTexture(), roughness: 0.9 });
+
+
+        // --- 1. DRILL MODEL ---
+        const drillGroup = new THREE.Group();
+        // Body (Tip at 0,0,0) - Adjusted so bit is world center
+        const body = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.9, 3.5, 32), yellowMat);
+        body.rotation.z = Math.PI / 2;
+        body.position.set(-2, 0, 0); 
+        body.castShadow = true;
+        drillGroup.add(body);
+        
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2.8, 1), blackMat);
+        handle.position.set(-2.5, -1.5, 0);
+        handle.rotation.z = -0.15;
+        handle.castShadow = true;
+        drillGroup.add(handle);
+
+        const battery = new THREE.Mesh(new THREE.BoxGeometry(2, 1.2, 1.4), blackMat);
+        battery.position.set(-2.2, -3.0, 0);
+        battery.castShadow = true;
+        drillGroup.add(battery);
+
+        const chuckGroup = new THREE.Group();
+        chuckGroup.position.set(0.2, 0, 0);
+        const chuck = new THREE.Mesh(new THREE.CylinderGeometry(0.7, 0.85, 1.2, 32), blackMat);
+        chuck.rotation.z = Math.PI / 2;
+        chuckGroup.add(chuck);
+        
+        const bit = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 4, 16), chromeMat);
+        bit.rotation.z = Math.PI / 2;
+        bit.position.set(2.0, 0, 0); 
+        
+        const spiralCanvas = document.createElement('canvas');
+        spiralCanvas.width = 64; spiralCanvas.height = 64;
+        const sCtx = spiralCanvas.getContext('2d');
+        sCtx.fillStyle='#bbb'; sCtx.fillRect(0,0,64,64);
+        sCtx.fillStyle='#555'; 
+        for(let i=0; i<64; i+=6) sCtx.fillRect(i,0,3,64);
+        bit.material = new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(spiralCanvas), roughness:0.4, metalness:0.8 });
+
+        chuckGroup.add(bit);
+        drillGroup.add(chuckGroup);
+        scene.add(drillGroup);
+
+
+        // --- 2. WOOD PLANK ---
+        const woodBlock = new THREE.Mesh(new THREE.BoxGeometry(20, 1, 8), woodMat);
+        woodBlock.position.set(0, -10, 0); 
+        woodBlock.receiveShadow = true;
+        scene.add(woodBlock);
+
+
+        // --- 3. HAMMER & NAIL ---
+        const hammerPivot = new THREE.Group();
+        const hammerGroup = new THREE.Group();
+        
+        const hHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, 5.5, 16), new THREE.MeshStandardMaterial({color: 0x8B4513}));
+        hHandle.position.set(0, 2.75, 0); 
+        hammerGroup.add(hHandle);
+        
+        const hHead = new THREE.Mesh(new THREE.BoxGeometry(2.5, 1, 1), new THREE.MeshStandardMaterial({color: 0x333333, metalness: 0.8, roughness: 0.3}));
+        hHead.position.set(0, 5.5, 0);
+        hammerGroup.add(hHead);
+        
+        hammerPivot.add(hammerGroup);
+        hammerPivot.position.set(5.5, 0.75, 0); // Correct pivot to hit 0,0.75
+        hammerPivot.rotation.z = -0.2; 
+        hammerPivot.visible = false;
+        scene.add(hammerPivot);
+
+        const nail = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.05, 1.5, 12), chromeMat);
+        nail.position.set(0, 0.75, 0); 
+        nail.visible = false;
+        scene.add(nail);
+
+
+        // --- 4. SHIPPING BOX ---
+        const boxGroup = new THREE.Group();
+        const boxBody = new THREE.Mesh(new THREE.BoxGeometry(3, 3, 3), boxMat);
+        boxBody.castShadow = true;
+        boxGroup.add(boxBody);
+        
+        const flapGeo = new THREE.BoxGeometry(3, 0.1, 1.5);
+        const flap1 = new THREE.Mesh(flapGeo, boxMat);
+        flap1.position.set(0, 1.5, -0.75);
+        const flap1Group = new THREE.Group();
+        flap1Group.position.set(0, 1.5, -1.5);
+        flap1.position.set(0, 0, 0.75);
+        flap1Group.add(flap1);
+        flap1Group.rotation.x = -2.5; 
+        boxGroup.add(flap1Group);
+
+        const flap2 = new THREE.Mesh(flapGeo, boxMat);
+        const flap2Group = new THREE.Group();
+        flap2Group.position.set(0, 1.5, 1.5);
+        flap2.position.set(0, 0, -0.75);
+        flap2Group.add(flap2);
+        flap2Group.rotation.x = 2.5; 
+        boxGroup.add(flap2Group);
+
+        boxGroup.position.set(0, 10, 0); 
+        scene.add(boxGroup);
+
+
+        // --- 5. FX PARTICLES ---
+        const pGeo = new THREE.BufferGeometry();
+        const pPos = new Float32Array(300 * 3);
+        const pVel = []; 
+        for(let i=0; i<300; i++) {
+            pPos[i*3] = 0; pPos[i*3+1] = 0; pPos[i*3+2] = 0;
+            pVel.push({x:0, y:0, z:0});
+        }
+        pGeo.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+        const pMat = new THREE.PointsMaterial({color: 0xdeb887, size: 0.1, transparent: true, opacity: 0.8});
+        const particles = new THREE.Points(pGeo, pMat);
+        particles.visible = false;
+        scene.add(particles);
+
+        // Gold Sparks (Hammer Hit)
+        const sGeo = new THREE.BufferGeometry();
+        const sPos = new Float32Array(50 * 3);
+        const sVel = [];
+        for(let i=0; i<50; i++) {
+            sPos[i*3] = 0; sPos[i*3+1] = 0.75; sPos[i*3+2] = 0;
+            sVel.push({
+                x: (Math.random()-0.5)*0.5,
+                y: Math.random()*0.5 + 0.2,
+                z: (Math.random()-0.5)*0.5
+            });
+        }
+        sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+        const sMat = new THREE.PointsMaterial({color: 0xffaa00, size: 0.15, transparent: true, blending: THREE.AdditiveBlending});
+        const sparkles = new THREE.Points(sGeo, sMat);
+        sparkles.visible = false;
+        scene.add(sparkles);
+
+        // Shockwave Ring
+        const ringGeo = new THREE.RingGeometry(0.2, 0.3, 32);
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, side: THREE.DoubleSide });
+        const shockwave = new THREE.Mesh(ringGeo, ringMat);
+        shockwave.rotation.x = -Math.PI / 2;
+        shockwave.position.set(0, 0.76, 0);
+        scene.add(shockwave);
+
+
+        // --- LIGHTING ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.5);
+        mainLight.position.set(5, 12, 5);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 2048; mainLight.shadow.mapSize.height = 2048;
+        scene.add(mainLight);
+        const blueLight = new THREE.PointLight(0x38BDF8, 2, 20); 
+        blueLight.position.set(-5, 2, -2);
+        scene.add(blueLight);
+
+        // --- POSITIONING ---
+        if(window.innerWidth > 1024) {
+            drillGroup.position.set(3, 0, 0);
+            camera.position.z = 7; camera.position.y = 2; camera.lookAt(0,0,0);
+        } else {
+            drillGroup.position.set(0, 0, 0);
+            camera.position.z = 10;
+        }
+        drillGroup.rotation.y = -0.4; drillGroup.rotation.z = 0.2;
+
+
+        // --- ANIMATION LOOP ---
+        let time = 0;
+        let isDrilling = false;
+        let mouseX = 0; let mouseY = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            time += 0.05;
+
+            // 1. Idle
+            if(!isDrilling && drillGroup.visible) {
+                drillGroup.position.y += Math.sin(time*0.5) * 0.002;
+                drillGroup.rotation.x += (mouseY * 0.1 - drillGroup.rotation.x) * 0.05;
+                drillGroup.rotation.y += (mouseX * 0.1 - 0.4 - drillGroup.rotation.y) * 0.05;
+            }
+
+            // 2. Drilling Particles
+            if(isDrilling) {
+                chuckGroup.rotation.x += 1.5; 
+                drillGroup.position.x += (Math.random()-0.5)*0.03;
+                drillGroup.position.z += (Math.random()-0.5)*0.03;
+                
+                particles.visible = true;
+                const positions = particles.geometry.attributes.position.array;
+                for(let i=0; i<300; i++) {
+                    positions[i*3] += pVel[i].x; positions[i*3+1] += pVel[i].y; positions[i*3+2] += pVel[i].z;
+                    pVel[i].y -= 0.03; 
+                    if(positions[i*3+1] < 0.6) {
+                        pVel[i].y = 0; pVel[i].x *= 0.9; pVel[i].z *= 0.9;
+                        if(Math.random() > 0.95) { 
+                             positions[i*3] = (Math.random()-0.5)*0.2; positions[i*3+1] = 0.5; positions[i*3+2] = (Math.random()-0.5)*0.2;
+                             pVel[i].y = Math.random()*0.6 + 0.2; pVel[i].x = (Math.random()-0.5)*0.4; pVel[i].z = (Math.random()-0.5)*0.4;
+                        }
+                    }
+                }
+                particles.geometry.attributes.position.needsUpdate = true;
+            } else {
+                particles.visible = false;
+            }
+
+            // 3. Sparks Logic
+            if(sparkles.visible) {
+                const sPositions = sparkles.geometry.attributes.position.array;
+                for(let i=0; i<50; i++) {
+                    sPositions[i*3] += sVel[i].x;
+                    sPositions[i*3+1] += sVel[i].y;
+                    sPositions[i*3+2] += sVel[i].z;
+                    sVel[i].y -= 0.02; // Gravity
+                    // Ground collision
+                    if(sPositions[i*3+1] < 0.75) {
+                        sPositions[i*3+1] = 0.75; sVel[i].y *= -0.5;
+                    }
+                }
+                sparkles.geometry.attributes.position.needsUpdate = true;
+                sparkles.material.opacity -= 0.02;
+            }
+
+            // 4. Shockwave
+            if(shockwave.material.opacity > 0) {
+                shockwave.scale.x += 0.1;
+                shockwave.scale.y += 0.1;
+                shockwave.material.opacity -= 0.05;
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+        });
+
+
+        // --- SCROLL SEQUENCE ---
+        const overlay = document.getElementById('sim-text-overlay');
+        const title = document.getElementById('sim-title');
+        const desc = document.getElementById('sim-desc');
+
+        // Helper to trigger effects
+        function triggerImpact() {
+            sparkles.visible = true;
+            sparkles.material.opacity = 1;
+            // Reset spark positions
+            const sPositions = sparkles.geometry.attributes.position.array;
+            for(let i=0; i<50; i++) {
+                sPositions[i*3] = 0; sPositions[i*3+1] = 0.75; sPositions[i*3+2] = 0;
+                sVel[i].y = Math.random()*0.5 + 0.2;
+            }
+            // Shockwave
+            shockwave.scale.set(1,1,1);
+            shockwave.material.opacity = 0.8;
+        }
+
+        // 1. PREP
+        const prepTl = gsap.timeline({
+            scrollTrigger: { trigger: "#simulation-stage", start: "top bottom", end: "top top", scrub: 1 }
+        });
+        prepTl.to(drillGroup.position, { x: 0, y: 4, z: 0 }) 
+              .to(drillGroup.rotation, { x: 0, y: 0, z: -Math.PI/2 }, "<") 
+              .to(woodBlock.position, { y: -0.5 }, "<"); 
+
+
+        // 2. ACTION (PINNED)
+        const actionTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: "#simulation-stage",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1,
+                pin: true,
+                onUpdate: (self) => {
+                    // Drilling State
+                    isDrilling = (self.progress > 0.05 && self.progress < 0.25);
+                    
+                    // Dynamic Text Positioning
+                    if(self.progress < 0.25) {
+                        // Drilling Phase
+                        overlay.className = "sim-text-container sim-pos-left bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl";
+                        title.innerHTML = 'Precision <span class="text-brand-yellow">Drilling</span>';
+                    } else if (self.progress < 0.6) {
+                        // Hammer Phase
+                        overlay.className = "sim-text-container sim-pos-right bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl";
+                        title.innerHTML = 'High Impact <span class="text-white">Assembly</span>';
+                        desc.innerText = "Reinforced construction for maximum durability.";
+                    } else {
+                        // Logistics Phase
+                        overlay.className = "sim-text-container sim-pos-center bg-black/40 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-2xl";
+                        title.innerHTML = 'Verified <span class="text-emerald-400">Logistics</span>';
+                        desc.innerText = "Packed, Sealed, Delivered. Ready for deployment.";
+                    }
+                }
+            }
+        });
+
+        // A. Drill Down (Stops so body is above wood)
+        actionTl.to(drillGroup.position, { y: 2.5, duration: 2 }) 
+        
+        // B. Drill Up & Away
+                .to(drillGroup.position, { y: 6, duration: 0.5 }) 
+                .to(drillGroup.position, { x: -8, duration: 0.5 }, "<") 
+
+        // C. Hammer Enter
+                .set(hammerPivot, { visible: true }, "<") 
+                .set(nail, { visible: true }, "<") 
+                .to(hammerPivot.rotation, { z: 0, duration: 0.5 }, "<") 
+
+        // D. Hammer Swing 1 (Hit)
+                .to(hammerPivot.rotation, { z: Math.PI/2, duration: 0.3, ease: "power2.out" }) 
+                .to(hammerPivot.rotation, { z: Math.PI, duration: 0.1, ease: "power4.in", onComplete: triggerImpact }) // HIT 1
+                .to(nail.position, { y: 0.4, duration: 0.05 }, "<")
+        
+        // E. Hammer Hit 2
+                .to(hammerPivot.rotation, { z: Math.PI/2, duration: 0.2 }) 
+                .to(hammerPivot.rotation, { z: Math.PI, duration: 0.1, ease: "power4.in", onComplete: triggerImpact }) // HIT 2
+                .to(nail.position, { y: 0.05, duration: 0.05 }, "<") 
+        
+        // F. Hammer Exit
+                .to(hammerPivot.position, { x: 12, duration: 0.5 }) 
+                .to(woodBlock.position, { y: -10, duration: 0.5, delay: 0.2 }, "drop") 
+                .to(nail.position, { y: -10, duration: 0.5, delay: 0.2 }, "drop") 
+
+        // G. BOX SEQUENCE (Fill Empty Space)
+                .set(boxGroup, { visible: true })
+                .to(boxGroup.position, { y: 0, duration: 1, ease: "bounce.out" }) 
+                .to(flap1Group.rotation, { x: 0, duration: 0.5 }) 
+                .to(flap2Group.rotation, { x: 0, duration: 0.5 }, "<")
+                .to(boxGroup.rotation, { y: Math.PI, duration: 1 }) 
+                .to(boxGroup.position, { x: 15, duration: 1, ease: "back.in" }); 
+
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+
+    // --- INTRO & INIT ---
+    window.addEventListener('load', () => {
+        document.body.style.overflow = 'hidden';
+        lenis.stop();
+
+        const introTl = gsap.timeline({
+            onComplete: () => {
+                document.body.style.overflow = '';
+                lenis.start();
+                initThreeJS();
+                initScrollAnimations();
+                gsap.to("#canvas-container", { opacity: 1, duration: 1 });
+            }
+        });
+
+        // Intro Animation
+        introTl.fromTo("#truck-group", { x: -500, opacity: 0 }, { x: 0, opacity: 1, duration: 1.2, ease: "power2.out" })
+               .to("#truck-bed", { rotation: -25, duration: 0.5, ease: "power1.inOut" })
+               .to("#materials-stack", { opacity: 1, duration: 0.1 }, "<0.2") 
+               .to("#materials-stack", { y: 20, x: -30, rotation: 0, duration: 0.5, ease: "bounce.out" }, "<")
+               .to("#truck-bed", { rotation: 0, duration: 0.4 }, "+=0.2")
+               .to("#truck-group", { x: 500, opacity: 0, duration: 0.8, ease: "power2.in" })
+               .to(["#intro-workers"], { opacity: 1, duration: 0.1 }, "-=0.2")
+               .fromTo("#worker-1", { x: 50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4 }, "<")
+               .fromTo("#worker-2", { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4 }, "<")
+               .to("#worker-arm-group", { rotation: -45, duration: 0.15, yoyo: true, repeat: 3 })
+               .to("#materials-stack", { scale: 0.9, opacity: 0, duration: 0.5 }, "+=0.2")
+               .fromTo("#intro-building", { scale: 0.8, opacity: 0, y: 20 }, { scale: 1, opacity: 1, y: 0, duration: 0.8, ease: "back.out" }, "<")
+               .to(["#intro-building", "#intro-workers"], { scale: 0.5, opacity: 0, duration: 0.4, ease: "power2.in", delay: 0.5 })
+               .fromTo("#stage-logo", { scale: 3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "bounce.out" })
+               .to(".logo-char", { yPercent: 0, opacity: 1, stagger: 0.05, duration: 0.4, ease: "power2.out" })
+               .to(".logo-subtitle", { opacity: 1, y: 0, duration: 0.6 }, "-=0.2")
+               .to("#intro-overlay", { yPercent: -100, duration: 1.2, ease: "power4.inOut", delay: 1 })
+               .to("#navbar", { opacity: 1, duration: 0.5 }, "-=0.5")
+               .to(".hero-anim-text", { y: 0, opacity: 1, duration: 1, stagger: 0.1 });
+    });
+
+    function initScrollAnimations() {
+        
+        // --- 1. PROVEN EXCELLENCE SCATTER (New Animation) ---
+        const scatterSection = document.getElementById('proven-excellence');
+        const scatterTl = gsap.timeline({
+            scrollTrigger: {
+                trigger: scatterSection,
+                start: "top top",
+                end: "+=150%", // Extended scroll duration for smoother scatter
+                scrub: 1,
+                pin: true,
+            }
+        });
+        
+        // Select scatter items
+        const items = gsap.utils.toArray('.scatter-item');
+        
+        items.forEach((item, i) => {
+            // Determine random direction for explosion (mostly outward)
+            const angle = Math.random() * Math.PI * 2;
+            const distance = window.innerWidth * 0.8; // Fly out distance
+            const xMove = Math.cos(angle) * distance;
+            const yMove = Math.sin(angle) * distance;
+            const rotate = (Math.random() - 0.5) * 120; // Random rotation
+
+            scatterTl.to(item, {
+                x: xMove,
+                y: yMove,
+                rotation: rotate,
+                opacity: 0,
+                scale: 0.5,
+                duration: 1,
+                ease: "power2.in"
+            }, 0); // Start all at same time (0)
+        });
+
+        // Slight Parallax for the Text Container
+        scatterTl.fromTo("#proven-container .relative.z-20", 
+            { scale: 0.9, opacity: 0.8 }, 
+            { scale: 1.1, opacity: 1, duration: 0.8 }, 
+            0
+        );
+
+
+        // --- 2. HORIZONTAL SCROLL ---
+        if (window.innerWidth > 768) {
+            const sections = gsap.utils.toArray(".h-scroll-section > div");
+            gsap.to(sections, {
+              xPercent: -100 * (sections.length - 1),
+              ease: "none",
+              scrollTrigger: {
+                trigger: ".pin-wrap-container",
+                pin: true,
+                scrub: 1,
+                end: () => "+=" + document.querySelector(".h-scroll-section").offsetWidth
+              }
+            });
+        }
+        
+        // --- 3. MAGNET EFFECT ---
+        const magnets = document.querySelectorAll('.magnetic-wrap');
+        magnets.forEach((magnet) => {
+            magnet.addEventListener('mousemove', (e) => {
+                const rect = magnet.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                gsap.to(magnet, { x: x * 0.3, y: y * 0.3, duration: 0.3, ease: "power2.out" });
+            });
+            magnet.addEventListener('mouseleave', () => {
+                gsap.to(magnet, { x: 0, y: 0, duration: 0.5, ease: "elastic.out(1, 0.3)" });
+            });
+        });
+    }
+  </script>
+</body>
+</html>
